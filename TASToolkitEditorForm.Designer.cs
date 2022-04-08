@@ -47,6 +47,7 @@
             this.inputGridView.RowTemplate.Height = 25;
             this.inputGridView.Size = new System.Drawing.Size(265, 389);
             this.inputGridView.TabIndex = 0;
+            this.inputGridView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.onCellClick);
             this.inputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChanged);
             // 
             // menuStrip

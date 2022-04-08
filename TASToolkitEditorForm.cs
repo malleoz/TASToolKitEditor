@@ -320,6 +320,7 @@ namespace TASToolKitEditor
                 cbColumn.TrueValue = 1;
                 cbColumn.FalseValue = 0;
                 cbColumn.Width = 25;
+                cbColumn.ReadOnly = true;
                 column = cbColumn;
             }
             else
@@ -543,6 +544,22 @@ namespace TASToolKitEditor
                     return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// This function is used so that button checkboxes will toggle even if you accidentally click between the cell and the box border
+        /// </summary>
+        private void onCellClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int colIdx = e.ColumnIndex;
+            if (!BUTTON_COLUMNS.Contains(colIdx - ADJUST_FOR_FRAMECOUNT_COLUMN))
+                return;
+
+            int rowIdx = e.RowIndex;
+            int cellVal = int.Parse(inputGridView.Rows[rowIdx].Cells[colIdx].Value.ToString());
+
+            inputGridView.Rows[rowIdx].Cells[colIdx].Value = (cellVal == 0) ? 1 : 0;
+            inputGridView.RefreshEdit();
         }
 
         string m_curFilePath;
