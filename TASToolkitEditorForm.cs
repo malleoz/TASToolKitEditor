@@ -175,7 +175,7 @@ namespace TASToolKitEditor
         /// <returns>the smallest acceptable integer value for the given column</returns>
         private int getSmallestAcceptedValue(int colIndex, int iValue)
         {
-            if (BUTTON_COLUMNS.Contains(colIndex))
+            if (BUTTON_COLUMNS.Contains(colIndex) || DPAD_COLUMN == colIndex)
                 return 0;
             if (m_file7Centered == null && !ableToDiscern7Centering(iValue, out m_file7Centered))
                     return 0;
@@ -554,7 +554,7 @@ namespace TASToolKitEditor
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;
         private const char COMMA_SEPARATOR = ',';
-        private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2, 5 };
+        private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2};
         private const int DPAD_COLUMN = 5;
         private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
     }
