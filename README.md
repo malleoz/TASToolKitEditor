@@ -12,3 +12,4 @@ A lightweight .csv visualizer/editor meant to assist in the development of Mario
 - Middle-click and drag a stick cell to change value? Is this useful?
 - Branching
 - Bookmarks
+- Adding/deleting rows
