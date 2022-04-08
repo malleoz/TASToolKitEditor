@@ -12,6 +12,8 @@ using System.Windows.Forms;
 // 3. Turn button cells to checkboxes
 // 4. Click and drag along button cells to do mass toggle
 // 5. Right click and drag to copy value from start of click to end of click
+// 6. Finish auto file re-load
+// 7. Add a menu toggle for automatic file re-load
 
 namespace TASToolKitEditor
 {
@@ -318,9 +320,21 @@ namespace TASToolKitEditor
         /// <summary>
         /// Standardized way to add columns, as they should all be uniform in size and behavior
         /// </summary>
-        private void addColumn(string name)
+        private void addColumn(string name, bool buttonCol)
         {
-            DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
+            DataGridViewColumn column;
+            if (buttonCol)
+            {
+                DataGridViewCheckBoxColumn cbColumn = new DataGridViewCheckBoxColumn();
+                cbColumn.TrueValue = 1;
+                cbColumn.FalseValue = 0;
+                column = cbColumn;
+            }
+            else
+            {
+                column = new DataGridViewTextBoxColumn();
+            }
+
             column.HeaderText = name;
             column.Width = 30;
             inputGridView.Columns.Add(column);
@@ -341,12 +355,12 @@ namespace TASToolKitEditor
             // Add the column to display framecount for each row
             addFrameCountColumn();
 
-            addColumn("A");
-            addColumn("B");
-            addColumn("L");
-            addColumn("L-R");
-            addColumn("U-D");
-            addColumn("Pad");
+            addColumn("A", true);
+            addColumn("B", true);
+            addColumn("L", true);
+            addColumn("L-R", false);
+            addColumn("U-D", false);
+            addColumn("Pad", false);
         }
 
         /// <summary>
