@@ -113,7 +113,7 @@ namespace TASToolKitEditor
             return true;
         }
 
-        private bool areHashesEqual(byte[] hash1, byte[] hash2)
+        private static bool areHashesEqual(byte[] hash1, byte[] hash2)
         {
             if (hash1.Length != hash2.Length)
                 return false;
@@ -135,7 +135,7 @@ namespace TASToolKitEditor
             clearData();
         }
 
-        private void showError(string errMsg)
+        private static void showError(string errMsg)
         {
             MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
