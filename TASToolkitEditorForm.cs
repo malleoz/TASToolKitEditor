@@ -9,7 +9,6 @@ using System.Windows.Forms;
 // TODO:
 // 1. What happens if you open a file while file is already open? We need to flush the table
 // 2. SaveToFile might fail if file is in use by other process... We would need to fall back if so
-// 3. Turn button cells to checkboxes
 // 4. Click and drag along button cells to do mass toggle
 // 5. Right click and drag to copy value from start of click to end of click
 // 6. Finish auto file re-load
@@ -328,15 +327,16 @@ namespace TASToolKitEditor
                 DataGridViewCheckBoxColumn cbColumn = new DataGridViewCheckBoxColumn();
                 cbColumn.TrueValue = 1;
                 cbColumn.FalseValue = 0;
+                cbColumn.Width = 25;
                 column = cbColumn;
             }
             else
             {
                 column = new DataGridViewTextBoxColumn();
+                column.Width = 40;
             }
 
             column.HeaderText = name;
-            column.Width = 30;
             inputGridView.Columns.Add(column);
         }
 
@@ -360,7 +360,7 @@ namespace TASToolKitEditor
             addColumn("L", true);
             addColumn("L-R", false);
             addColumn("U-D", false);
-            addColumn("Pad", false);
+            addColumn("UDLR", false);
         }
 
         /// <summary>
