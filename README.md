@@ -4,7 +4,6 @@ A lightweight .csv visualizer/editor meant to assist in the development of Mario
 ![image](https://user-images.githubusercontent.com/16770560/162370209-30066f00-5f80-4dfc-9055-110dd92bc101.png)
 
 ## TODO
-- Toggle button cells even if you click outside of the actual checkbox but within the cell
 - Handle File>Open operation when a file is already opened in the program
 - SaveToFile can fail if file is in use by other program. Determine what to do here. Should we warn user and just keep attempting to save on each input change?
 - Left-click and drag for mass toggle
@@ -18,3 +17,4 @@ A lightweight .csv visualizer/editor meant to assist in the development of Mario
 - Basic text editing functionality
 - Auto file re-load on checksum change detected between cached and local file
 - Toggle between 0 and 7 centering
+- Toggle button cells even if you click outside of the actual checkbox but within the cell
