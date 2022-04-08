@@ -45,7 +45,7 @@
             this.inputGridView.Location = new System.Drawing.Point(12, 50);
             this.inputGridView.Name = "inputGridView";
             this.inputGridView.RowTemplate.Height = 25;
-            this.inputGridView.Size = new System.Drawing.Size(240, 388);
+            this.inputGridView.Size = new System.Drawing.Size(250, 388);
             this.inputGridView.TabIndex = 0;
             this.inputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChanged);
             // 
@@ -55,7 +55,7 @@
             this.fileMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(264, 24);
+            this.menuStrip.Size = new System.Drawing.Size(274, 24);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -102,7 +102,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(264, 450);
+            this.ClientSize = new System.Drawing.Size(274, 450);
             this.Controls.Add(this.inputGridView);
             this.Controls.Add(this.menuStrip);
             this.MainMenuStrip = this.menuStrip;

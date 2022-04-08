@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -290,6 +291,7 @@ namespace TASToolKitEditor
             // This must be performed *after* adding columns/rows otherwise effect is lost
             inputGridView.AllowUserToResizeColumns = false;
             inputGridView.AllowUserToResizeRows = false;
+            inputGridView.RowHeadersVisible = false;
 
             m_gridViewLoaded = true;
         }
@@ -304,9 +306,11 @@ namespace TASToolKitEditor
 
             for (int i = 0; i < m_curFileData.Count; i++)
             {
+                // Write framecount to first column
+                inputGridView.Rows[i].Cells[0].Value = i + 1;
                 for (int j = 0; j < m_curFileData[i].Count; j++)
                 {
-                    inputGridView.Rows[i].Cells[j].Value = m_curFileData[i][j];
+                    inputGridView.Rows[i].Cells[j+1].Value = m_curFileData[i][j];
                 }
             }
         }
@@ -322,8 +326,21 @@ namespace TASToolKitEditor
             inputGridView.Columns.Add(column);
         }
 
+        private void addFrameCountColumn()
+        {
+            DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
+            column.HeaderText = "Frame";
+            column.Width = 50;
+            column.ReadOnly = true;
+            column.DefaultCellStyle.BackColor = Color.LightGray;
+            inputGridView.Columns.Add(column);
+        }
+
         private void addColumnsAndHeaders()
         {
+            // Add the column to display framecount for each row
+            addFrameCountColumn();
+
             addColumn("A");
             addColumn("B");
             addColumn("L");
@@ -368,7 +385,7 @@ namespace TASToolKitEditor
             // To prevent unnecessary File I/O let's double-check that the value actually changed
             int inputNew;
             bool inputAccepted = int.TryParse(inputGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), out inputNew);
-            int inputCurFile = m_curFileData[e.RowIndex][e.ColumnIndex];
+            int inputCurFile = m_curFileData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN];
 
             // The value changed but doesn't conform with formatting rules... Reset to whatever it was before
             if (!inputAccepted || !valueFormattedProperly(inputNew, e))
@@ -382,7 +399,7 @@ namespace TASToolKitEditor
                 return false;
 
             // The value changed, so change in the file data
-            m_curFileData[e.RowIndex][e.ColumnIndex] = inputNew;
+            m_curFileData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN] = inputNew;
             return true;
         }
 
@@ -463,8 +480,8 @@ namespace TASToolKitEditor
 
                     // Apply to DataGridView
                     int iCellValue;
-                    int.TryParse(inputGridView.Rows[i].Cells[j].Value.ToString(), out iCellValue);
-                    inputGridView.Rows[i].Cells[j].Value = iCellValue + centerOffset;
+                    int.TryParse(inputGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value.ToString(), out iCellValue);
+                    inputGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = iCellValue + centerOffset;
                 }
             }
 
@@ -503,5 +520,6 @@ namespace TASToolKitEditor
         private const char COMMA_SEPARATOR = ',';
         private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2, 5 };
         private const int DPAD_COLUMN = 5;
+        private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
     }
 }
