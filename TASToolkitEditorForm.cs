@@ -520,6 +520,7 @@ namespace TASToolKitEditor
 
             inputGridView.Rows.Clear();
             m_curFileData.Clear();
+            m_gridViewLoaded = false;
 
             if (reOpenFile())
             {
@@ -530,6 +531,8 @@ namespace TASToolKitEditor
             {
                 showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
             }
+
+            m_gridViewLoaded = true;
         }
 
         private bool reOpenFile()
