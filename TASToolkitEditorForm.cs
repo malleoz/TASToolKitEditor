@@ -6,14 +6,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Windows.Forms;
 
-// TODO:
-// 1. What happens if you open a file while file is already open? We need to flush the table
-// 2. SaveToFile might fail if file is in use by other process... We would need to fall back if so
-// 4. Click and drag along button cells to do mass toggle
-// 5. Right click and drag to copy value from start of click to end of click
-// 6. Finish auto file re-load
-// 7. Add a menu toggle for automatic file re-load
-
 namespace TASToolKitEditor
 {
     public partial class TASToolKitEditorForm : Form
@@ -396,6 +388,10 @@ namespace TASToolKitEditor
             if (!m_gridViewLoaded)
                 return false;
 
+            // Happens when file is being re-loaded and the frameCount column is written over
+            if (e.ColumnIndex == 0)
+                return false;
+
             // To prevent unnecessary File I/O let's double-check that the value actually changed
             int inputNew;
             bool inputAccepted = int.TryParse(inputGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), out inputNew);
@@ -520,7 +516,30 @@ namespace TASToolKitEditor
             if (areHashesEqual(newHash, m_curFileHash))
                 return;
 
-            // TODO: React to the checksum change
+            m_curFileHash = newHash;
+
+            inputGridView.Rows.Clear();
+            m_curFileData.Clear();
+
+            if (reOpenFile())
+            {
+                addRowsAndHeaders();
+                addDataFromCache();
+            }
+            else
+            {
+                showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
+            }
+        }
+
+        private bool reOpenFile()
+        {
+            using (StreamReader reader = new StreamReader(m_curFilePath))
+            {
+                if (!parseFile(reader))
+                    return false;
+            }
+            return true;
         }
 
         string m_curFilePath;
