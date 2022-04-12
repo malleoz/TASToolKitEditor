@@ -138,6 +138,7 @@
             this.Name = "TASToolKitEditorForm";
             this.Text = "TTK Input Editor";
             this.Activated += new System.EventHandler(this.onGainFocus);
+            this.Resize += new System.EventHandler(this.onFormResize);
             ((System.ComponentModel.ISupportInitialize)(this.inputGridView)).EndInit();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();

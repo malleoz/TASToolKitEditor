@@ -99,6 +99,14 @@ namespace TASToolKitEditor
         }
 
         /// <summary>
+        /// When the form is resized, adjust the DataGridView height accordingly
+        /// </summary>
+        private void onFormResize(object sender, EventArgs e)
+        {
+            inputGridView.Height = inputGridView.Parent.Height - (DATAGRIDVIEW_PADDING * 2);
+        }
+
+        /// <summary>
         /// When the form regains focus, check to see if the file has been modified by Dolphin (or other program).
         /// If so, we will want to re-load the file
         /// </summary>
@@ -703,6 +711,7 @@ namespace TASToolKitEditor
         private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2};
         private const int DPAD_COLUMN = 5;
         private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
+        private const int DATAGRIDVIEW_PADDING = 50;
     }
 
     /// <summary>
