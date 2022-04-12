@@ -8,8 +8,15 @@ using System.Windows.Forms;
 
 namespace TASToolKitEditor
 {
-    public partial class TASToolKitEditorForm : Form
+ public partial class TASToolKitEditorForm : Form
     {
+        enum EOperationType
+        {
+            Normal,
+            Undo,
+            Redo,
+        };
+
         public TASToolKitEditorForm()
         {
             InitializeComponent();
@@ -19,6 +26,56 @@ namespace TASToolKitEditor
             m_curFileData = new List<List<int>>();
             m_gridViewLoaded = false;
             m_file7Centered = null;
+            m_undoStack = new Stack<CellEditAction>();
+            m_redoStack = new Stack<CellEditAction>();
+            m_curOpType = EOperationType.Normal;
+        }
+
+        #region Events
+        private void on7CenterClick(object sender, EventArgs e)
+        {
+            // If we're already 7-centered, do not do anything
+            if (centered7Button.Checked) return;
+
+            centered7Button.Enabled = true;
+            centered0Button.Checked = false;
+
+            // Iterate through all inputs and change to 7-centered
+            centerInputs(true);
+        }
+
+        private void on0CenterClick(object sender, EventArgs e)
+        {
+            // If we're already 0-centered, do not do anything
+            if (centered0Button.Checked) return;
+
+            centered0Button.Checked = true;
+            centered7Button.Checked = false;
+
+            // Iterate through all inputs and change to 0-centered
+            centerInputs(false);
+        }
+
+        /// <summary>
+        /// This function is used so that button checkboxes will toggle even if you accidentally click between the cell and the box border
+        /// </summary>
+        private void onCellClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            int colIdx = e.ColumnIndex;
+            if (!BUTTON_COLUMNS.Contains(colIdx - ADJUST_FOR_FRAMECOUNT_COLUMN))
+                return;
+
+            int rowIdx = e.RowIndex;
+
+            // Row index is -1 if clicking on column headers
+            if (rowIdx < 0)
+                return;
+
+            int cellVal = int.Parse(inputGridView.Rows[rowIdx].Cells[colIdx].Value.ToString());
+            // TODO: Crashes when clicking column header
+
+            inputGridView.Rows[rowIdx].Cells[colIdx].Value = (cellVal == 0) ? 1 : 0;
+            inputGridView.RefreshEdit();
         }
 
         /// <summary>
@@ -30,6 +87,80 @@ namespace TASToolKitEditor
             if (openFile())
                 loadDataToGridView();
         }
+
+        private void onClickRedo(object sender, EventArgs e)
+        {
+            performUndoRedo(EOperationType.Redo);
+        }
+
+        private void onClickUndo(object sender, EventArgs e)
+        {
+            performUndoRedo(EOperationType.Undo);
+        }
+
+        /// <summary>
+        /// When the form regains focus, check to see if the file has been modified by Dolphin (or other program).
+        /// If so, we will want to re-load the file
+        /// </summary>
+        private void onGainFocus(object sender, EventArgs e)
+        {
+            if (m_curFilePath == string.Empty)
+                return;
+
+            // Hash the local file and see if it matches the cached file
+            // If not, then we know we want to re-load the file data
+            byte[] newHash = getHash();
+            if (areHashesEqual(newHash, m_curFileHash))
+                return;
+
+            m_curFileHash = newHash;
+
+            inputGridView.Rows.Clear();
+            m_curFileData.Clear();
+            m_gridViewLoaded = false;
+
+            if (reOpenFile())
+            {
+                addRowsAndHeaders();
+                addDataFromCache();
+            }
+            else
+            {
+                showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
+            }
+
+            m_gridViewLoaded = true;
+        }
+
+        /// <summary>
+        /// This event is fired whenever a cell is modified (not necessarily when the value has changed!)
+        /// </summary>
+        private void onInputChanged(object sender, DataGridViewCellEventArgs e)
+        {
+            if (inputChangeChecksPassed(e))
+                saveToFile();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            bool undo = keyData.HasFlag(Keys.Z) && keyData.HasFlag(Keys.Control);
+            bool redo = keyData.HasFlag(Keys.Y) && keyData.HasFlag(Keys.Control);
+            bool fopen = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control);
+
+            if (undo)
+                performUndoRedo(EOperationType.Undo);
+            else if (redo)
+                performUndoRedo(EOperationType.Redo);
+            else if (fopen)
+                openFile();
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+        #endregion
+
+        /*******************
+         *UTILITY FUNCTIONS*
+         *******************/
 
         /// <summary>
         /// Prompts user to select a .csv file and attempts to open the selected file for parsing.
@@ -370,15 +501,6 @@ namespace TASToolKitEditor
         }
 
         /// <summary>
-        /// This event is fired whenever a cell is modified (not necessarily when the value has changed!)
-        /// </summary>
-        private void onInputChanged(object sender, DataGridViewCellEventArgs e)
-        {
-            if (inputChangeChecksPassed(e))
-                saveToFile();
-        }
-
-        /// <summary>
         /// Perform various checks to make sure that we want to consider the file's inputs changed
         /// (e.g. table isn't loading up, user didn't just press enter on a cell, user typed a number)
         /// </summary>
@@ -409,9 +531,52 @@ namespace TASToolKitEditor
             if (inputNew == inputCurFile)
                 return false;
 
-            // The value changed, so change in the file data
+            // Change the value in the cached file
             m_curFileData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN] = inputNew;
+
+            // Write to one of the stacks
+            CellEditAction action = new CellEditAction(e.RowIndex, e.ColumnIndex, inputCurFile, inputNew);
+            addActionToStack(action);
+
             return true;
+        }
+
+        private void addActionToStack(CellEditAction action)
+        {
+            // Undos and Redos are handled in performUndoRedo
+            if (m_curOpType != EOperationType.Normal)
+                return;
+
+            if (m_redoStack.Count > 0)
+                addActionToStackWithNonEmptyRedo(action);
+            else
+                m_undoStack.Push(action);
+        }
+
+        private void addActionToStackWithNonEmptyRedo(CellEditAction action)
+        {
+            // Since an action has been performed, we want to clear the redo stack unless the action matches the top of the redo stack
+            CellEditAction redoTop = m_redoStack.Peek();
+
+            if (action.m_cellRowIdx != redoTop.m_cellRowIdx)
+                return;
+            if (action.m_cellColIdx != redoTop.m_cellColIdx)
+                return;
+            if (action.m_cellPrevVal != redoTop.m_cellPrevVal)
+                return;
+
+            // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
+            // We must delete the redo stack before pushing
+            if (action.m_cellCurVal != redoTop.m_cellCurVal)
+            {
+                m_redoStack.Clear();
+                m_undoStack.Push(action);
+            }
+            else
+            {
+                // User performed the action specified in the top of redo stack. Basically this counts as a redo, so move the action from redo stack to undo stack
+                m_undoStack.Push(m_redoStack.Pop());
+            }
         }
 
         // Takes the content in m_curFileData and writes to m_curFilePath
@@ -452,47 +617,19 @@ namespace TASToolKitEditor
             }
         }
 
-        private void on7CenterClick(object sender, EventArgs e)
-        {
-            // If we're already 7-centered, do not do anything
-            if (centered7Button.Checked) return;
-
-            centered7Button.Enabled = true;
-            centered0Button.Checked = false;
-
-            // Iterate through all inputs and change to 7-centered
-            centerInputs(true);
-        }
-
-        private void on0CenterClick(object sender, EventArgs e)
-        {
-            // If we're already 0-centered, do not do anything
-            if (centered0Button.Checked) return;
-
-            centered0Button.Checked = true;
-            centered7Button.Checked = false;
-
-            // Iterate through all inputs and change to 0-centered
-            centerInputs(false);
-        }
-
         private void centerInputs(bool centerOn7)
         {
             // Adjustment to make (either from 7-center to 0-center or vice versa)
             int centerOffset = centerOn7 ? 7 : -7;
 
-            // Since we need to update both the grid and the m_curFileData, I think it's more efficient to iterate across the m_curFileData
+            // It's easier (and probably more efficient to iterate the cached file
             for (int i = 0; i < m_curFileData.Count; i++)
             {
                 for (int j = 3; j < 5; j++)
                 {
-                    // Apply to cached file data
-                    m_curFileData[i][j] += centerOffset;
-
-                    // Apply to DataGridView
-                    int iCellValue;
-                    int.TryParse(inputGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value.ToString(), out iCellValue);
-                    inputGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = iCellValue + centerOffset;
+                    int centeredInput = m_curFileData[i][j] + centerOffset;
+                    m_curFileData[i][j] = centeredInput; // Write to cached file here to prevent a ridiculous amount of file I/O
+                    inputGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = centeredInput;
                 }
             }
 
@@ -500,40 +637,10 @@ namespace TASToolKitEditor
             saveToFile();
         }
 
-        /// <summary>
-        /// When the form regains focus, check to see if the file has been modified by Dolphin (or other program).
-        /// If so, we will want to re-load the file
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void onGainFocus(object sender, EventArgs e)
+        private void writeToCacheAndGridView(int value, int rowIdx, int colIdx)
         {
-            if (m_curFilePath == string.Empty)
-                return;
-
-            // Hash the local file and see if it matches the cached file
-            // If not, then we know we want to re-load the file data
-            byte[] newHash = getHash();
-            if (areHashesEqual(newHash, m_curFileHash))
-                return;
-
-            m_curFileHash = newHash;
-
-            inputGridView.Rows.Clear();
-            m_curFileData.Clear();
-            m_gridViewLoaded = false;
-
-            if (reOpenFile())
-            {
-                addRowsAndHeaders();
-                addDataFromCache();
-            }
-            else
-            {
-                showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
-            }
-
-            m_gridViewLoaded = true;
+            m_curFileData[rowIdx][colIdx] = value;
+            inputGridView.Rows[rowIdx].Cells[colIdx + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = value;
         }
 
         private bool reOpenFile()
@@ -546,27 +653,49 @@ namespace TASToolKitEditor
             return true;
         }
 
-        /// <summary>
-        /// This function is used so that button checkboxes will toggle even if you accidentally click between the cell and the box border
-        /// </summary>
-        private void onCellClick(object sender, DataGridViewCellMouseEventArgs e)
+        private bool stackIsEmpty(EOperationType eOpType)
         {
-            int colIdx = e.ColumnIndex;
-            if (!BUTTON_COLUMNS.Contains(colIdx - ADJUST_FOR_FRAMECOUNT_COLUMN))
+            if (eOpType == EOperationType.Undo)
+                return m_undoStack.Count == 0;
+
+            return m_redoStack.Count == 0;
+        }
+
+        private void performUndoRedo(EOperationType eOpType)
+        {
+            if (stackIsEmpty(eOpType))
                 return;
 
-            int rowIdx = e.RowIndex;
-            int cellVal = int.Parse(inputGridView.Rows[rowIdx].Cells[colIdx].Value.ToString());
+            m_curOpType = eOpType;
 
-            inputGridView.Rows[rowIdx].Cells[colIdx].Value = (cellVal == 0) ? 1 : 0;
-            inputGridView.RefreshEdit();
+            CellEditAction action = (m_curOpType == EOperationType.Undo) ? m_undoStack.Pop() : m_redoStack.Pop();
+
+            action.FlipValues();
+
+            if (m_curOpType == EOperationType.Undo)
+                m_redoStack.Push(action);
+            else
+                m_undoStack.Push(action);
+
+            // Only apply the action after pushing to the new stack
+            // This way we can check if the action should cause the redo stack to collapse
+            int rowIdx = action.m_cellRowIdx;
+            int colIdx = action.m_cellColIdx;
+            inputGridView.Rows[rowIdx].Cells[colIdx].Value = action.m_cellCurVal;
+
+            eOpType = EOperationType.Normal;
+
+            saveToFile();
         }
 
         string m_curFilePath;
         byte[] m_curFileHash; 
-        List<List<int>> m_curFileData;
+        List<List<int>> m_curFileData; // TODO: Vectorizexd implementation for better iteration on centerInputs()?
         bool m_gridViewLoaded;
         bool? m_file7Centered;
+        Stack<CellEditAction> m_undoStack;
+        Stack<CellEditAction> m_redoStack;
+        EOperationType m_curOpType;
 
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;
@@ -574,5 +703,32 @@ namespace TASToolKitEditor
         private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2};
         private const int DPAD_COLUMN = 5;
         private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
+    }
+
+    /// <summary>
+    /// A class to represent a cell modification action. This is used to undo/redo actions concisely
+    /// </summary>
+    public class CellEditAction
+    {
+        public CellEditAction(int row, int col, int prevVal, int nextVal)
+        {
+            m_cellRowIdx = row;
+            m_cellColIdx = col;
+            m_cellPrevVal = prevVal;
+            m_cellCurVal = nextVal;
+        }
+
+        public int m_cellRowIdx;
+        public int m_cellColIdx;
+        public int m_cellPrevVal;
+        public int m_cellCurVal;
+
+        internal void FlipValues()
+        {
+            // Swap prev and cur
+            int temp = m_cellCurVal;
+            m_cellCurVal = m_cellPrevVal;
+            m_cellPrevVal = temp;
+        }
     }
 }

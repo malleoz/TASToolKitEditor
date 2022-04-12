@@ -35,6 +35,9 @@
             this.inputCenteringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.centered0Button = new System.Windows.Forms.ToolStripMenuItem();
             this.centered7Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.editMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoMenu = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoMenu = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.inputGridView)).BeginInit();
             this.menuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -53,7 +56,8 @@
             // menuStrip
             // 
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileMenu});
+            this.fileMenu,
+            this.editMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
             this.menuStrip.Size = new System.Drawing.Size(289, 24);
@@ -72,8 +76,8 @@
             // fileOpen
             // 
             this.fileOpen.Name = "fileOpen";
-            this.fileOpen.Size = new System.Drawing.Size(157, 22);
-            this.fileOpen.Text = "Open";
+            this.fileOpen.Size = new System.Drawing.Size(180, 22);
+            this.fileOpen.Text = "Open (Ctrl + O)";
             this.fileOpen.Click += new System.EventHandler(this.onClickFileOpen);
             // 
             // inputCenteringToolStripMenuItem
@@ -98,6 +102,29 @@
             this.centered7Button.Size = new System.Drawing.Size(131, 22);
             this.centered7Button.Text = "7 Centered";
             this.centered7Button.Click += new System.EventHandler(this.on7CenterClick);
+            // 
+            // editMenu
+            // 
+            this.editMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoMenu,
+            this.redoMenu});
+            this.editMenu.Name = "editMenu";
+            this.editMenu.Size = new System.Drawing.Size(39, 20);
+            this.editMenu.Text = "Edit";
+            // 
+            // undoMenu
+            // 
+            this.undoMenu.Name = "undoMenu";
+            this.undoMenu.Size = new System.Drawing.Size(180, 22);
+            this.undoMenu.Text = "Undo (Ctrl + Z)";
+            this.undoMenu.Click += new System.EventHandler(this.onClickUndo);
+            // 
+            // redoMenu
+            // 
+            this.redoMenu.Name = "redoMenu";
+            this.redoMenu.Size = new System.Drawing.Size(180, 22);
+            this.redoMenu.Text = "Redo (Ctrl + Y)";
+            this.redoMenu.Click += new System.EventHandler(this.onClickRedo);
             // 
             // TASToolKitEditorForm
             // 
@@ -128,5 +155,8 @@
         private System.Windows.Forms.ToolStripMenuItem inputCenteringToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem centered0Button;
         private System.Windows.Forms.ToolStripMenuItem centered7Button;
+        private System.Windows.Forms.ToolStripMenuItem editMenu;
+        private System.Windows.Forms.ToolStripMenuItem undoMenu;
+        private System.Windows.Forms.ToolStripMenuItem redoMenu;
     }
 }
