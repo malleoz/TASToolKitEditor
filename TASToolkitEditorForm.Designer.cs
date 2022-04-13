@@ -37,11 +37,11 @@
             this.centered0Button = new System.Windows.Forms.ToolStripMenuItem();
             this.centered7Button = new System.Windows.Forms.ToolStripMenuItem();
             this.playerMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.undoCtrlShiftZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.redoCtrlShiftYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.playerUndoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.playerRedoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ghostMenu = new System.Windows.Forms.ToolStripMenuItem();
-            this.undoCtrlZToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.redoCtrlYToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ghostUndoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.ghostRedoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ghostInputGridView = new System.Windows.Forms.DataGridView();
             this.ghostGridViewLabel = new System.Windows.Forms.Label();
             this.playerGridViewLabel = new System.Windows.Forms.Label();
@@ -123,50 +123,54 @@
             // playerMenu
             // 
             this.playerMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.undoCtrlShiftZToolStripMenuItem,
-            this.redoCtrlShiftYToolStripMenuItem});
+            this.playerUndoMenuItem,
+            this.playerRedoMenuItem});
             this.playerMenu.Name = "playerMenu";
             this.playerMenu.Size = new System.Drawing.Size(51, 20);
             this.playerMenu.Text = "Player";
             this.playerMenu.Visible = false;
             // 
-            // undoCtrlShiftZToolStripMenuItem
+            // playerUndoMenuItem
             // 
-            this.undoCtrlShiftZToolStripMenuItem.Name = "undoCtrlShiftZToolStripMenuItem";
-            this.undoCtrlShiftZToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-            this.undoCtrlShiftZToolStripMenuItem.Text = "Undo (Ctrl + Z)";
-            this.undoCtrlShiftZToolStripMenuItem.Click += new System.EventHandler(this.onClickUndoPlayer);
+            this.playerUndoMenuItem.Enabled = false;
+            this.playerUndoMenuItem.Name = "playerUndoMenuItem";
+            this.playerUndoMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.playerUndoMenuItem.Text = "Undo (Ctrl + Z)";
+            this.playerUndoMenuItem.Click += new System.EventHandler(this.onClickUndoPlayer);
             // 
-            // redoCtrlShiftYToolStripMenuItem
+            // playerRedoMenuItem
             // 
-            this.redoCtrlShiftYToolStripMenuItem.Name = "redoCtrlShiftYToolStripMenuItem";
-            this.redoCtrlShiftYToolStripMenuItem.Size = new System.Drawing.Size(154, 22);
-            this.redoCtrlShiftYToolStripMenuItem.Text = "Redo (Ctrl + Y)";
-            this.redoCtrlShiftYToolStripMenuItem.Click += new System.EventHandler(this.onClickRedoPlayer);
+            this.playerRedoMenuItem.Enabled = false;
+            this.playerRedoMenuItem.Name = "playerRedoMenuItem";
+            this.playerRedoMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.playerRedoMenuItem.Text = "Redo (Ctrl + Y)";
+            this.playerRedoMenuItem.Click += new System.EventHandler(this.onClickRedoPlayer);
             // 
             // ghostMenu
             // 
             this.ghostMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.undoCtrlZToolStripMenuItem,
-            this.redoCtrlYToolStripMenuItem});
+            this.ghostUndoMenuItem,
+            this.ghostRedoMenuItem});
             this.ghostMenu.Name = "ghostMenu";
             this.ghostMenu.Size = new System.Drawing.Size(50, 20);
             this.ghostMenu.Text = "Ghost";
             this.ghostMenu.Visible = false;
             // 
-            // undoCtrlZToolStripMenuItem
+            // ghostUndoMenuItem
             // 
-            this.undoCtrlZToolStripMenuItem.Name = "undoCtrlZToolStripMenuItem";
-            this.undoCtrlZToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
-            this.undoCtrlZToolStripMenuItem.Text = "Undo (Ctrl + Shift + Z)";
-            this.undoCtrlZToolStripMenuItem.Click += new System.EventHandler(this.onClickUndoGhost);
+            this.ghostUndoMenuItem.Enabled = false;
+            this.ghostUndoMenuItem.Name = "ghostUndoMenuItem";
+            this.ghostUndoMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.ghostUndoMenuItem.Text = "Undo (Ctrl + Shift + Z)";
+            this.ghostUndoMenuItem.Click += new System.EventHandler(this.onClickUndoGhost);
             // 
-            // redoCtrlYToolStripMenuItem
+            // ghostRedoMenuItem
             // 
-            this.redoCtrlYToolStripMenuItem.Name = "redoCtrlYToolStripMenuItem";
-            this.redoCtrlYToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
-            this.redoCtrlYToolStripMenuItem.Text = "Redo (Ctrl +Shift + Y)";
-            this.redoCtrlYToolStripMenuItem.Click += new System.EventHandler(this.onClickRedoGhost);
+            this.ghostRedoMenuItem.Enabled = false;
+            this.ghostRedoMenuItem.Name = "ghostRedoMenuItem";
+            this.ghostRedoMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.ghostRedoMenuItem.Text = "Redo (Ctrl +Shift + Y)";
+            this.ghostRedoMenuItem.Click += new System.EventHandler(this.onClickRedoGhost);
             // 
             // ghostInputGridView
             // 
@@ -234,11 +238,11 @@
         private System.Windows.Forms.ToolStripMenuItem fileOpenGhost;
         private System.Windows.Forms.DataGridView ghostInputGridView;
         private System.Windows.Forms.ToolStripMenuItem ghostMenu;
-        private System.Windows.Forms.ToolStripMenuItem undoCtrlZToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem redoCtrlYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ghostUndoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem ghostRedoMenuItem;
         private System.Windows.Forms.ToolStripMenuItem playerMenu;
-        private System.Windows.Forms.ToolStripMenuItem undoCtrlShiftZToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem redoCtrlShiftYToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem playerUndoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem playerRedoMenuItem;
         private System.Windows.Forms.Label ghostGridViewLabel;
         private System.Windows.Forms.Label playerGridViewLabel;
     }

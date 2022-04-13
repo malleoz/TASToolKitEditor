@@ -183,18 +183,26 @@ namespace TASToolKitEditor
 
         private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
         {
-            onInputChanged(e, EDataSource.DataGhost);
+            inputChanged(e, EDataSource.DataGhost);
         }
 
         private void onInputChangedPlayer(object sender, DataGridViewCellEventArgs e)
         {
-            onInputChanged(e, EDataSource.DataPlayer);
+            inputChanged(e, EDataSource.DataPlayer);
         }
         #endregion
 
         /*******************
          *UTILITY FUNCTIONS*
          *******************/
+
+        private ref ToolStripMenuItem getSourceMenuButton(EDataSource dataSource, EOperationType opType)
+        {
+            if (dataSource == EDataSource.DataPlayer)
+                return ref ((opType == EOperationType.Undo) ? ref playerUndoMenuItem : ref playerRedoMenuItem);
+
+            return ref ((opType == EOperationType.Undo) ? ref ghostUndoMenuItem : ref ghostRedoMenuItem);
+        }
 
         /// <summary>
         /// This is a more reliable method of the KeyDown event. Observer keys pressed and react to them
@@ -224,7 +232,7 @@ namespace TASToolKitEditor
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        private void onInputChanged(DataGridViewCellEventArgs e, EDataSource dataSource)
+        private void inputChanged(DataGridViewCellEventArgs e, EDataSource dataSource)
         {
             if (inputChangeChecksPassed(e, dataSource))
                 saveToFile(dataSource);
@@ -553,8 +561,8 @@ namespace TASToolKitEditor
         private bool valueFormattedProperly(int value, DataGridViewCellEventArgs e)
         {
             int colIndex = e.ColumnIndex;
-            int smallestAcceptedVal = getSmallestAcceptedValue(colIndex, value);
-            int largestAcceptedVal = getLargestAcceptedValue(colIndex, value);
+            int smallestAcceptedVal = getSmallestAcceptedValue(colIndex - ADJUST_FOR_FRAMECOUNT_COLUMN, value);
+            int largestAcceptedVal = getLargestAcceptedValue(colIndex - ADJUST_FOR_FRAMECOUNT_COLUMN, value);
 
             return (value >= smallestAcceptedVal && value <= largestAcceptedVal);
         }
@@ -581,19 +589,12 @@ namespace TASToolKitEditor
 
         private void applyGridViewFormatting(EDataSource dataSource)
         {
+            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
+
             // This must be performed *after* adding columns/rows otherwise effect is lost
-            if (dataSource == EDataSource.DataPlayer)
-            {
-                playerInputGridView.AllowUserToResizeColumns = false;
-                playerInputGridView.AllowUserToResizeRows = false;
-                playerInputGridView.RowHeadersVisible = false;
-            }
-            else
-            {
-                ghostInputGridView.AllowUserToResizeColumns = false;
-                ghostInputGridView.AllowUserToResizeRows = false;
-                ghostInputGridView.RowHeadersVisible = false;
-            }
+            sourceGridView.AllowUserToResizeColumns = false;
+            sourceGridView.AllowUserToResizeRows = false;
+            sourceGridView.RowHeadersVisible = false;
         }
 
         /// <summary>
@@ -730,6 +731,12 @@ namespace TASToolKitEditor
             CellEditAction action = new CellEditAction(e.RowIndex, e.ColumnIndex, inputCurFile, inputNew);
             addActionToStack(action, dataSource);
 
+            // Adjust menu buttons accordingly
+            if (dataSource == EDataSource.DataGhost)
+                ghostUndoMenuItem.Enabled = true;
+            else
+                playerUndoMenuItem.Enabled = true;
+
             return true;
         }
 
@@ -737,7 +744,10 @@ namespace TASToolKitEditor
         {
             // Undos and Redos are handled in performUndoRedo
             if (m_curOpType != EOperationType.Normal)
+            {
+                m_curOpType = EOperationType.Normal;
                 return;
+            }
 
             ref Stack<CellEditAction> sourceRedoStack = ref getSourceRedoStack(dataSource);
             ref Stack<CellEditAction> sourceUndoStack = ref getSourceUndoStack(dataSource);
@@ -845,12 +855,6 @@ namespace TASToolKitEditor
             saveToFile(dataSource);
         }
 
-        private void writeToCacheAndGridView(int value, int rowIdx, int colIdx)
-        {
-            m_playerFileData[rowIdx][colIdx] = value;
-            playerInputGridView.Rows[rowIdx].Cells[colIdx + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = value;
-        }
-
         private bool reOpenFile(ref string sourcePath, ref List<List<int>> sourceData)
         {
             using (StreamReader reader = new StreamReader(sourcePath))
@@ -898,6 +902,13 @@ namespace TASToolKitEditor
             int colIdx = action.m_cellColIdx;
             ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
             sourceGridView.Rows[rowIdx].Cells[colIdx].Value = action.m_cellCurVal;
+
+            ref ToolStripMenuItem undoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Undo);
+            ref ToolStripMenuItem redoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Redo);
+
+            // Adjust menu items accordingly
+            redoMenuItem.Enabled = sourceRedoStack.Count > 0;
+            undoMenuItem.Enabled = sourceUndoStack.Count > 0;
 
             saveToFile(dataSource);
         }
