@@ -902,6 +902,7 @@ namespace TASToolKitEditor
             int colIdx = action.m_cellColIdx;
             ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
             sourceGridView.Rows[rowIdx].Cells[colIdx].Value = action.m_cellCurVal;
+            sourceGridView.Refresh();
 
             ref ToolStripMenuItem undoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Undo);
             ref ToolStripMenuItem redoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Redo);
