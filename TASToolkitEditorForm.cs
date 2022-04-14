@@ -19,6 +19,7 @@ namespace TASToolKitEditor
 
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
+            m_fileSystemWatcher = new FileSystemWatcher();
         }
 
         #region Events
@@ -92,12 +93,6 @@ namespace TASToolKitEditor
             playerInputGridView.Height = this.Height - (DATAGRIDVIEW_PADDING * 2);
         }
 
-        private void onGainFocus(object sender, EventArgs e)
-        {
-            checkForInputChanges(ghostInfo);
-            checkForInputChanges(playerInfo);
-        }
-
         private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
         {
             inputChanged(e, ghostInfo);
@@ -147,45 +142,6 @@ namespace TASToolKitEditor
                 saveToFile(info);
         }
 
-        private void checkForInputChanges(SupportInfo info)
-        {
-            if (info.m_filePath == string.Empty)
-                return;
-
-            // Hash the local file and see if it matches the cached file
-            // If not, then we know we want to re-load the file data
-            byte[] diskHash = getHash(info.m_filePath);
-            if (areHashesEqual(diskHash, info.m_fileHash))
-                return;
-
-            info.m_fileHash = diskHash;
-            info.m_fileData.Clear();
-            info.m_dataGridView.Rows.Clear();
-            info.m_gridViewLoaded = false;
-
-            if (reOpenFile(info))
-            {
-                addRowsAndHeaders(info);
-                addDataFromCache(info);
-            }
-            else
-            {
-                showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
-            }
-
-            info.m_gridViewLoaded = true;
-        }
-
-        private void onRedo(EDataSource dataSource)
-        {
-            
-        }
-
-        private void onUndo(EDataSource dataSource)
-        {
-
-        }
-
         private void fileOpen(SupportInfo info)
         {
             if (openFile(info))
@@ -227,13 +183,6 @@ namespace TASToolKitEditor
 
                 info.m_filePath = ofd.FileName;
 
-                if (!hashCachedFile(info))
-                {
-                    string errMsg = String.Format("Unable to open {0} as it may be opened by another program.", info.m_filePath);
-                    showErrorAndClearData(errMsg, info);
-                    return false;
-                }
-
                 Stream fileStream;
 
                 try
@@ -254,7 +203,57 @@ namespace TASToolKitEditor
                 }
             }
 
+            if (m_fileSystemWatcher.Path == String.Empty)
+                watchFileSystem(info);
+
             return true;
+        }
+
+        private void watchFileSystem(SupportInfo info)
+        {
+            m_fileSystemWatcher.Path = Path.GetDirectoryName(info.m_filePath);
+            m_fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
+            m_fileSystemWatcher.Filter = "*.csv";
+            m_fileSystemWatcher.Changed += new FileSystemEventHandler(ClearAndReloadFile);
+            m_fileSystemWatcher.EnableRaisingEvents = true;
+
+        }
+
+        public void ClearAndReloadFile(object sender, FileSystemEventArgs e)
+        {
+            // Determine if one of the loaded files was modified
+            bool bIsGhostFile = (e.FullPath == ghostInfo.m_filePath);
+            bool bIsPlayerFile = (e.FullPath == playerInfo.m_filePath);
+            if (!bIsGhostFile && !bIsPlayerFile)
+                return;
+
+            // Schedule on main thread
+            Invoke(new Action(() =>
+            {
+                if (bIsGhostFile)
+                    ClearAndReloadFile(ghostInfo);
+                else
+                    ClearAndReloadFile(playerInfo);
+            }));
+        }
+
+        public void ClearAndReloadFile(SupportInfo info)
+        {
+            info.m_fileData.Clear();
+            info.m_dataGridView.Rows.Clear();
+            info.m_gridViewLoaded = false;
+
+            if (reOpenFile(info))
+            {
+                addRowsAndHeaders(info);
+                addDataFromCache(info);
+            }
+            else
+            {
+                showError("Unable to re-open file when detecting change... Future behavior is undefined...");
+            }
+
+            info.m_gridViewLoaded = true;
         }
 
         private byte[] getHash(string path)
@@ -272,31 +271,6 @@ namespace TASToolKitEditor
             }
 
             return Array.Empty<Byte>();
-        }
-
-        private bool hashCachedFile(SupportInfo info)
-        {
-            byte[] hash = getHash(info.m_filePath);
-
-            if (areHashesEqual(hash, Array.Empty<byte>()))
-                return false;
-
-            info.m_fileHash = hash;
-
-            return true;
-        }
-
-        private static bool areHashesEqual(byte[] hash1, byte[] hash2)
-        {
-            if (hash1.Length != hash2.Length)
-                return false;
-
-            for (int i = 0; i < hash1.Length; i++)
-            {
-                if (hash1[i] != hash2[i])
-                    return false;
-            }
-            return true;
         }
 
         /// <summary>
@@ -319,7 +293,6 @@ namespace TASToolKitEditor
         private void clearData(SupportInfo info)
         {
             info.m_filePath = String.Empty;
-            Array.Clear(info.m_fileHash, 0, info.m_fileHash.Length);
             info.m_fileData.Clear();
         }
 
@@ -654,6 +627,7 @@ namespace TASToolKitEditor
         // Takes the content in m_curFileData and writes to m_curFilePath
         private void saveToFile(SupportInfo info)
         {
+            m_fileSystemWatcher.EnableRaisingEvents = false;
             try
             {
                 using (StreamWriter writer = new StreamWriter(info.m_filePath, false))
@@ -681,12 +655,7 @@ namespace TASToolKitEditor
                 System.Diagnostics.Debug.WriteLine(e.ToString());
             }
 
-            if (!hashCachedFile(info))
-            {
-                string errMsg = String.Format("Unable to hash file on save... Any further behavior is undefined." +
-                                              "You should immediately back-up {0} and quit out of this program.", info.m_filePath);
-                showError(errMsg);
-            }
+            m_fileSystemWatcher.EnableRaisingEvents = true;
         }
 
         private void centerInputs(bool centerOn7)
@@ -761,6 +730,7 @@ namespace TASToolKitEditor
 
         bool? m_files7Centered;
         EOperationType m_curOpType;
+        FileSystemWatcher m_fileSystemWatcher;
 
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;
@@ -781,7 +751,6 @@ namespace TASToolKitEditor
         public SupportInfo(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu)
         {
             m_filePath = String.Empty;
-            m_fileHash = Array.Empty<Byte>();
             m_fileData = new List<List<int>>();
             m_gridViewLoaded = false;
             m_undoStack = new Stack<CellEditAction>();
@@ -793,7 +762,6 @@ namespace TASToolKitEditor
         }
 
         public string m_filePath;
-        public byte[] m_fileHash;
         public List<List<int>> m_fileData; // TODO: Vectorized implementation for better iteration on centerInputs()?
         public bool m_gridViewLoaded;
         public Stack<CellEditAction> m_undoStack;
