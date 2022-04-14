@@ -722,6 +722,9 @@ namespace TASToolKitEditor
             info.m_redoMenuItem.Enabled = info.m_redoStack.Count > 0;
             info.m_undoMenuItem.Enabled = info.m_undoStack.Count > 0;
 
+            // Change scroll to show the row that was just edited
+            info.m_dataGridView.FirstDisplayedScrollingRowIndex = rowIdx;
+
             saveToFile(info);
         }
 
