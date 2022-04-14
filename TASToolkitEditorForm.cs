@@ -14,95 +14,12 @@ namespace TASToolKitEditor
         {
             InitializeComponent();
 
-            m_playerFilePath = string.Empty;
-            m_ghostFilePath = string.Empty;
-
-            m_playerFileHash = Array.Empty<Byte>();
-            m_ghostFileHash = Array.Empty<Byte>();
-
-            m_playerFileData = new List<List<int>>();
-            m_ghostFileData = new List<List<int>>();
-
-            m_playerGridViewLoaded = false;
-            m_ghostGridViewLoaded = false;
+            playerInfo = new SupportInfo(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem);
+            ghostInfo = new SupportInfo(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem);
 
             m_files7Centered = null;
-
-            m_playerUndoStack = new Stack<CellEditAction>();
-            m_ghostUndoStack = new Stack<CellEditAction>();
-
-            m_playerRedoStack = new Stack<CellEditAction>();
-            m_ghostRedoStack = new Stack<CellEditAction>();
-
             m_curOpType = EOperationType.Normal;
-            m_curDataSource = EDataSource.DataNone;
         }
-
-        #region Reference Functions
-        private ref List<List<int>> getSourceData(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerFileData;
-
-            return ref m_ghostFileData;
-        }
-
-        private ref DataGridView getSourceGridView(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref playerInputGridView;
-
-            return ref ghostInputGridView;
-        }
-
-        private ref byte[] getSourceHash(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerFileHash;
-
-            return ref m_ghostFileHash;
-        }
-
-        private ref ToolStripMenuItem getSourceMenuButton(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref playerMenu;
-
-            return ref ghostMenu;
-        }
-
-        private ref string getSourcePath(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerFilePath;
-
-            return ref m_ghostFilePath;
-        }
-
-        private ref bool getSourceLoaded(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerGridViewLoaded;
-
-            return ref m_ghostGridViewLoaded;
-        }
-
-        private ref Stack<CellEditAction> getSourceRedoStack(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerRedoStack;
-
-            return ref m_ghostRedoStack;
-        }
-
-        private ref Stack<CellEditAction> getSourceUndoStack(EDataSource dataSource)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref m_playerUndoStack;
-
-            return ref m_ghostUndoStack;
-        }
-        #endregion // Reference Functions
 
         #region Events
         private void on7CenterClick(object sender, EventArgs e)
@@ -131,42 +48,42 @@ namespace TASToolKitEditor
 
         private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e)
         {
-            cellClick(e, EDataSource.DataGhost);
+            cellClick(e, ghostInfo);
         }
 
         private void onCellClickPlayer(object sender, DataGridViewCellMouseEventArgs e)
         {
-            cellClick(e, EDataSource.DataPlayer);
+            cellClick(e, playerInfo);
         }
 
         private void onClickFileOpenGhost(object sender, EventArgs e)
         {
-            fileOpen(EDataSource.DataGhost);
+            fileOpen(ghostInfo);
         }
 
         private void onClickFileOpenPlayer(object sender, EventArgs e)
         {
-            fileOpen(EDataSource.DataPlayer);
+            fileOpen(playerInfo);
         }
 
         private void onClickRedoGhost(object sender, EventArgs e)
         {
-            performUndoRedo(EDataSource.DataGhost, EOperationType.Redo);
+            performUndoRedo(ghostInfo, EOperationType.Redo);
         }
 
         private void onClickRedoPlayer(object sender, EventArgs e)
         {
-            performUndoRedo(EDataSource.DataPlayer, EOperationType.Redo);
+            performUndoRedo(playerInfo, EOperationType.Redo);
         }
 
         private void onClickUndoGhost(object sender, EventArgs e)
         {
-            performUndoRedo(EDataSource.DataGhost, EOperationType.Undo);
+            performUndoRedo(ghostInfo, EOperationType.Undo);
         }
 
         private void onClickUndoPlayer(object sender, EventArgs e)
         {
-            performUndoRedo(EDataSource.DataPlayer, EOperationType.Undo);
+            performUndoRedo(playerInfo, EOperationType.Undo);
         }
 
         private void onFormResize(object sender, EventArgs e)
@@ -177,31 +94,18 @@ namespace TASToolKitEditor
 
         private void onGainFocus(object sender, EventArgs e)
         {
-            checkForInputChanges(EDataSource.DataGhost);
-            checkForInputChanges(EDataSource.DataPlayer);
+            checkForInputChanges(ghostInfo);
+            checkForInputChanges(playerInfo);
         }
 
         private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
         {
-            inputChanged(e, EDataSource.DataGhost);
+            inputChanged(e, ghostInfo);
         }
 
         private void onInputChangedPlayer(object sender, DataGridViewCellEventArgs e)
         {
-            inputChanged(e, EDataSource.DataPlayer);
-        }
-        #endregion
-
-        /*******************
-         *UTILITY FUNCTIONS*
-         *******************/
-
-        private ref ToolStripMenuItem getSourceMenuButton(EDataSource dataSource, EOperationType opType)
-        {
-            if (dataSource == EDataSource.DataPlayer)
-                return ref ((opType == EOperationType.Undo) ? ref playerUndoMenuItem : ref playerRedoMenuItem);
-
-            return ref ((opType == EOperationType.Undo) ? ref ghostUndoMenuItem : ref ghostRedoMenuItem);
+            inputChanged(e, playerInfo);
         }
 
         /// <summary>
@@ -217,65 +121,59 @@ namespace TASToolKitEditor
             bool openPlayer = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control);
 
             if (undoGhost)
-                performUndoRedo(EDataSource.DataGhost, EOperationType.Undo);
+                performUndoRedo(ghostInfo, EOperationType.Undo);
             else if (undoPlayer)
-                performUndoRedo(EDataSource.DataPlayer, EOperationType.Undo);
+                performUndoRedo(playerInfo, EOperationType.Undo);
             else if (redoGhost)
-                performUndoRedo(EDataSource.DataGhost, EOperationType.Redo);
+                performUndoRedo(ghostInfo, EOperationType.Redo);
             else if (redoPlayer)
-                performUndoRedo(EDataSource.DataPlayer, EOperationType.Redo);
+                performUndoRedo(playerInfo, EOperationType.Redo);
             else if (openGhost)
-                openFile(EDataSource.DataGhost);
+                openFile(ghostInfo);
             else if (openPlayer)
-                openFile(EDataSource.DataPlayer);
+                openFile(playerInfo);
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
+        #endregion
 
-        private void inputChanged(DataGridViewCellEventArgs e, EDataSource dataSource)
+        /*******************
+         *UTILITY FUNCTIONS*
+         *******************/
+
+        private void inputChanged(DataGridViewCellEventArgs e, SupportInfo info)
         {
-            if (inputChangeChecksPassed(e, dataSource))
-                saveToFile(dataSource);
+            if (inputChangeChecksPassed(e, info))
+                saveToFile(info);
         }
 
-        private void checkForInputChanges(EDataSource dataSource)
+        private void checkForInputChanges(SupportInfo info)
         {
-            ref string sourcePath = ref getSourcePath(dataSource);
-
-            if (sourcePath == string.Empty)
+            if (info.m_filePath == string.Empty)
                 return;
-
-            ref byte[] sourceHash = ref getSourceHash(dataSource);
 
             // Hash the local file and see if it matches the cached file
             // If not, then we know we want to re-load the file data
-            byte[] newHash = getHash(sourcePath);
-            if (areHashesEqual(newHash, sourceHash))
+            byte[] diskHash = getHash(info.m_filePath);
+            if (areHashesEqual(diskHash, info.m_fileHash))
                 return;
 
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-            ref List<List<int>> sourceData = ref getSourceData(dataSource);
-            ref bool sourceLoaded = ref getSourceLoaded(dataSource);
+            info.m_fileHash = diskHash;
+            info.m_fileData.Clear();
+            info.m_dataGridView.Rows.Clear();
+            info.m_gridViewLoaded = false;
 
-            sourceHash = newHash;
-            sourceGridView.Rows.Clear();
-            sourceData.Clear();
-            sourceLoaded = false;
-
-            if (reOpenFile(ref sourcePath, ref sourceData))
+            if (reOpenFile(info))
             {
-                addRowsAndHeaders(dataSource);
-                addDataFromCache(dataSource);
+                addRowsAndHeaders(info);
+                addDataFromCache(info);
             }
             else
             {
                 showError("Unable to re-open file when detecting change... Future behavior is undefined...\n");
             }
 
-            if (dataSource == EDataSource.DataPlayer)
-                m_playerGridViewLoaded = true;
-            else
-                m_ghostGridViewLoaded = true;
+            info.m_gridViewLoaded = true;
         }
 
         private void onRedo(EDataSource dataSource)
@@ -288,16 +186,14 @@ namespace TASToolKitEditor
 
         }
 
-        private void fileOpen(EDataSource dataSource)
+        private void fileOpen(SupportInfo info)
         {
-            if (openFile(dataSource))
-                loadDataToGridView(dataSource);
+            if (openFile(info))
+                loadDataToGridView(info);
         }
 
-        private void cellClick(DataGridViewCellMouseEventArgs e, EDataSource dataSource)
+        private void cellClick(DataGridViewCellMouseEventArgs e, SupportInfo info)
         {
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-
             int colIdx = e.ColumnIndex;
             if (!BUTTON_COLUMNS.Contains(colIdx - ADJUST_FOR_FRAMECOUNT_COLUMN))
                 return;
@@ -308,18 +204,18 @@ namespace TASToolKitEditor
             if (rowIdx < 0)
                 return;
 
-            int cellVal = int.Parse(sourceGridView.Rows[rowIdx].Cells[colIdx].Value.ToString());
+            int cellVal = int.Parse(info.m_dataGridView.Rows[rowIdx].Cells[colIdx].Value.ToString());
             // TODO: Crashes when clicking column header
 
-            sourceGridView.Rows[rowIdx].Cells[colIdx].Value = (cellVal == 0) ? 1 : 0;
-            sourceGridView.RefreshEdit();
+            info.m_dataGridView.Rows[rowIdx].Cells[colIdx].Value = (cellVal == 0) ? 1 : 0;
+            info.m_dataGridView.RefreshEdit();
         }
 
         /// <summary>
         /// Prompts user to select a .csv file and attempts to open the selected file for parsing.
         /// </summary>
         /// <returns>Returns true if the file was successfully opened, read, and parsed</returns>
-        private bool openFile(EDataSource dataSource)
+        private bool openFile(SupportInfo info)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
@@ -329,13 +225,12 @@ namespace TASToolKitEditor
                 if (ofd.ShowDialog() != DialogResult.OK)
                     return false;
 
-                ref string sourcePath = ref getSourcePath(dataSource);
-                sourcePath = ofd.FileName;
+                info.m_filePath = ofd.FileName;
 
-                if (!hashCachedFile(dataSource, ref sourcePath))
+                if (!hashCachedFile(info))
                 {
-                    string errMsg = String.Format("Unable to open {0} as it may be opened by another program.", sourcePath);
-                    showErrorAndClearData(errMsg);
+                    string errMsg = String.Format("Unable to open {0} as it may be opened by another program.", info.m_filePath);
+                    showErrorAndClearData(errMsg, info);
                     return false;
                 }
 
@@ -347,15 +242,14 @@ namespace TASToolKitEditor
                 }
                 catch (IOException)
                 {
-                    string errMsg = String.Format("Unable to open {0} as it may be opened by another program.", sourcePath);
-                    showErrorAndClearData(errMsg);
+                    string errMsg = String.Format("Unable to open {0} as it may be opened by another program.", info.m_filePath);
+                    showErrorAndClearData(errMsg, info);
                     return false;
                 }
 
                 using (StreamReader reader = new StreamReader(fileStream))
                 {
-                    ref List<List<int>> sourceData = ref getSourceData(dataSource);
-                    if (!parseFile(reader, ref sourcePath, ref sourceData))
+                    if (!parseFile(reader, info))
                         return false;
                 }
             }
@@ -363,12 +257,12 @@ namespace TASToolKitEditor
             return true;
         }
 
-        private byte[] getHash(string sourcePath)
+        private byte[] getHash(string path)
         {
             MD5 md5 = MD5.Create();
             try
             {
-                using (var stream = File.OpenRead(sourcePath))
+                using (var stream = File.OpenRead(path))
                 {
                     return md5.ComputeHash(stream);
                 }
@@ -380,16 +274,14 @@ namespace TASToolKitEditor
             return Array.Empty<Byte>();
         }
 
-        private bool hashCachedFile(EDataSource dataSource, ref string sourcePath)
+        private bool hashCachedFile(SupportInfo info)
         {
-            byte[] hash = getHash(sourcePath);
+            byte[] hash = getHash(info.m_filePath);
 
-
-            ref byte[] sourceHash = ref getSourceHash(dataSource);
             if (areHashesEqual(hash, Array.Empty<byte>()))
                 return false;
 
-            sourceHash = hash;
+            info.m_fileHash = hash;
 
             return true;
         }
@@ -410,10 +302,10 @@ namespace TASToolKitEditor
         /// <summary>
         /// Simple function to display an errMsg in a MessageBox, but also clear the cache for the current file.
         /// </summary>
-        private void showErrorAndClearData(string errMsg)
+        private void showErrorAndClearData(string errMsg, SupportInfo info)
         {
             showError(errMsg);
-            clearData();
+            clearData(info);
         }
 
         private static void showError(string errMsg)
@@ -424,18 +316,18 @@ namespace TASToolKitEditor
         /// <summary>
         /// Clear cached data
         /// </summary>
-        private void clearData()
+        private void clearData(SupportInfo info)
         {
-            m_playerFilePath = String.Empty;
-            Array.Clear(m_playerFileHash, 0, m_playerFileHash.Length);
-            m_playerFileData.Clear();
+            info.m_filePath = String.Empty;
+            Array.Clear(info.m_fileHash, 0, info.m_fileHash.Length);
+            info.m_fileData.Clear();
         }
 
         /// <summary>
         /// Attempts to parse the provided .csv file
         /// </summary>
         /// <returns>true if the file conforms to the formatting restraints</returns>
-        private bool parseFile(StreamReader reader, ref string sourcePath, ref List<List<int>> sourceData)
+        private bool parseFile(StreamReader reader, SupportInfo info)
         {
             int frameCount = 1;
             for (; !reader.EndOfStream; frameCount++)
@@ -446,17 +338,17 @@ namespace TASToolKitEditor
                 if (!valuesFormattedProperly(values))
                 {
                     // It's possible there is a centering mismatch between the ghost and player files
-                    string errMsg = String.Format("There is an error on frame {0}\n\nFile: {1}", frameCount, sourcePath);
+                    string errMsg = String.Format("There is an error on frame {0}\n\nFile: {1}", frameCount, info.m_filePath);
                     errMsg += "\n\nIf you're opening a second input file, it's possible that there is a 0/7 centering mismatch.";
 
-                    showErrorAndClearData(errMsg);
+                    showErrorAndClearData(errMsg, info);
                     return false;
                 }
 
                 // Parsed successfully, add to cached data list
                 List<int> frameData = new(Array.ConvertAll(values, v => int.Parse(v)));
 
-                sourceData.Add(frameData);
+                info.m_fileData.Add(frameData);
             }
             return true;
         }
@@ -564,48 +456,34 @@ namespace TASToolKitEditor
             int smallestAcceptedVal = getSmallestAcceptedValue(colIndex - ADJUST_FOR_FRAMECOUNT_COLUMN, value);
             int largestAcceptedVal = getLargestAcceptedValue(colIndex - ADJUST_FOR_FRAMECOUNT_COLUMN, value);
 
-            return (value >= smallestAcceptedVal && value <= largestAcceptedVal);
+            return value >= smallestAcceptedVal && value <= largestAcceptedVal;
         }
 
-        private void loadDataToGridView(EDataSource dataSource)
+        private void loadDataToGridView(SupportInfo info)
         {
-            addColumnsAndHeaders(dataSource);
-            addRowsAndHeaders(dataSource);
-            addDataFromCache(dataSource);
-            applyGridViewFormatting(dataSource);
+            addColumnsAndHeaders(info);
+            addRowsAndHeaders(info);
+            addDataFromCache(info);
+            applyGridViewFormatting(info);
 
-            if (dataSource == EDataSource.DataPlayer)
-                m_playerGridViewLoaded = true;
-            else
-                m_ghostGridViewLoaded = true;
-
-            enableMenuButton(ref getSourceMenuButton(dataSource));
+            info.m_gridViewLoaded = true;
+            info.m_rootMenuItem.Visible = true;
         }
 
-        private void enableMenuButton(ref ToolStripMenuItem sourceMenu)
+        private void applyGridViewFormatting(SupportInfo info)
         {
-            sourceMenu.Visible = true;
-        }
-
-        private void applyGridViewFormatting(EDataSource dataSource)
-        {
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-
             // This must be performed *after* adding columns/rows otherwise effect is lost
-            sourceGridView.AllowUserToResizeColumns = false;
-            sourceGridView.AllowUserToResizeRows = false;
-            sourceGridView.RowHeadersVisible = false;
+            info.m_dataGridView.AllowUserToResizeColumns = false;
+            info.m_dataGridView.AllowUserToResizeRows = false;
+            info.m_dataGridView.RowHeadersVisible = false;
         }
 
         /// <summary>
         /// Take data from m_curFileData and write to the inputGridView
         /// </summary>
-        private void addDataFromCache(EDataSource dataSource)
+        private void addDataFromCache(SupportInfo info)
         {
-            ref List<List<int>> sourceData = ref getSourceData(dataSource);
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-
-            int sourceFrameCount = sourceData.Count;
+            int sourceFrameCount = info.m_fileData.Count;
             IEnumerable<int> frames = Enumerable.Range(0, sourceFrameCount);
             IEnumerable<int> columns = Enumerable.Range(0, NUM_INPUT_COLUMNS);
 
@@ -613,11 +491,11 @@ namespace TASToolKitEditor
             {
                 int frameCount = i + 1;
                 // Write framecount to first column
-                sourceGridView.Rows[i].Cells[0].Value = frameCount;
+                info.m_dataGridView.Rows[i].Cells[0].Value = frameCount;
 
                 for (int j = 0; j < NUM_INPUT_COLUMNS; j++)
                 {
-                    sourceGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = sourceData[i][j];
+                    info.m_dataGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = info.m_fileData[i][j];
                 }
             }
         }
@@ -625,7 +503,7 @@ namespace TASToolKitEditor
         /// <summary>
         /// Standardized way to add columns, as they should all be uniform in size and behavior
         /// </summary>
-        private void addColumn(ref DataGridView sourceGridView, string name, bool buttonCol)
+        private void addColumn(DataGridView gridView, string name, bool buttonCol)
         {
             DataGridViewColumn column;
             if (buttonCol)
@@ -645,10 +523,10 @@ namespace TASToolKitEditor
 
             column.HeaderText = name;
 
-            sourceGridView.Columns.Add(column);
+            gridView.Columns.Add(column);
         }
 
-        private void addFrameCountColumn(ref DataGridView sourceGridView)
+        private void addFrameCountColumn(DataGridView gridView)
         {
             DataGridViewTextBoxColumn column = new DataGridViewTextBoxColumn();
             column.HeaderText = "Frame";
@@ -656,36 +534,34 @@ namespace TASToolKitEditor
             column.ReadOnly = true;
             column.DefaultCellStyle.BackColor = Color.LightGray;
 
-            sourceGridView.Columns.Add(column);
+            gridView.Columns.Add(column);
         }
 
-        private void addColumnsAndHeaders(EDataSource dataSource)
+        private void addColumnsAndHeaders(SupportInfo info)
         {
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
             // Add the column to display framecount for each row
-            addFrameCountColumn(ref sourceGridView);
+            DataGridView gridView = info.m_dataGridView;
+            addFrameCountColumn(gridView);
 
-            addColumn(ref sourceGridView, "A", true);
-            addColumn(ref sourceGridView, "B", true);
-            addColumn(ref sourceGridView, "L", true);
-            addColumn(ref sourceGridView, "L-R", false);
-            addColumn(ref sourceGridView, "U-D", false);
-            addColumn(ref sourceGridView, "UDLR", false);
+            addColumn(gridView, "A", true);
+            addColumn(gridView, "B", true);
+            addColumn(gridView, "L", true);
+            addColumn(gridView, "L-R", false);
+            addColumn(gridView, "U-D", false);
+            addColumn(gridView, "UDLR", false);
         }
 
         /// <summary>
         /// Adds a row to the inputGridView for every frame in the cached data
         /// </summary>
-        private void addRowsAndHeaders(EDataSource dataSource)
+        private void addRowsAndHeaders(SupportInfo info)
         {
-            ref List<List<int>> sourceData = ref getSourceData(dataSource);
-            for (int i = 0; i < sourceData.Count; i++)
+            for (int i = 0; i < info.m_fileData.Count; i++)
             {
                 DataGridViewRow row = new DataGridViewRow();
                 row.HeaderCell.Value = i;
 
-                ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-                sourceGridView.Rows.Add(row);
+                info.m_dataGridView.Rows.Add(row);
             }
         }
 
@@ -694,12 +570,10 @@ namespace TASToolKitEditor
         /// (e.g. table isn't loading up, user didn't just press enter on a cell, user typed a number)
         /// </summary>
         /// <returns>true if checks pass and input has changed in cache</returns>
-        private bool inputChangeChecksPassed(DataGridViewCellEventArgs e, EDataSource dataSource)
+        private bool inputChangeChecksPassed(DataGridViewCellEventArgs e, SupportInfo info)
         {
-            ref bool sourceLoaded = ref getSourceLoaded(dataSource);
-
             // Happens when data is being loaded from file... We don't want to consider the cell data changed!
-            if (!sourceLoaded)
+            if (!info.m_gridViewLoaded)
                 return false;
 
             // Happens when file is being re-loaded and the frameCount column is written over
@@ -707,16 +581,14 @@ namespace TASToolKitEditor
                 return false;
 
             // To prevent unnecessary File I/O let's double-check that the value actually changed
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-            ref List<List<int>> sourceData = ref getSourceData(dataSource);
             int inputNew;
-            bool inputAccepted = int.TryParse(sourceGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), out inputNew);
-            int inputCurFile = sourceData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN];
+            bool inputAccepted = int.TryParse(info.m_dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString(), out inputNew);
+            int inputCurFile = info.m_fileData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN];
 
-            // The value changed but doesn't conform with formatting rules... Reset to whatever it was before
+            // The value is non-numeric, or the value changed but doesn't conform with formatting rules... Reset to whatever it was before
             if (!inputAccepted || !valueFormattedProperly(inputNew, e))
             {
-                sourceGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = inputCurFile;
+                info.m_dataGridView.Rows[e.RowIndex].Cells[e.ColumnIndex].Value = inputCurFile;
                 return false;
             }
 
@@ -725,22 +597,20 @@ namespace TASToolKitEditor
                 return false;
 
             // Change the value in the cached file
-            sourceData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN] = inputNew;
+            info.m_fileData[e.RowIndex][e.ColumnIndex - ADJUST_FOR_FRAMECOUNT_COLUMN] = inputNew;
 
             // Write to one of the stacks
             CellEditAction action = new CellEditAction(e.RowIndex, e.ColumnIndex, inputCurFile, inputNew);
-            addActionToStack(action, dataSource);
+            addActionToStack(action, info);
 
-            // Adjust menu buttons accordingly
-            if (dataSource == EDataSource.DataGhost)
-                ghostUndoMenuItem.Enabled = true;
-            else
-                playerUndoMenuItem.Enabled = true;
+            // Adjust menu buttons
+            info.m_undoMenuItem.Enabled = info.m_undoStack.Count > 0;
+            info.m_redoMenuItem.Enabled = info.m_redoStack.Count > 0;
 
             return true;
         }
 
-        private void addActionToStack(CellEditAction action, EDataSource dataSource)
+        private void addActionToStack(CellEditAction action, SupportInfo info)
         {
             // Undos and Redos are handled in performUndoRedo
             if (m_curOpType != EOperationType.Normal)
@@ -749,54 +619,47 @@ namespace TASToolKitEditor
                 return;
             }
 
-            ref Stack<CellEditAction> sourceRedoStack = ref getSourceRedoStack(dataSource);
-            ref Stack<CellEditAction> sourceUndoStack = ref getSourceUndoStack(dataSource);
-
-            if (sourceRedoStack.Count > 0)
-                addActionToStackWithNonEmptyRedo(action, ref sourceRedoStack, ref sourceUndoStack);
+            if (info.m_redoStack.Count > 0)
+                addActionToStackWithNonEmptyRedo(action, info);
             else
-                sourceUndoStack.Push(action);
+                info.m_undoStack.Push(action);
         }
 
-        private void addActionToStackWithNonEmptyRedo(CellEditAction action, ref Stack<CellEditAction> redoStack, ref Stack<CellEditAction> undoStack)
+        private void addActionToStackWithNonEmptyRedo(CellEditAction action, SupportInfo info)
         {
             // Since an action has been performed, we want to clear the redo stack unless the action matches the top of the redo stack
-            CellEditAction redoTop = redoStack.Peek();
+            CellEditAction redoTop = info.m_redoStack.Peek();
+            redoTop.FlipValues();
 
-            if (action.m_cellRowIdx != redoTop.m_cellRowIdx)
-                return;
-            if (action.m_cellColIdx != redoTop.m_cellColIdx)
-                return;
-            if (action.m_cellPrevVal != redoTop.m_cellPrevVal)
-                return;
+            bool actionsDiffRow = action.m_cellRowIdx != redoTop.m_cellRowIdx;
+            bool actionsDiffCol = action.m_cellColIdx != redoTop.m_cellColIdx;
+            bool actionsDiffVal = action.m_cellCurVal != redoTop.m_cellCurVal;
 
-            // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
-            // We must delete the redo stack before pushing
-            if (action.m_cellCurVal != redoTop.m_cellCurVal)
+            if (actionsDiffRow || actionsDiffCol || actionsDiffVal)
             {
-                redoStack.Clear();
-                undoStack.Push(action);
+                // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
+                // We must delete the redo stack before pushing
+                info.m_redoStack.Clear();
+                info.m_undoStack.Push(action);
             }
             else
             {
-                // User performed the action specified in the top of redo stack. Basically this counts as a redo, so move the action from redo stack to undo stack
-                undoStack.Push(redoStack.Pop());
+                // User performed the action specified in the top of redo stack.
+                // Basically this counts as a redo, so move the action from redo stack to undo stack
+                action = info.m_redoStack.Pop();
+                info.m_undoStack.Push(action);
             }
         }
 
         // Takes the content in m_curFileData and writes to m_curFilePath
-        private void saveToFile(EDataSource dataSource)
+        private void saveToFile(SupportInfo info)
         {
-            ref string sourcePath = ref getSourcePath(dataSource);
-
             try
             {
-                using (StreamWriter writer = new StreamWriter(sourcePath, false))
+                using (StreamWriter writer = new StreamWriter(info.m_filePath, false))
                 {
-                    ref List<List<int>> sourceData = ref getSourceData(dataSource);
-
                     // for each frame
-                    foreach (List<int> curFileFrameData in sourceData)
+                    foreach (List<int> curFileFrameData in info.m_fileData)
                     {
                         string sFrameData = string.Empty;
 
@@ -818,10 +681,10 @@ namespace TASToolKitEditor
                 System.Diagnostics.Debug.WriteLine(e.ToString());
             }
 
-            if (!hashCachedFile(dataSource, ref sourcePath))
+            if (!hashCachedFile(info))
             {
                 string errMsg = String.Format("Unable to hash file on save... Any further behavior is undefined." +
-                                              "You should immediately back-up {0} and quit out of this program.", m_playerFilePath);
+                                              "You should immediately back-up {0} and quit out of this program.", info.m_filePath);
                 showError(errMsg);
             }
         }
@@ -831,111 +694,73 @@ namespace TASToolKitEditor
             // Adjustment to make (either from 7-center to 0-center or vice versa)
             int centerOffset = centerOn7 ? 7 : -7;
 
-            centerInputs(centerOffset, EDataSource.DataGhost);
-            centerInputs(centerOffset, EDataSource.DataPlayer);
+            centerInputs(centerOffset, ghostInfo);
+            centerInputs(centerOffset, playerInfo);
         }
 
-        private void centerInputs(int centerOffset, EDataSource dataSource)
+        private void centerInputs(int centerOffset, SupportInfo info)
         {
-            ref List<List<int>> sourceData = ref getSourceData(dataSource);
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-
             // It's easier (and probably more efficient) to iterate the cached file
-            for (int i = 0; i < sourceData.Count; i++)
+            for (int i = 0; i < info.m_fileData.Count; i++)
             {
                 for (int j = 3; j < 5; j++)
                 {
-                    int centeredInput = sourceData[i][j] + centerOffset;
-                    sourceData[i][j] = centeredInput; // Write to cached file here to prevent a ridiculous amount of file I/O
-                    sourceGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = centeredInput;
+                    int centeredInput = info.m_fileData[i][j] + centerOffset;
+                    info.m_fileData[i][j] = centeredInput; // Write to cached file here to prevent a ridiculous amount of file I/O
+                    info.m_dataGridView.Rows[i].Cells[j + ADJUST_FOR_FRAMECOUNT_COLUMN].Value = centeredInput;
                 }
             }
 
             // Now re-save file to disk
-            saveToFile(dataSource);
+            saveToFile(info);
         }
 
-        private bool reOpenFile(ref string sourcePath, ref List<List<int>> sourceData)
+        private bool reOpenFile(SupportInfo info)
         {
-            using (StreamReader reader = new StreamReader(sourcePath))
+            using (StreamReader reader = new StreamReader(info.m_filePath))
             {
-                if (!parseFile(reader, ref sourcePath, ref sourceData))
+                if (!parseFile(reader, info))
                     return false;
             }
             return true;
         }
 
-        private bool stackIsEmpty(EOperationType eOpType)
+        private void performUndoRedo(SupportInfo info, EOperationType opType)
         {
-            if (eOpType == EOperationType.Undo)
-                return m_playerUndoStack.Count == 0;
-
-            return m_playerRedoStack.Count == 0;
-        }
-
-        private void performUndoRedo(EDataSource dataSource, EOperationType opType)
-        {
-            ref Stack<CellEditAction> sourceRedoStack = ref getSourceRedoStack(dataSource);
-            ref Stack<CellEditAction> sourceUndoStack = ref getSourceUndoStack(dataSource);
-
-            if ((opType == EOperationType.Undo && sourceUndoStack.Count == 0) ||
-                (opType == EOperationType.Redo && sourceRedoStack.Count == 0))
+            if ((opType == EOperationType.Undo && info.m_undoStack.Count == 0) ||
+                (opType == EOperationType.Redo && info.m_redoStack.Count == 0))
             {
                 return;
             }
 
             m_curOpType = opType;
-            m_curDataSource = dataSource;
 
-            CellEditAction action = (m_curOpType == EOperationType.Undo) ? sourceUndoStack.Pop() : sourceRedoStack.Pop();
+            CellEditAction action = (m_curOpType == EOperationType.Undo) ? info.m_undoStack.Pop() : info.m_redoStack.Pop();
 
             action.FlipValues();
 
             if (m_curOpType == EOperationType.Undo)
-                sourceRedoStack.Push(action);
+                info.m_redoStack.Push(action);
             else
-                sourceUndoStack.Push(action);
+                info.m_undoStack.Push(action);
 
-            // Only apply the action after pushing to the new stack
-            // This way we can check if the action should cause the redo stack to collapse
             int rowIdx = action.m_cellRowIdx;
             int colIdx = action.m_cellColIdx;
-            ref DataGridView sourceGridView = ref getSourceGridView(dataSource);
-            sourceGridView.Rows[rowIdx].Cells[colIdx].Value = action.m_cellCurVal;
-            sourceGridView.Refresh();
-
-            ref ToolStripMenuItem undoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Undo);
-            ref ToolStripMenuItem redoMenuItem = ref getSourceMenuButton(dataSource, EOperationType.Redo);
+            info.m_dataGridView.Rows[rowIdx].Cells[colIdx].Value = action.m_cellCurVal;
+            info.m_dataGridView.RefreshEdit();
 
             // Adjust menu items accordingly
-            redoMenuItem.Enabled = sourceRedoStack.Count > 0;
-            undoMenuItem.Enabled = sourceUndoStack.Count > 0;
+            info.m_redoMenuItem.Enabled = info.m_redoStack.Count > 0;
+            info.m_undoMenuItem.Enabled = info.m_undoStack.Count > 0;
 
-            saveToFile(dataSource);
+            saveToFile(info);
         }
 
-        string m_playerFilePath;
-        string m_ghostFilePath;
-
-        byte[] m_playerFileHash;
-        byte[] m_ghostFileHash;
-
-        List<List<int>> m_playerFileData; // TODO: Vectorized implementation for better iteration on centerInputs()?
-        List<List<int>> m_ghostFileData;
-
-        bool m_playerGridViewLoaded;
-        bool m_ghostGridViewLoaded;
+        SupportInfo playerInfo;
+        SupportInfo ghostInfo;
 
         bool? m_files7Centered;
-
-        Stack<CellEditAction> m_playerUndoStack;
-        Stack<CellEditAction> m_ghostUndoStack;
-
-        Stack<CellEditAction> m_playerRedoStack;
-        Stack<CellEditAction> m_ghostRedoStack;
-
         EOperationType m_curOpType;
-        EDataSource m_curDataSource;
 
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;
@@ -947,6 +772,38 @@ namespace TASToolKitEditor
     }
 
     #region Support Classes
+    /// <summary>
+    /// This class contains all distinct information for a given source input file.
+    /// This includes the path, hash, associated menu buttons, and DataGridView.
+    /// </summary>
+    public class SupportInfo
+    {
+        public SupportInfo(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu)
+        {
+            m_filePath = String.Empty;
+            m_fileHash = Array.Empty<Byte>();
+            m_fileData = new List<List<int>>();
+            m_gridViewLoaded = false;
+            m_undoStack = new Stack<CellEditAction>();
+            m_redoStack = new Stack<CellEditAction>();
+            m_dataGridView = dataGridView;
+            m_rootMenuItem = rootMenu;
+            m_undoMenuItem = undoMenu;
+            m_redoMenuItem = redoMenu;
+        }
+
+        public string m_filePath;
+        public byte[] m_fileHash;
+        public List<List<int>> m_fileData; // TODO: Vectorized implementation for better iteration on centerInputs()?
+        public bool m_gridViewLoaded;
+        public Stack<CellEditAction> m_undoStack;
+        public Stack<CellEditAction> m_redoStack;
+        public DataGridView m_dataGridView;
+        public ToolStripMenuItem m_rootMenuItem;
+        public ToolStripMenuItem m_undoMenuItem;
+        public ToolStripMenuItem m_redoMenuItem;
+    }
+
     /// <summary>
     /// A class to represent a cell modification action. This is used to undo/redo actions concisely
     /// </summary>
