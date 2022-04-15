@@ -100,35 +100,11 @@ namespace TASToolKitEditor
         }
 
         /// <summary>
-        /// This is a more reliable method of the KeyDown event. Observes keys pressed and react to them
+        /// This is a more reliable method of the KeyDown event
         /// </summary>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
-            bool undoGhost = keyData.HasFlag(Keys.Z) && keyData.HasFlag(Keys.Control) && keyData.HasFlag(Keys.Shift);
-            bool undoPlayer = keyData.HasFlag(Keys.Z) && keyData.HasFlag(Keys.Control);
-            bool redoGhost = keyData.HasFlag(Keys.Y) && keyData.HasFlag(Keys.Control) && keyData.HasFlag(Keys.Shift);
-            bool redoPlayer = keyData.HasFlag(Keys.Y) && keyData.HasFlag(Keys.Control);
-            bool openGhost = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control) && keyData.HasFlag(Keys.Shift);
-            bool openPlayer = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control);
-            bool closeGhost = keyData.HasFlag(Keys.Escape) && keyData.HasFlag(Keys.Shift);
-            bool closePlayer = keyData.HasFlag(Keys.Escape);
-
-            if (undoGhost)
-                performUndoRedo(ghostFile, EOperationType.Undo);
-            else if (undoPlayer)
-                performUndoRedo(playerFile, EOperationType.Undo);
-            else if (redoGhost)
-                performUndoRedo(ghostFile, EOperationType.Redo);
-            else if (redoPlayer)
-                performUndoRedo(playerFile, EOperationType.Redo);
-            else if (openGhost)
-                openFile(ghostFile);
-            else if (openPlayer)
-                openFile(playerFile);
-            else if (closeGhost)
-                closeFile(ghostFile);
-            else if (closePlayer)
-                closeFile(playerFile);
+            processHotkeys(keyData);
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
