@@ -33,6 +33,8 @@
             this.fileMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.fileOpenPlayer = new System.Windows.Forms.ToolStripMenuItem();
             this.fileOpenGhost = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileClosePlayer = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileCloseGhost = new System.Windows.Forms.ToolStripMenuItem();
             this.inputCenteringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.centered0Button = new System.Windows.Forms.ToolStripMenuItem();
             this.centered7Button = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,8 +47,7 @@
             this.ghostInputGridView = new System.Windows.Forms.DataGridView();
             this.ghostGridViewLabel = new System.Windows.Forms.Label();
             this.playerGridViewLabel = new System.Windows.Forms.Label();
-            this.fileClosePlayer = new System.Windows.Forms.ToolStripMenuItem();
-            this.fileCloseGhost = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSwapButton = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.playerInputGridView)).BeginInit();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ghostInputGridView)).BeginInit();
@@ -82,7 +83,8 @@
             this.fileOpenGhost,
             this.fileClosePlayer,
             this.fileCloseGhost,
-            this.inputCenteringToolStripMenuItem});
+            this.inputCenteringToolStripMenuItem,
+            this.fileSwapButton});
             this.fileMenu.Name = "fileMenu";
             this.fileMenu.Size = new System.Drawing.Size(37, 20);
             this.fileMenu.Text = "File";
@@ -101,6 +103,22 @@
             this.fileOpenGhost.Text = "Open Ghost (Ctrl + Shift + O)";
             this.fileOpenGhost.Click += new System.EventHandler(this.onClickFileOpenGhost);
             // 
+            // fileClosePlayer
+            // 
+            this.fileClosePlayer.Enabled = false;
+            this.fileClosePlayer.Name = "fileClosePlayer";
+            this.fileClosePlayer.Size = new System.Drawing.Size(228, 22);
+            this.fileClosePlayer.Text = "Close Player (Esc)";
+            this.fileClosePlayer.Click += new System.EventHandler(this.onClickFileClosePlayer);
+            // 
+            // fileCloseGhost
+            // 
+            this.fileCloseGhost.Enabled = false;
+            this.fileCloseGhost.Name = "fileCloseGhost";
+            this.fileCloseGhost.Size = new System.Drawing.Size(228, 22);
+            this.fileCloseGhost.Text = "Close Ghost (Shift + Esc)";
+            this.fileCloseGhost.Click += new System.EventHandler(this.onClickFileCloseGhost);
+            // 
             // inputCenteringToolStripMenuItem
             // 
             this.inputCenteringToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -113,14 +131,14 @@
             // centered0Button
             // 
             this.centered0Button.Name = "centered0Button";
-            this.centered0Button.Size = new System.Drawing.Size(180, 22);
+            this.centered0Button.Size = new System.Drawing.Size(131, 22);
             this.centered0Button.Text = "0 Centered";
             this.centered0Button.Click += new System.EventHandler(this.on0CenterClick);
             // 
             // centered7Button
             // 
             this.centered7Button.Name = "centered7Button";
-            this.centered7Button.Size = new System.Drawing.Size(180, 22);
+            this.centered7Button.Size = new System.Drawing.Size(131, 22);
             this.centered7Button.Text = "7 Centered";
             this.centered7Button.Click += new System.EventHandler(this.on7CenterClick);
             // 
@@ -138,7 +156,7 @@
             // 
             this.playerUndoMenuItem.Enabled = false;
             this.playerUndoMenuItem.Name = "playerUndoMenuItem";
-            this.playerUndoMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.playerUndoMenuItem.Size = new System.Drawing.Size(154, 22);
             this.playerUndoMenuItem.Text = "Undo (Ctrl + Z)";
             this.playerUndoMenuItem.Click += new System.EventHandler(this.onClickUndoPlayer);
             // 
@@ -146,7 +164,7 @@
             // 
             this.playerRedoMenuItem.Enabled = false;
             this.playerRedoMenuItem.Name = "playerRedoMenuItem";
-            this.playerRedoMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.playerRedoMenuItem.Size = new System.Drawing.Size(154, 22);
             this.playerRedoMenuItem.Text = "Redo (Ctrl + Y)";
             this.playerRedoMenuItem.Click += new System.EventHandler(this.onClickRedoPlayer);
             // 
@@ -205,21 +223,12 @@
             this.playerGridViewLabel.TabIndex = 4;
             this.playerGridViewLabel.Text = "Player Inputs";
             // 
-            // fileClosePlayer
+            // fileSwapButton
             // 
-            this.fileClosePlayer.Enabled = false;
-            this.fileClosePlayer.Name = "fileClosePlayer";
-            this.fileClosePlayer.Size = new System.Drawing.Size(228, 22);
-            this.fileClosePlayer.Text = "Close Player (Esc)";
-            this.fileClosePlayer.Click += new System.EventHandler(this.onClickFileClosePlayer);
-            // 
-            // fileCloseGhost
-            // 
-            this.fileCloseGhost.Enabled = false;
-            this.fileCloseGhost.Name = "fileCloseGhost";
-            this.fileCloseGhost.Size = new System.Drawing.Size(228, 22);
-            this.fileCloseGhost.Text = "Close Ghost (Shift + Esc)";
-            this.fileCloseGhost.Click += new System.EventHandler(this.onClickFileCloseGhost);
+            this.fileSwapButton.Name = "fileSwapButton";
+            this.fileSwapButton.Size = new System.Drawing.Size(228, 22);
+            this.fileSwapButton.Text = "Swap Player and Ghost Files";
+            this.fileSwapButton.Click += new System.EventHandler(this.onFileSwap);
             // 
             // TASToolKitEditorForm
             // 
@@ -266,5 +275,6 @@
         private System.Windows.Forms.Label playerGridViewLabel;
         private System.Windows.Forms.ToolStripMenuItem fileClosePlayer;
         private System.Windows.Forms.ToolStripMenuItem fileCloseGhost;
+        private System.Windows.Forms.ToolStripMenuItem fileSwapButton;
     }
 }

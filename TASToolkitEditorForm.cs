@@ -83,6 +83,11 @@ namespace TASToolKitEditor
             performUndoRedo(playerFile, EOperationType.Undo);
         }
 
+        private void onFileSwap(object sender, EventArgs e)
+        {
+            swapPlayerAndGhost();
+        }
+
         private void onFormResize(object sender, EventArgs e)
         {
             ghostInputGridView.Height = this.Height - (DATAGRIDVIEW_PADDING * 2);

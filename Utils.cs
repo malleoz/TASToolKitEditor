@@ -565,6 +565,24 @@ namespace TASToolKitEditor
             clearData(info);
         }
 
+        private void swapPlayerAndGhost()
+        {
+            // No point in swapping if both files aren't open
+            if (playerFile.m_filePath == string.Empty || ghostFile.m_filePath == string.Empty)
+                return;
+
+            // All we need to do is take player data and swap with ghost data
+            List<List<int>> tempData = playerFile.m_fileData;
+            playerFile.m_fileData = ghostFile.m_fileData;
+            ghostFile.m_fileData = tempData;
+
+            saveToFile(playerFile);
+            saveToFile(ghostFile);
+
+            clearAndReloadFile(playerFile);
+            clearAndReloadFile(ghostFile);
+        }
+
         /// <summary>
         /// When user sets a cell value, perform a formatting check to see if input is acceptable
         /// </summary>
