@@ -14,8 +14,8 @@ namespace TASToolKitEditor
         {
             InitializeComponent();
 
-            playerInfo = new SupportInfo(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem);
-            ghostInfo = new SupportInfo(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem);
+            playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem);
+            ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem);
 
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
@@ -49,42 +49,42 @@ namespace TASToolKitEditor
 
         private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e)
         {
-            cellClick(e, ghostInfo);
+            cellClick(e, ghostFile);
         }
 
         private void onCellClickPlayer(object sender, DataGridViewCellMouseEventArgs e)
         {
-            cellClick(e, playerInfo);
+            cellClick(e, playerFile);
         }
 
         private void onClickFileOpenGhost(object sender, EventArgs e)
         {
-            fileOpen(ghostInfo);
+            fileOpen(ghostFile);
         }
 
         private void onClickFileOpenPlayer(object sender, EventArgs e)
         {
-            fileOpen(playerInfo);
+            fileOpen(playerFile);
         }
 
         private void onClickRedoGhost(object sender, EventArgs e)
         {
-            performUndoRedo(ghostInfo, EOperationType.Redo);
+            performUndoRedo(ghostFile, EOperationType.Redo);
         }
 
         private void onClickRedoPlayer(object sender, EventArgs e)
         {
-            performUndoRedo(playerInfo, EOperationType.Redo);
+            performUndoRedo(playerFile, EOperationType.Redo);
         }
 
         private void onClickUndoGhost(object sender, EventArgs e)
         {
-            performUndoRedo(ghostInfo, EOperationType.Undo);
+            performUndoRedo(ghostFile, EOperationType.Undo);
         }
 
         private void onClickUndoPlayer(object sender, EventArgs e)
         {
-            performUndoRedo(playerInfo, EOperationType.Undo);
+            performUndoRedo(playerFile, EOperationType.Undo);
         }
 
         private void onFormResize(object sender, EventArgs e)
@@ -95,12 +95,12 @@ namespace TASToolKitEditor
 
         private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
         {
-            inputChanged(e, ghostInfo);
+            inputChanged(e, ghostFile);
         }
 
         private void onInputChangedPlayer(object sender, DataGridViewCellEventArgs e)
         {
-            inputChanged(e, playerInfo);
+            inputChanged(e, playerFile);
         }
 
         /// <summary>
@@ -116,17 +116,17 @@ namespace TASToolKitEditor
             bool openPlayer = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control);
 
             if (undoGhost)
-                performUndoRedo(ghostInfo, EOperationType.Undo);
+                performUndoRedo(ghostFile, EOperationType.Undo);
             else if (undoPlayer)
-                performUndoRedo(playerInfo, EOperationType.Undo);
+                performUndoRedo(playerFile, EOperationType.Undo);
             else if (redoGhost)
-                performUndoRedo(ghostInfo, EOperationType.Redo);
+                performUndoRedo(ghostFile, EOperationType.Redo);
             else if (redoPlayer)
-                performUndoRedo(playerInfo, EOperationType.Redo);
+                performUndoRedo(playerFile, EOperationType.Redo);
             else if (openGhost)
-                openFile(ghostInfo);
+                openFile(ghostFile);
             else if (openPlayer)
-                openFile(playerInfo);
+                openFile(playerFile);
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -136,19 +136,19 @@ namespace TASToolKitEditor
          *UTILITY FUNCTIONS*
          *******************/
 
-        private void inputChanged(DataGridViewCellEventArgs e, SupportInfo info)
+        private void inputChanged(DataGridViewCellEventArgs e, InputFile info)
         {
             if (inputChangeChecksPassed(e, info))
                 saveToFile(info);
         }
 
-        private void fileOpen(SupportInfo info)
+        private void fileOpen(InputFile info)
         {
             if (openFile(info))
                 loadDataToGridView(info);
         }
 
-        private void cellClick(DataGridViewCellMouseEventArgs e, SupportInfo info)
+        private void cellClick(DataGridViewCellMouseEventArgs e, InputFile info)
         {
             int colIdx = e.ColumnIndex;
             if (!BUTTON_COLUMNS.Contains(colIdx - ADJUST_FOR_FRAMECOUNT_COLUMN))
@@ -171,7 +171,7 @@ namespace TASToolKitEditor
         /// Prompts user to select a .csv file and attempts to open the selected file for parsing.
         /// </summary>
         /// <returns>Returns true if the file was successfully opened, read, and parsed</returns>
-        private bool openFile(SupportInfo info)
+        private bool openFile(InputFile info)
         {
             using (OpenFileDialog ofd = new OpenFileDialog())
             {
@@ -209,7 +209,7 @@ namespace TASToolKitEditor
             return true;
         }
 
-        private void watchFileSystem(SupportInfo info)
+        private void watchFileSystem(InputFile info)
         {
             m_fileSystemWatcher.Path = Path.GetDirectoryName(info.m_filePath);
             m_fileSystemWatcher.NotifyFilter = NotifyFilters.LastWrite;
@@ -222,8 +222,8 @@ namespace TASToolKitEditor
         public void ClearAndReloadFile(object sender, FileSystemEventArgs e)
         {
             // Determine if one of the loaded files was modified
-            bool bIsGhostFile = (e.FullPath == ghostInfo.m_filePath);
-            bool bIsPlayerFile = (e.FullPath == playerInfo.m_filePath);
+            bool bIsGhostFile = (e.FullPath == ghostFile.m_filePath);
+            bool bIsPlayerFile = (e.FullPath == playerFile.m_filePath);
             if (!bIsGhostFile && !bIsPlayerFile)
                 return;
 
@@ -231,13 +231,13 @@ namespace TASToolKitEditor
             Invoke(new Action(() =>
             {
                 if (bIsGhostFile)
-                    ClearAndReloadFile(ghostInfo);
+                    ClearAndReloadFile(ghostFile);
                 else
-                    ClearAndReloadFile(playerInfo);
+                    ClearAndReloadFile(playerFile);
             }));
         }
 
-        public void ClearAndReloadFile(SupportInfo info)
+        public void ClearAndReloadFile(InputFile info)
         {
             info.m_fileData.Clear();
             info.m_dataGridView.Rows.Clear();
@@ -276,7 +276,7 @@ namespace TASToolKitEditor
         /// <summary>
         /// Simple function to display an errMsg in a MessageBox, but also clear the cache for the current file.
         /// </summary>
-        private void showErrorAndClearData(string errMsg, SupportInfo info)
+        private void showErrorAndClearData(string errMsg, InputFile info)
         {
             showError(errMsg);
             clearData(info);
@@ -290,7 +290,7 @@ namespace TASToolKitEditor
         /// <summary>
         /// Clear cached data
         /// </summary>
-        private void clearData(SupportInfo info)
+        private void clearData(InputFile info)
         {
             info.m_filePath = String.Empty;
             info.m_fileData.Clear();
@@ -300,7 +300,7 @@ namespace TASToolKitEditor
         /// Attempts to parse the provided .csv file
         /// </summary>
         /// <returns>true if the file conforms to the formatting restraints</returns>
-        private bool parseFile(StreamReader reader, SupportInfo info)
+        private bool parseFile(StreamReader reader, InputFile info)
         {
             int frameCount = 1;
             for (; !reader.EndOfStream; frameCount++)
@@ -432,7 +432,7 @@ namespace TASToolKitEditor
             return value >= smallestAcceptedVal && value <= largestAcceptedVal;
         }
 
-        private void loadDataToGridView(SupportInfo info)
+        private void loadDataToGridView(InputFile info)
         {
             addColumnsAndHeaders(info);
             addRowsAndHeaders(info);
@@ -443,7 +443,7 @@ namespace TASToolKitEditor
             info.m_rootMenuItem.Visible = true;
         }
 
-        private void applyGridViewFormatting(SupportInfo info)
+        private void applyGridViewFormatting(InputFile info)
         {
             // This must be performed *after* adding columns/rows otherwise effect is lost
             info.m_dataGridView.AllowUserToResizeColumns = false;
@@ -454,7 +454,7 @@ namespace TASToolKitEditor
         /// <summary>
         /// Take data from m_curFileData and write to the inputGridView
         /// </summary>
-        private void addDataFromCache(SupportInfo info)
+        private void addDataFromCache(InputFile info)
         {
             int sourceFrameCount = info.m_fileData.Count;
             IEnumerable<int> frames = Enumerable.Range(0, sourceFrameCount);
@@ -510,7 +510,7 @@ namespace TASToolKitEditor
             gridView.Columns.Add(column);
         }
 
-        private void addColumnsAndHeaders(SupportInfo info)
+        private void addColumnsAndHeaders(InputFile info)
         {
             // Add the column to display framecount for each row
             DataGridView gridView = info.m_dataGridView;
@@ -527,7 +527,7 @@ namespace TASToolKitEditor
         /// <summary>
         /// Adds a row to the inputGridView for every frame in the cached data
         /// </summary>
-        private void addRowsAndHeaders(SupportInfo info)
+        private void addRowsAndHeaders(InputFile info)
         {
             for (int i = 0; i < info.m_fileData.Count; i++)
             {
@@ -543,7 +543,7 @@ namespace TASToolKitEditor
         /// (e.g. table isn't loading up, user didn't just press enter on a cell, user typed a number)
         /// </summary>
         /// <returns>true if checks pass and input has changed in cache</returns>
-        private bool inputChangeChecksPassed(DataGridViewCellEventArgs e, SupportInfo info)
+        private bool inputChangeChecksPassed(DataGridViewCellEventArgs e, InputFile info)
         {
             // Happens when data is being loaded from file... We don't want to consider the cell data changed!
             if (!info.m_gridViewLoaded)
@@ -583,7 +583,7 @@ namespace TASToolKitEditor
             return true;
         }
 
-        private void addActionToStack(CellEditAction action, SupportInfo info)
+        private void addActionToStack(CellEditAction action, InputFile info)
         {
             // Undos and Redos are handled in performUndoRedo
             if (m_curOpType != EOperationType.Normal)
@@ -598,7 +598,7 @@ namespace TASToolKitEditor
                 info.m_undoStack.Push(action);
         }
 
-        private void addActionToStackWithNonEmptyRedo(CellEditAction action, SupportInfo info)
+        private void addActionToStackWithNonEmptyRedo(CellEditAction action, InputFile info)
         {
             // Since an action has been performed, we want to clear the redo stack unless the action matches the top of the redo stack
             CellEditAction redoTop = info.m_redoStack.Peek();
@@ -625,15 +625,15 @@ namespace TASToolKitEditor
         }
 
         // Takes the content in m_curFileData and writes to m_curFilePath
-        private void saveToFile(SupportInfo info)
+        private void saveToFile(InputFile file)
         {
             m_fileSystemWatcher.EnableRaisingEvents = false;
             try
             {
-                using (StreamWriter writer = new StreamWriter(info.m_filePath, false))
+                using (StreamWriter writer = new StreamWriter(file.m_filePath, false))
                 {
                     // for each frame
-                    foreach (List<int> curFileFrameData in info.m_fileData)
+                    foreach (List<int> curFileFrameData in file.m_fileData)
                     {
                         string sFrameData = string.Empty;
 
@@ -663,11 +663,11 @@ namespace TASToolKitEditor
             // Adjustment to make (either from 7-center to 0-center or vice versa)
             int centerOffset = centerOn7 ? 7 : -7;
 
-            centerInputs(centerOffset, ghostInfo);
-            centerInputs(centerOffset, playerInfo);
+            centerInputs(centerOffset, ghostFile);
+            centerInputs(centerOffset, playerFile);
         }
 
-        private void centerInputs(int centerOffset, SupportInfo info)
+        private void centerInputs(int centerOffset, InputFile info)
         {
             // It's easier (and probably more efficient) to iterate the cached file
             for (int i = 0; i < info.m_fileData.Count; i++)
@@ -684,7 +684,7 @@ namespace TASToolKitEditor
             saveToFile(info);
         }
 
-        private bool reOpenFile(SupportInfo info)
+        private bool reOpenFile(InputFile info)
         {
             using (StreamReader reader = new StreamReader(info.m_filePath))
             {
@@ -694,7 +694,7 @@ namespace TASToolKitEditor
             return true;
         }
 
-        private void performUndoRedo(SupportInfo info, EOperationType opType)
+        private void performUndoRedo(InputFile info, EOperationType opType)
         {
             if ((opType == EOperationType.Undo && info.m_undoStack.Count == 0) ||
                 (opType == EOperationType.Redo && info.m_redoStack.Count == 0))
@@ -728,8 +728,8 @@ namespace TASToolKitEditor
             saveToFile(info);
         }
 
-        SupportInfo playerInfo;
-        SupportInfo ghostInfo;
+        InputFile playerFile;
+        InputFile ghostFile;
 
         bool? m_files7Centered;
         EOperationType m_curOpType;
@@ -749,9 +749,9 @@ namespace TASToolKitEditor
     /// This class contains all distinct information for a given source input file.
     /// This includes the path, hash, associated menu buttons, and DataGridView.
     /// </summary>
-    public class SupportInfo
+    public class InputFile
     {
-        public SupportInfo(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu)
+        public InputFile(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu)
         {
             m_filePath = String.Empty;
             m_fileData = new List<List<int>>();
