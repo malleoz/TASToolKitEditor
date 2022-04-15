@@ -641,18 +641,18 @@ namespace TASToolKitEditor
             CellEditAction redoTop = info.m_redoStack.Peek();
             redoTop.FlipValues();
 
-            if (!action.Equals(redoTop))
-            {
-                // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
-                // We must delete the redo stack before pushing
-                info.m_redoStack.Clear();
-                info.m_undoStack.Push(action);
-            }
-            else
+            if (action.Equals(redoTop))
             {
                 // User performed the action specified in the top of redo stack.
                 // Basically this counts as a redo, so move the action from redo stack to undo stack
                 action = info.m_redoStack.Pop();
+                info.m_undoStack.Push(action);
+            }
+            else
+            {
+                // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
+                // We must delete the redo stack before pushing
+                info.m_redoStack.Clear();
                 info.m_undoStack.Push(action);
             }
         }
