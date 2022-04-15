@@ -641,11 +641,7 @@ namespace TASToolKitEditor
             CellEditAction redoTop = info.m_redoStack.Peek();
             redoTop.FlipValues();
 
-            bool actionsDiffRow = action.m_cellRowIdx != redoTop.m_cellRowIdx;
-            bool actionsDiffCol = action.m_cellColIdx != redoTop.m_cellColIdx;
-            bool actionsDiffVal = action.m_cellCurVal != redoTop.m_cellCurVal;
-
-            if (actionsDiffRow || actionsDiffCol || actionsDiffVal)
+            if (!action.Equals(redoTop))
             {
                 // e.g. user changed cell (0,2) from 0 to 1, then un-did, then changed cell (0,2) from 0 to 2
                 // We must delete the redo stack before pushing
@@ -840,6 +836,15 @@ namespace TASToolKitEditor
             int temp = m_cellCurVal;
             m_cellCurVal = m_cellPrevVal;
             m_cellPrevVal = temp;
+        }
+
+        internal bool Equals(CellEditAction rhs)
+        {
+            bool bRowsEqual = m_cellRowIdx == rhs.m_cellRowIdx;
+            bool bColsEqual = m_cellColIdx == rhs.m_cellColIdx;
+            bool bValuesEqual = m_cellCurVal == rhs.m_cellCurVal;
+
+            return bRowsEqual && bColsEqual && bValuesEqual;
         }
     }
     #endregion // Support Classes
