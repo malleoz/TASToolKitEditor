@@ -23,28 +23,25 @@ namespace TASToolKitEditor
         }
 
         #region Events
-        private void on7CenterClick(object sender, EventArgs e)
-        {
-            // If we're already 7-centered, do not do anything
-            if (centered7Button.Checked) return;
-
-            centered7Button.Enabled = true;
-            centered0Button.Checked = false;
-
-            // Iterate through all inputs and change to 7-centered
-            centerInputs(true);
-        }
-
         private void on0CenterClick(object sender, EventArgs e)
         {
-            // If we're already 0-centered, do not do anything
-            if (centered0Button.Checked) return;
+            onCenterClick(centered0Button, centered7Button, false);
+        }
 
-            centered0Button.Checked = true;
-            centered7Button.Checked = false;
+        private void on7CenterClick(object sender, EventArgs e)
+        {
+            onCenterClick(centered7Button, centered0Button, true);
+        }
 
-            // Iterate through all inputs and change to 0-centered
-            centerInputs(false);
+        private void onCenterClick(ToolStripMenuItem centerTo, ToolStripMenuItem centerFrom, bool bCenterOn7)
+        {
+            if (centerTo.Checked)
+                return;
+
+            centerTo.Checked = true;
+            centerFrom.Checked = false;
+
+            centerInputs(bCenterOn7);
         }
 
         private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e)
