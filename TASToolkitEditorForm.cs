@@ -702,6 +702,8 @@ namespace TASToolKitEditor
 
             centerInputs(centerOffset, ghostFile);
             centerInputs(centerOffset, playerFile);
+
+            m_files7Centered = centerOn7;
         }
 
         private void centerInputs(int centerOffset, InputFile info)
