@@ -430,6 +430,9 @@ namespace TASToolKitEditor
                 if (ofd.ShowDialog() != DialogResult.OK)
                     return false;
 
+                if (info.m_filePath != string.Empty)
+                    closeFile(info);
+
                 info.m_filePath = ofd.FileName;
 
                 Stream fileStream;
