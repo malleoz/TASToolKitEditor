@@ -20,6 +20,7 @@ namespace TASToolKitEditor
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
             m_fileSystemWatcher = new FileSystemWatcher();
+            m_scrollTogether = false;
         }
 
         #region Events
@@ -43,6 +44,16 @@ namespace TASToolKitEditor
             cellClick(e, playerFile);
         }
 
+        private void onClickFileClosePlayer(object sender, EventArgs e)
+        {
+            closeFile(playerFile);
+        }
+
+        private void onClickFileCloseGhost(object sender, EventArgs e)
+        {
+            closeFile(ghostFile);
+        }
+
         private void onClickFileOpenGhost(object sender, EventArgs e)
         {
             fileOpen(ghostFile);
@@ -63,14 +74,17 @@ namespace TASToolKitEditor
             performUndoRedo(playerFile, EOperationType.Redo);
         }
 
-        private void onClickFileClosePlayer(object sender, EventArgs e)
+        private void onClickScrollTogether(object sender, EventArgs e)
         {
-            closeFile(playerFile);
-        }
+            scrollTogetherMenuItem.Checked = !scrollTogetherMenuItem.Checked;
+            m_scrollTogether = !m_scrollTogether;
 
-        private void onClickFileCloseGhost(object sender, EventArgs e)
-        {
-            closeFile(ghostFile);
+            if (!m_scrollTogether)
+                return;
+
+            // Snap views together (default to player?)
+            // Get top-left visible cell of player and set that row as first visible cell of ghost
+            ghostInputGridView.FirstDisplayedScrollingRowIndex = playerInputGridView.FirstDisplayedScrollingRowIndex;
         }
 
         private void onClickUndoGhost(object sender, EventArgs e)
@@ -104,6 +118,16 @@ namespace TASToolKitEditor
             inputChanged(e, playerFile);
         }
 
+        private void onScrollGhost(object sender, ScrollEventArgs e)
+        {
+            scrollTogether(e, playerInputGridView);
+        }
+
+        private void onScrollPlayer(object sender, ScrollEventArgs e)
+        {
+            scrollTogether(e, ghostInputGridView);
+        }
+
         /// <summary>
         /// This is a more reliable method of the KeyDown event
         /// </summary>
@@ -122,6 +146,7 @@ namespace TASToolKitEditor
         EOperationType m_curOpType;
         FileSystemWatcher m_fileSystemWatcher;
         public static int filesLoaded = 0;
+        bool m_scrollTogether;
 
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;

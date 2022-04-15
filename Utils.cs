@@ -287,6 +287,8 @@ namespace TASToolKitEditor
             file.m_dataGridView.Visible = false;
             file.m_gridViewLabel.Visible = false;
             filesLoaded--;
+            scrollTogetherMenuItem.Enabled = false;
+            scrollTogetherMenuItem.Checked = false;
 
             // If other file is still open, move to be to left-side of program window
             if (filesLoaded > 0)
@@ -407,6 +409,7 @@ namespace TASToolKitEditor
             info.m_closeMenuItem.Enabled = true;
 
             adjustGuiShow(info);
+            scrollTogetherMenuItem.Enabled = true;
         }
 
         private void onCenterClick(ToolStripMenuItem centerTo, ToolStripMenuItem centerFrom, bool bCenterOn7)
@@ -591,6 +594,14 @@ namespace TASToolKitEditor
             }
 
             m_fileSystemWatcher.EnableRaisingEvents = true;
+        }
+
+        private void scrollTogether(ScrollEventArgs e, DataGridView playerInputGridView)
+        {
+            if (!m_scrollTogether)
+                return;
+
+            playerInputGridView.FirstDisplayedScrollingRowIndex = e.NewValue;
         }
 
         private static void showError(string errMsg)

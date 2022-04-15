@@ -39,6 +39,7 @@
             this.centered0Button = new System.Windows.Forms.ToolStripMenuItem();
             this.centered7Button = new System.Windows.Forms.ToolStripMenuItem();
             this.fileSwapButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.scrollTogetherMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.playerUndoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerRedoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -64,6 +65,7 @@
             this.playerInputGridView.Visible = false;
             this.playerInputGridView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.onCellClickPlayer);
             this.playerInputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChangedPlayer);
+            this.playerInputGridView.Scroll += new System.Windows.Forms.ScrollEventHandler(this.onScrollPlayer);
             // 
             // menuStrip
             // 
@@ -85,7 +87,8 @@
             this.fileClosePlayer,
             this.fileCloseGhost,
             this.inputCenteringToolStripMenuItem,
-            this.fileSwapButton});
+            this.fileSwapButton,
+            this.scrollTogetherMenuItem});
             this.fileMenu.Name = "fileMenu";
             this.fileMenu.Size = new System.Drawing.Size(37, 20);
             this.fileMenu.Text = "File";
@@ -150,6 +153,14 @@
             this.fileSwapButton.Text = "Swap Player and Ghost Files";
             this.fileSwapButton.Click += new System.EventHandler(this.onFileSwap);
             // 
+            // scrollTogetherMenuItem
+            // 
+            this.scrollTogetherMenuItem.Enabled = false;
+            this.scrollTogetherMenuItem.Name = "scrollTogetherMenuItem";
+            this.scrollTogetherMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.scrollTogetherMenuItem.Text = "Scroll Together";
+            this.scrollTogetherMenuItem.Click += new System.EventHandler(this.onClickScrollTogether);
+            // 
             // playerMenu
             // 
             this.playerMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -213,6 +224,7 @@
             this.ghostInputGridView.Visible = false;
             this.ghostInputGridView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.onCellClickGhost);
             this.ghostInputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChangedGhost);
+            this.ghostInputGridView.Scroll += new System.Windows.Forms.ScrollEventHandler(this.onScrollGhost);
             // 
             // ghostGridViewLabel
             // 
@@ -280,5 +292,6 @@
         private System.Windows.Forms.ToolStripMenuItem fileClosePlayer;
         private System.Windows.Forms.ToolStripMenuItem fileCloseGhost;
         private System.Windows.Forms.ToolStripMenuItem fileSwapButton;
+        private System.Windows.Forms.ToolStripMenuItem scrollTogetherMenuItem;
     }
 }
