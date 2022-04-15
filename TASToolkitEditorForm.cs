@@ -845,13 +845,6 @@ namespace TASToolKitEditor
     #endregion // Support Classes
 
     #region Enums
-    public enum EDataSource
-    {
-        DataNone,
-        DataGhost,
-        DataPlayer,
-    };
-
     public enum EOperationType
     {
         Normal,
