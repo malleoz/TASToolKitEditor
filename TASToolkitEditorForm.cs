@@ -33,17 +33,6 @@ namespace TASToolKitEditor
             onCenterClick(centered7Button, centered0Button, true);
         }
 
-        private void onCenterClick(ToolStripMenuItem centerTo, ToolStripMenuItem centerFrom, bool bCenterOn7)
-        {
-            if (centerTo.Checked)
-                return;
-
-            centerTo.Checked = true;
-            centerFrom.Checked = false;
-
-            centerInputs(bCenterOn7);
-        }
-
         private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e)
         {
             cellClick(e, ghostFile);
@@ -111,7 +100,7 @@ namespace TASToolKitEditor
         }
 
         /// <summary>
-        /// This is a more reliable method of the KeyDown event. Observer keys pressed and react to them
+        /// This is a more reliable method of the KeyDown event. Observes keys pressed and react to them
         /// </summary>
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
@@ -121,6 +110,8 @@ namespace TASToolKitEditor
             bool redoPlayer = keyData.HasFlag(Keys.Y) && keyData.HasFlag(Keys.Control);
             bool openGhost = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control) && keyData.HasFlag(Keys.Shift);
             bool openPlayer = keyData.HasFlag(Keys.O) && keyData.HasFlag(Keys.Control);
+            bool closeGhost = keyData.HasFlag(Keys.Escape) && keyData.HasFlag(Keys.Shift);
+            bool closePlayer = keyData.HasFlag(Keys.Escape);
 
             if (undoGhost)
                 performUndoRedo(ghostFile, EOperationType.Undo);
@@ -134,6 +125,10 @@ namespace TASToolKitEditor
                 openFile(ghostFile);
             else if (openPlayer)
                 openFile(playerFile);
+            else if (closeGhost)
+                closeFile(ghostFile);
+            else if (closePlayer)
+                closeFile(playerFile);
 
             return base.ProcessCmdKey(ref msg, keyData);
         }
@@ -142,6 +137,17 @@ namespace TASToolKitEditor
         /*******************
          *UTILITY FUNCTIONS*
          *******************/
+
+        private void onCenterClick(ToolStripMenuItem centerTo, ToolStripMenuItem centerFrom, bool bCenterOn7)
+        {
+            if (centerTo.Checked)
+                return;
+
+            centerTo.Checked = true;
+            centerFrom.Checked = false;
+
+            centerInputs(bCenterOn7);
+        }
 
         private void closeFile(InputFile file)
         {
