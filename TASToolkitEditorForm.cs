@@ -14,8 +14,8 @@ namespace TASToolKitEditor
         {
             InitializeComponent();
 
-            playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem);
-            ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem);
+            playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem, fileClosePlayer);
+            ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem, fileCloseGhost);
 
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
@@ -77,6 +77,16 @@ namespace TASToolKitEditor
             performUndoRedo(playerFile, EOperationType.Redo);
         }
 
+        private void onClickFileClosePlayer(object sender, EventArgs e)
+        {
+            closeFile(playerFile);
+        }
+
+        private void onClickFileCloseGhost(object sender, EventArgs e)
+        {
+            closeFile(ghostFile);
+        }
+
         private void onClickUndoGhost(object sender, EventArgs e)
         {
             performUndoRedo(ghostFile, EOperationType.Undo);
@@ -135,6 +145,29 @@ namespace TASToolKitEditor
         /*******************
          *UTILITY FUNCTIONS*
          *******************/
+
+        private void closeFile(InputFile file)
+        {
+            // Clear the grid, the InputFile class, and adjust menu items accordingly
+            file.m_dataGridView.Rows.Clear();
+            file.m_dataGridView.Columns.Clear();
+            file.m_dataGridView.Refresh();
+
+            clearInputFile(file);
+            
+            file.m_undoMenuItem.Enabled = false;
+            file.m_redoMenuItem.Enabled = false;
+            file.m_rootMenuItem.Visible = false;
+        }
+
+        private void clearInputFile(InputFile file)
+        {
+            file.m_gridViewLoaded = false;
+            file.m_filePath = String.Empty;
+            file.m_fileData.Clear();
+            file.m_redoStack.Clear();
+            file.m_undoStack.Clear();
+        }
 
         private void inputChanged(DataGridViewCellEventArgs e, InputFile info)
         {
@@ -441,6 +474,7 @@ namespace TASToolKitEditor
 
             info.m_gridViewLoaded = true;
             info.m_rootMenuItem.Visible = true;
+            info.m_closeMenuItem.Enabled = true;
         }
 
         private void applyGridViewFormatting(InputFile info)
@@ -751,7 +785,7 @@ namespace TASToolKitEditor
     /// </summary>
     public class InputFile
     {
-        public InputFile(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu)
+        public InputFile(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu, ToolStripMenuItem closeMenu)
         {
             m_filePath = String.Empty;
             m_fileData = new List<List<int>>();
@@ -762,6 +796,7 @@ namespace TASToolKitEditor
             m_rootMenuItem = rootMenu;
             m_undoMenuItem = undoMenu;
             m_redoMenuItem = redoMenu;
+            m_closeMenuItem = closeMenu;
         }
 
         public string m_filePath;
@@ -773,6 +808,7 @@ namespace TASToolKitEditor
         public ToolStripMenuItem m_rootMenuItem;
         public ToolStripMenuItem m_undoMenuItem;
         public ToolStripMenuItem m_redoMenuItem;
+        public ToolStripMenuItem m_closeMenuItem;
     }
 
     /// <summary>
