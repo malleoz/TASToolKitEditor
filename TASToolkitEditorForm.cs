@@ -14,8 +14,8 @@ namespace TASToolKitEditor
         {
             InitializeComponent();
 
-            playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem, fileClosePlayer);
-            ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem, fileCloseGhost);
+            playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem, fileClosePlayer, playerGridViewLabel);
+            ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem, fileCloseGhost, ghostGridViewLabel);
 
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
@@ -121,6 +121,7 @@ namespace TASToolKitEditor
         bool? m_files7Centered;
         EOperationType m_curOpType;
         FileSystemWatcher m_fileSystemWatcher;
+        public static int filesLoaded = 0;
 
         // Constants
         private const int NUM_INPUT_COLUMNS = 6;
@@ -128,7 +129,15 @@ namespace TASToolKitEditor
         private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2};
         private const int DPAD_COLUMN = 5;
         private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
-        private const int DATAGRIDVIEW_PADDING = 50;
+        private const int DATAGRIDVIEW_PADDING = 12;
+        private const int firstGridViewlocationX = 12;
+        private const int firstGridViewRightPadding = 25;
+        private const int secondGridViewlocationX = 283;
+        private const int gridViewLocationY = 50;
+        private const int GridViewLabelY = 32;
+        private const int widthBetweenGridViews = 6;
+        private const int formWidthWithSingleGridView = 289;
+        private const int gridViewWidth = 265;
         #endregion
     }
 }

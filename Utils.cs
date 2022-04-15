@@ -155,6 +155,22 @@ namespace TASToolKitEditor
             }
         }
 
+        private void adjustGuiShow(InputFile info)
+        {
+            filesLoaded++;
+
+            int x = (filesLoaded == 1) ? firstGridViewlocationX : secondGridViewlocationX;
+
+            info.m_gridViewLabel.Location = new Point(x, GridViewLabelY);
+            info.m_dataGridView.Location = new Point(x, gridViewLocationY);
+
+            info.m_gridViewLabel.Visible = true;
+            info.m_dataGridView.Visible = true;
+
+            if (filesLoaded == 2)
+                Width = secondGridViewlocationX + gridViewWidth + widthBetweenGridViews + DATAGRIDVIEW_PADDING;
+        }
+
         private void applyGridViewFormatting(InputFile info)
         {
             // This must be performed *after* adding columns/rows otherwise effect is lost
@@ -268,6 +284,24 @@ namespace TASToolKitEditor
             file.m_dataGridView.Rows.Clear();
             file.m_dataGridView.Columns.Clear();
             file.m_dataGridView.Refresh();
+            file.m_dataGridView.Visible = false;
+            file.m_gridViewLabel.Visible = false;
+            filesLoaded--;
+
+            // If other file is still open, move to be to left-side of program window
+            if (filesLoaded > 0)
+            {
+                InputFile sourceFile;
+                if (file == ghostFile)
+                    sourceFile = playerFile;
+                else
+                    sourceFile = ghostFile;
+
+                sourceFile.m_dataGridView.Location = new Point(firstGridViewlocationX, gridViewLocationY);
+                sourceFile.m_gridViewLabel.Location = new Point(firstGridViewlocationX, GridViewLabelY);
+            }
+
+            Width = firstGridViewlocationX + gridViewWidth + firstGridViewRightPadding;
 
             clearInputFile(file);
 
@@ -371,6 +405,8 @@ namespace TASToolKitEditor
             info.m_gridViewLoaded = true;
             info.m_rootMenuItem.Visible = true;
             info.m_closeMenuItem.Enabled = true;
+
+            adjustGuiShow(info);
         }
 
         private void onCenterClick(ToolStripMenuItem centerTo, ToolStripMenuItem centerFrom, bool bCenterOn7)
@@ -657,7 +693,7 @@ namespace TASToolKitEditor
     /// </summary>
     public class InputFile
     {
-        public InputFile(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu, ToolStripMenuItem closeMenu)
+        public InputFile(DataGridView dataGridView, ToolStripMenuItem rootMenu, ToolStripMenuItem undoMenu, ToolStripMenuItem redoMenu, ToolStripMenuItem closeMenu, Label label)
         {
             m_filePath = String.Empty;
             m_fileData = new List<List<int>>();
@@ -669,6 +705,7 @@ namespace TASToolKitEditor
             m_undoMenuItem = undoMenu;
             m_redoMenuItem = redoMenu;
             m_closeMenuItem = closeMenu;
+            m_gridViewLabel = label;
         }
 
         public string m_filePath;
@@ -681,6 +718,7 @@ namespace TASToolKitEditor
         public ToolStripMenuItem m_undoMenuItem;
         public ToolStripMenuItem m_redoMenuItem;
         public ToolStripMenuItem m_closeMenuItem;
+        public Label m_gridViewLabel;
     }
 
     /// <summary>

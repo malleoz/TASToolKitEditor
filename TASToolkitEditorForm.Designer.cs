@@ -38,6 +38,7 @@
             this.inputCenteringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.centered0Button = new System.Windows.Forms.ToolStripMenuItem();
             this.centered7Button = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileSwapButton = new System.Windows.Forms.ToolStripMenuItem();
             this.playerMenu = new System.Windows.Forms.ToolStripMenuItem();
             this.playerUndoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.playerRedoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,7 +48,6 @@
             this.ghostInputGridView = new System.Windows.Forms.DataGridView();
             this.ghostGridViewLabel = new System.Windows.Forms.Label();
             this.playerGridViewLabel = new System.Windows.Forms.Label();
-            this.fileSwapButton = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.playerInputGridView)).BeginInit();
             this.menuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.ghostInputGridView)).BeginInit();
@@ -56,11 +56,12 @@
             // playerInputGridView
             // 
             this.playerInputGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.playerInputGridView.Location = new System.Drawing.Point(283, 50);
+            this.playerInputGridView.Location = new System.Drawing.Point(12, 50);
             this.playerInputGridView.Name = "playerInputGridView";
             this.playerInputGridView.RowTemplate.Height = 25;
             this.playerInputGridView.Size = new System.Drawing.Size(265, 389);
             this.playerInputGridView.TabIndex = 0;
+            this.playerInputGridView.Visible = false;
             this.playerInputGridView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.onCellClickPlayer);
             this.playerInputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChangedPlayer);
             // 
@@ -72,7 +73,7 @@
             this.ghostMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(562, 24);
+            this.menuStrip.Size = new System.Drawing.Size(288, 24);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -142,6 +143,13 @@
             this.centered7Button.Text = "7 Centered";
             this.centered7Button.Click += new System.EventHandler(this.on7CenterClick);
             // 
+            // fileSwapButton
+            // 
+            this.fileSwapButton.Name = "fileSwapButton";
+            this.fileSwapButton.Size = new System.Drawing.Size(228, 22);
+            this.fileSwapButton.Text = "Swap Player and Ghost Files";
+            this.fileSwapButton.Click += new System.EventHandler(this.onFileSwap);
+            // 
             // playerMenu
             // 
             this.playerMenu.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -202,6 +210,7 @@
             this.ghostInputGridView.RowTemplate.Height = 25;
             this.ghostInputGridView.Size = new System.Drawing.Size(265, 389);
             this.ghostInputGridView.TabIndex = 2;
+            this.ghostInputGridView.Visible = false;
             this.ghostInputGridView.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.onCellClickGhost);
             this.ghostInputGridView.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.onInputChangedGhost);
             // 
@@ -213,28 +222,23 @@
             this.ghostGridViewLabel.Size = new System.Drawing.Size(74, 15);
             this.ghostGridViewLabel.TabIndex = 3;
             this.ghostGridViewLabel.Text = "Ghost Inputs";
+            this.ghostGridViewLabel.Visible = false;
             // 
             // playerGridViewLabel
             // 
             this.playerGridViewLabel.AutoSize = true;
-            this.playerGridViewLabel.Location = new System.Drawing.Point(283, 32);
+            this.playerGridViewLabel.Location = new System.Drawing.Point(12, 32);
             this.playerGridViewLabel.Name = "playerGridViewLabel";
             this.playerGridViewLabel.Size = new System.Drawing.Size(75, 15);
             this.playerGridViewLabel.TabIndex = 4;
             this.playerGridViewLabel.Text = "Player Inputs";
-            // 
-            // fileSwapButton
-            // 
-            this.fileSwapButton.Name = "fileSwapButton";
-            this.fileSwapButton.Size = new System.Drawing.Size(228, 22);
-            this.fileSwapButton.Text = "Swap Player and Ghost Files";
-            this.fileSwapButton.Click += new System.EventHandler(this.onFileSwap);
+            this.playerGridViewLabel.Visible = false;
             // 
             // TASToolKitEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(562, 451);
+            this.ClientSize = new System.Drawing.Size(288, 451);
             this.Controls.Add(this.playerGridViewLabel);
             this.Controls.Add(this.ghostGridViewLabel);
             this.Controls.Add(this.ghostInputGridView);
