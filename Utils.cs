@@ -155,11 +155,24 @@ namespace TASToolKitEditor
             }
         }
 
+        private void adjustFormWidth()
+        {
+            int newWidth = 0;
+            if (m_filesLoaded == 2)
+                newWidth = formWidthWithDoubleGridView;
+            else
+                newWidth = formWidthWithSingleGridView;
+
+            MaximumSize = new Size(newWidth, int.MaxValue);
+            MinimumSize = new Size(newWidth, 0);
+            Width = newWidth;
+        }
+
         private void adjustGuiShow(InputFile info)
         {
-            filesLoaded++;
+            m_filesLoaded++;
 
-            int x = (filesLoaded == 1) ? firstGridViewlocationX : secondGridViewlocationX;
+            int x = (m_filesLoaded == 1) ? firstGridViewlocationX : secondGridViewlocationX;
 
             info.m_gridViewLabel.Location = new Point(x, GridViewLabelY);
             info.m_dataGridView.Location = new Point(x, gridViewLocationY);
@@ -167,8 +180,7 @@ namespace TASToolKitEditor
             info.m_gridViewLabel.Visible = true;
             info.m_dataGridView.Visible = true;
 
-            if (filesLoaded == 2)
-                Width = secondGridViewlocationX + gridViewWidth + widthBetweenGridViews + DATAGRIDVIEW_PADDING;
+            adjustFormWidth();
         }
 
         private void applyGridViewFormatting(InputFile info)
@@ -286,12 +298,13 @@ namespace TASToolKitEditor
             file.m_dataGridView.Refresh();
             file.m_dataGridView.Visible = false;
             file.m_gridViewLabel.Visible = false;
-            filesLoaded--;
+            m_filesLoaded--;
+            adjustFormWidth();
             scrollTogetherMenuItem.Enabled = false;
             scrollTogetherMenuItem.Checked = false;
 
             // If other file is still open, move to be to left-side of program window
-            if (filesLoaded > 0)
+            if (m_filesLoaded > 0)
             {
                 InputFile sourceFile;
                 if (file == ghostFile)
@@ -302,8 +315,6 @@ namespace TASToolKitEditor
                 sourceFile.m_dataGridView.Location = new Point(firstGridViewlocationX, gridViewLocationY);
                 sourceFile.m_gridViewLabel.Location = new Point(firstGridViewlocationX, GridViewLabelY);
             }
-
-            Width = firstGridViewlocationX + gridViewWidth + firstGridViewRightPadding;
 
             clearInputFile(file);
 

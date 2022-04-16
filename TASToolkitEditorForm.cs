@@ -13,6 +13,7 @@ namespace TASToolKitEditor
         public TASToolKitEditorForm()
         {
             InitializeComponent();
+            adjustFormWidth();
 
             playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem, fileClosePlayer, playerGridViewLabel);
             ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem, fileCloseGhost, ghostGridViewLabel);
@@ -104,8 +105,8 @@ namespace TASToolKitEditor
 
         private void onFormResize(object sender, EventArgs e)
         {
-            ghostInputGridView.Height = this.Height - (DATAGRIDVIEW_PADDING * 2);
-            playerInputGridView.Height = this.Height - (DATAGRIDVIEW_PADDING * 2);
+            ghostInputGridView.Height = this.Height - DATAGRIDVIEW_PADDING - ghostInputGridView.Location.Y;
+            playerInputGridView.Height = this.Height - DATAGRIDVIEW_PADDING - playerInputGridView.Location.Y;
         }
 
         private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
@@ -145,7 +146,7 @@ namespace TASToolKitEditor
         bool? m_files7Centered;
         EOperationType m_curOpType;
         FileSystemWatcher m_fileSystemWatcher;
-        public static int filesLoaded = 0;
+        public static int m_filesLoaded = 0;
         bool m_scrollTogether;
 
         // Constants
@@ -154,14 +155,15 @@ namespace TASToolKitEditor
         private static readonly int[] BUTTON_COLUMNS = new int[] { 0, 1, 2};
         private const int DPAD_COLUMN = 5;
         private const int ADJUST_FOR_FRAMECOUNT_COLUMN = 1;
-        private const int DATAGRIDVIEW_PADDING = 12;
+        private const int DATAGRIDVIEW_PADDING = 50;
         private const int firstGridViewlocationX = 12;
-        private const int firstGridViewRightPadding = 25;
+        private const int gridViewRightPadding = 25;
         private const int secondGridViewlocationX = 283;
         private const int gridViewLocationY = 50;
         private const int GridViewLabelY = 32;
         private const int widthBetweenGridViews = 6;
-        private const int formWidthWithSingleGridView = 289;
+        private const int formWidthWithSingleGridView = firstGridViewlocationX + gridViewWidth + gridViewRightPadding;
+        private const int formWidthWithDoubleGridView = secondGridViewlocationX + gridViewWidth + gridViewRightPadding;
         private const int gridViewWidth = 265;
         #endregion
     }

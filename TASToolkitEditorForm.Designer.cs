@@ -75,7 +75,7 @@
             this.ghostMenu});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Size = new System.Drawing.Size(288, 24);
+            this.menuStrip.Size = new System.Drawing.Size(293, 24);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip1";
             // 
@@ -215,6 +215,7 @@
             // 
             // ghostInputGridView
             // 
+            this.ghostInputGridView.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.ghostInputGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.ghostInputGridView.Location = new System.Drawing.Point(12, 50);
             this.ghostInputGridView.Name = "ghostInputGridView";
@@ -250,7 +251,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(288, 451);
+            this.ClientSize = new System.Drawing.Size(293, 451);
             this.Controls.Add(this.playerGridViewLabel);
             this.Controls.Add(this.ghostGridViewLabel);
             this.Controls.Add(this.ghostInputGridView);
