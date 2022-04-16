@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Windows.Forms;
 
 namespace TASToolKitEditor
@@ -765,7 +764,6 @@ namespace TASToolKitEditor
     }
 
     #region Support Classes
-
     /// <summary>
     /// This class contains all distinct information for a given source input file.
     /// This includes the path, hash, associated menu buttons, and DataGridView.
