@@ -78,14 +78,23 @@ namespace TASToolKitEditor
         private void onClickScrollTogether(object sender, EventArgs e)
         {
             scrollTogetherMenuItem.Checked = !scrollTogetherMenuItem.Checked;
-            m_scrollTogether = !m_scrollTogether;
 
-            if (!m_scrollTogether)
+            if (m_scrollTogether)
+            {
+                m_scrollTogether = false;
                 return;
+            }
 
             // Snap views together (default to player?)
             // Get top-left visible cell of player and set that row as first visible cell of ghost
-            ghostInputGridView.FirstDisplayedScrollingRowIndex = playerInputGridView.FirstDisplayedScrollingRowIndex;
+            int newRowIdx = playerInputGridView.FirstDisplayedScrollingRowIndex;
+
+            if (ghostInputGridView.Rows.Count > newRowIdx)
+                ghostInputGridView.FirstDisplayedScrollingRowIndex = newRowIdx;
+            else
+                ghostInputGridView.FirstDisplayedScrollingRowIndex = ghostInputGridView.Rows.Count - 1;
+
+            m_scrollTogether = !m_scrollTogether;
         }
 
         private void onClickUndoGhost(object sender, EventArgs e)

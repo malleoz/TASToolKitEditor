@@ -614,12 +614,13 @@ namespace TASToolKitEditor
             m_fileSystemWatcher.EnableRaisingEvents = true;
         }
 
-        private void scrollTogether(ScrollEventArgs e, DataGridView playerInputGridView)
+        private void scrollTogether(ScrollEventArgs e, DataGridView inputGridView)
         {
             if (!m_scrollTogether)
                 return;
 
-            playerInputGridView.FirstDisplayedScrollingRowIndex = e.NewValue;
+            if (inputGridView.Rows.Count > e.NewValue)
+                inputGridView.FirstDisplayedScrollingRowIndex = e.NewValue;
         }
 
         private static void showError(string errMsg)
