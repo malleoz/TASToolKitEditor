@@ -28,55 +28,21 @@ namespace TASToolKitEditor
         }
 
         #region Events
-        private void on0CenterClick(object sender, EventArgs e)
-        {
-            onCenterClick(centered0Button, centered7Button, false);
-        }
+        private void on0CenterClick(object sender, EventArgs e) => onCenterClick(centered0Button, centered7Button, false);
+        private void on7CenterClick(object sender, EventArgs e) => onCenterClick(centered7Button, centered0Button, true);
 
-        private void on7CenterClick(object sender, EventArgs e)
-        {
-            onCenterClick(centered7Button, centered0Button, true);
-        }
+        private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e) => cellClick(e, ghostFile);
+        private void onCellClickPlayer(object sender, DataGridViewCellMouseEventArgs e) => cellClick(e, playerFile);
 
-        private void onCellClickGhost(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            cellClick(e, ghostFile);
-        }
+        private void onClickFileClosePlayer(object sender, EventArgs e) => closeFile(playerFile);
+        private void onClickFileCloseGhost(object sender, EventArgs e) => closeFile(ghostFile);
+        private void onClickFileOpenGhost(object sender, EventArgs e) => fileOpen(ghostFile);
+        private void onClickFileOpenPlayer(object sender, EventArgs e) => fileOpen(playerFile);
 
-        private void onCellClickPlayer(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            cellClick(e, playerFile);
-        }
-
-        private void onClickFileClosePlayer(object sender, EventArgs e)
-        {
-            closeFile(playerFile);
-        }
-
-        private void onClickFileCloseGhost(object sender, EventArgs e)
-        {
-            closeFile(ghostFile);
-        }
-
-        private void onClickFileOpenGhost(object sender, EventArgs e)
-        {
-            fileOpen(ghostFile);
-        }
-
-        private void onClickFileOpenPlayer(object sender, EventArgs e)
-        {
-            fileOpen(playerFile);
-        }
-
-        private void onClickRedoGhost(object sender, EventArgs e)
-        {
-            performUndoRedo(ghostFile, EOperationType.Redo);
-        }
-
-        private void onClickRedoPlayer(object sender, EventArgs e)
-        {
-            performUndoRedo(playerFile, EOperationType.Redo);
-        }
+        private void onClickRedoGhost(object sender, EventArgs e) => performUndoRedo(ghostFile, EOperationType.Redo);
+        private void onClickRedoPlayer(object sender, EventArgs e) => performUndoRedo(playerFile, EOperationType.Redo);
+        private void onClickUndoGhost(object sender, EventArgs e) => performUndoRedo(ghostFile, EOperationType.Undo);
+        private void onClickUndoPlayer(object sender, EventArgs e) => performUndoRedo(playerFile, EOperationType.Undo);
 
         private void onClickScrollTogether(object sender, EventArgs e)
         {
@@ -100,19 +66,22 @@ namespace TASToolKitEditor
             m_scrollTogether = !m_scrollTogether;
         }
 
-        private void onClickUndoGhost(object sender, EventArgs e)
-        {
-            performUndoRedo(ghostFile, EOperationType.Undo);
-        }
-
-        private void onClickUndoPlayer(object sender, EventArgs e)
-        {
-            performUndoRedo(playerFile, EOperationType.Undo);
-        }
-
         private void onFileSwap(object sender, EventArgs e)
         {
-            swapPlayerAndGhost();
+            // No point in swapping if both files aren't open
+            if (playerFile.m_filePath == string.Empty || ghostFile.m_filePath == string.Empty)
+                return;
+
+            // All we need to do is take player data and swap with ghost data
+            List<List<int>> tempData = playerFile.m_fileData;
+            playerFile.m_fileData = ghostFile.m_fileData;
+            ghostFile.m_fileData = tempData;
+
+            saveToFile(playerFile);
+            saveToFile(ghostFile);
+
+            clearAndReloadFile(playerFile);
+            clearAndReloadFile(ghostFile);
         }
 
         private void onFormResize(object sender, EventArgs e)
@@ -121,25 +90,11 @@ namespace TASToolKitEditor
             playerInputGridView.Height = this.Height - DATAGRIDVIEW_PADDING - playerInputGridView.Location.Y;
         }
 
-        private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e)
-        {
-            inputChanged(e, ghostFile);
-        }
+        private void onInputChangedGhost(object sender, DataGridViewCellEventArgs e) => inputChanged(e, ghostFile);
+        private void onInputChangedPlayer(object sender, DataGridViewCellEventArgs e) => inputChanged(e, playerFile);
 
-        private void onInputChangedPlayer(object sender, DataGridViewCellEventArgs e)
-        {
-            inputChanged(e, playerFile);
-        }
-
-        private void onScrollGhost(object sender, ScrollEventArgs e)
-        {
-            scrollTogether(e, playerInputGridView);
-        }
-
-        private void onScrollPlayer(object sender, ScrollEventArgs e)
-        {
-            scrollTogether(e, ghostInputGridView);
-        }
+        private void onScrollGhost(object sender, ScrollEventArgs e) => scrollTogether(e, playerInputGridView);
+        private void onScrollPlayer(object sender, ScrollEventArgs e) => scrollTogether(e, ghostInputGridView);
 
         /// <summary>
         /// This is a more reliable method of the KeyDown event
