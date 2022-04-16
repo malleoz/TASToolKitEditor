@@ -191,6 +191,17 @@ namespace TASToolKitEditor
             info.m_dataGridView.RowHeadersVisible = false;
         }
 
+        private void assignContextMenu(InputFile file)
+        {
+            ContextMenuStrip contextMenuStrip = new ContextMenuStrip();
+            contextMenuStrip.Items.Add("Insert Above");
+            contextMenuStrip.Items[0].Click += (sender, e) => insertRowAbove(file);
+            contextMenuStrip.Items.Add("Insert Below");
+            contextMenuStrip.Items[1].Click += (sender, e) => insertRowBelow(file);
+            
+            file.m_dataGridView.ContextMenuStrip = contextMenuStrip;
+        }
+
         private void cellClick(DataGridViewCellMouseEventArgs e, InputFile info)
         {
             int colIdx = e.ColumnIndex;
@@ -290,6 +301,15 @@ namespace TASToolKitEditor
             file.m_undoStack.Clear();
         }
 
+        private DataGridViewRow cloneRowWithValues(DataGridViewRow row)
+        {
+            DataGridViewRow newRow = (DataGridViewRow)row.Clone();
+            for (int i = 0; i < row.Cells.Count; i++)
+                newRow.Cells[i].Value = row.Cells[i].Value;
+
+            return newRow;
+        }
+
         private void closeFile(InputFile file)
         {
             // Clear the grid, the InputFile class, and adjust menu items accordingly
@@ -327,6 +347,16 @@ namespace TASToolKitEditor
         {
             if (openFile(info))
                 loadDataToGridView(info);
+        }
+
+        private List<int> getInputData(DataGridViewRow row)
+        {
+            List<int> inputData = new List<int>();
+
+            for (int i = 1; i < row.Cells.Count; i++)
+                inputData.Add(int.Parse(row.Cells[i].Value.ToString()));
+
+            return inputData;
         }
 
         /// <summary>
@@ -406,6 +436,36 @@ namespace TASToolKitEditor
             info.m_redoMenuItem.Enabled = info.m_redoStack.Count > 0;
 
             return true;
+        }
+
+        /// <summary>
+        /// Inserts a new row at rowIdx, shifting all other inputs down one
+        /// </summary>
+        private void insertRow(InputFile file, DataGridViewRow row, int rowIdx)
+        {
+            file.m_dataGridView.Rows.Insert(rowIdx, row);
+            file.m_fileData.Insert(rowIdx, getInputData(row));
+
+            reAdjustFrameCount(file.m_dataGridView, rowIdx);
+            saveToFile(file);
+        }
+
+        private void insertRowAbove(InputFile file)
+        {
+            int rowIdxToCopy = file.m_dataGridView.CurrentCell.RowIndex;
+            int rowIdxToInsertAt = rowIdxToCopy;
+            DataGridViewRow newRow = cloneRowWithValues(file.m_dataGridView.Rows[rowIdxToInsertAt]);
+
+            insertRow(file, newRow, rowIdxToInsertAt);
+        }
+
+        private void insertRowBelow(InputFile file)
+        {
+            int rowIdxToCopy = file.m_dataGridView.CurrentCell.RowIndex;
+            int rowIdxToInsertAt = rowIdxToCopy + 1;
+            DataGridViewRow newRow = cloneRowWithValues(file.m_dataGridView.Rows[rowIdxToCopy]);
+
+            insertRow(file, newRow, rowIdxToInsertAt);
         }
 
         private void loadDataToGridView(InputFile info)
@@ -571,6 +631,12 @@ namespace TASToolKitEditor
                 closeFile(playerFile);
         }
 
+        private void reAdjustFrameCount(DataGridView gridView, int rowIdx)
+        {
+            for (int i = rowIdx; i < gridView.Rows.Count; i++)
+                gridView.Rows[i].Cells[0].Value = i + 1;
+        }
+
         private bool reOpenFile(InputFile info)
         {
             using (StreamReader reader = new StreamReader(info.m_filePath))
@@ -720,6 +786,7 @@ namespace TASToolKitEditor
     }
 
     #region Support Classes
+
     /// <summary>
     /// This class contains all distinct information for a given source input file.
     /// This includes the path, hash, associated menu buttons, and DataGridView.

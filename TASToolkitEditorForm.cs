@@ -18,6 +18,9 @@ namespace TASToolKitEditor
             playerFile = new InputFile(playerInputGridView, playerMenu, playerUndoMenuItem, playerRedoMenuItem, fileClosePlayer, playerGridViewLabel);
             ghostFile = new InputFile(ghostInputGridView, ghostMenu, ghostUndoMenuItem, ghostRedoMenuItem, fileCloseGhost, ghostGridViewLabel);
 
+            assignContextMenu(playerFile);
+            assignContextMenu(ghostFile);
+
             m_files7Centered = null;
             m_curOpType = EOperationType.Normal;
             m_fileSystemWatcher = new FileSystemWatcher();
