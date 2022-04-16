@@ -447,6 +447,13 @@ namespace TASToolKitEditor
                 if (info.m_filePath != string.Empty)
                     closeFile(info);
 
+                if (ofd.FileName == playerFile.m_filePath || ofd.FileName == ghostFile.m_filePath)
+                {
+                    string errMsg = String.Format("Unable to open {0} as it is already open in this program!", ofd.FileName);
+                    showError(errMsg);
+                    return false;
+                }
+
                 info.m_filePath = ofd.FileName;
 
                 Stream fileStream;
