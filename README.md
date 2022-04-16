@@ -4,9 +4,6 @@ A lightweight .csv visualizer/editor meant to assist in the development of Mario
 ![image](https://user-images.githubusercontent.com/16770560/162370209-30066f00-5f80-4dfc-9055-110dd92bc101.png)
 
 ## TODO
-- FileSystemWatcher to detect file changes, rather than a hash
-- Ghost AND Player DataGridViews
-- Handle File>Open operation when a file is already opened in the program
 - SaveToFile can fail if file is in use by other program. Determine what to do here. Should we warn user and just keep attempting to save on each input change?
 - Left-click and drag for mass toggle
 - Right-click and drag for mass write (starting cell value is written to all cells dragged over)
@@ -17,6 +14,10 @@ A lightweight .csv visualizer/editor meant to assist in the development of Mario
 - Adding/deleting rows
 
 ## Completed Features
+- Inserting rows
+- Handle File>Open operation when a file is already opened in the program
+- Ghost and Player views
+- FileSystemWatcher to detect file changes, rather than a hash
 - Basic text editing functionality
 - Auto file re-load on checksum change detected between cached and local file
 - Toggle between 0 and 7 centering
