@@ -24,9 +24,9 @@ namespace TASToolKitEditor
             bool bCenter0 = iValue < 0;
             if (bCenter0 || bCenter7)
             {
-                file7Centered = bCenter7 ? true : false;
-                centered7Button.Checked = bCenter7 ? true : false;
-                centered0Button.Checked = bCenter0 ? true : false;
+                file7Centered = bCenter7;
+                centered7Button.Checked = bCenter7;
+                centered0Button.Checked = bCenter0;
                 return true;
             }
 
