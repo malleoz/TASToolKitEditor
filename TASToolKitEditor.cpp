@@ -1,5 +1,16 @@
 #include "TASToolKitEditor.h"
 
+#define TABLE_VIEW_WIDTH 200
+#define TABLE_SIDE_PADDING 10
+#define DEFAULT_WINDOW_WIDTH ((TABLE_VIEW_WIDTH) + (2 * TABLE_SIDE_PADDING))
+#define DEFAULT_WINDOW_HEIGHT 500
+
+/*
+ * TODO
+ * - std::vector for inputs data
+ * - figure out QTableView and how to specify vector as source
+ */
+
 TASToolKitEditor::TASToolKitEditor(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -12,26 +23,77 @@ void TASToolKitEditor::connectActions()
 
 }
 
-void TASToolKitEditor::setupUi()
+void TASToolKitEditor::addMenuItems()
 {
-    resize(452, 405);
-    actionUndoPlayer = new QAction(this);
-    actionRedoPlayer = new QAction(this);
-    actionUndoGhost = new QAction(this);
-    actionRedoGhost = new QAction(this);
+    setMenuBar(menuBar = new QMenuBar(this));
+
+    addFileMenuItems();
+    addPlayerMenuItems();
+    addGhostMenuItems();
+}
+
+void TASToolKitEditor::addFileMenuItems()
+{
+    menuFile = new QMenu(menuBar);
     actionOpenPlayer = new QAction(this);
     actionOpenGhost = new QAction(this);
     actionClosePlayer = new QAction(this);
     actionCloseGhost = new QAction(this);
+    actionSwapFiles = new QAction(this);
+
+    menuInputCentering = new QMenu(menuFile);
+    menuInputCentering->addAction(action0Centered);
+    menuInputCentering->addAction(action7Centered);
+
     action0Centered = new QAction(this);
     action7Centered = new QAction(this);
-    actionSwapFiles = new QAction(this);
     actionScrollTogether = new QAction(this);
+
+    menuFile->addAction(actionOpenPlayer);
+    menuFile->addAction(actionOpenGhost);
+    menuFile->addAction(actionClosePlayer);
+    menuFile->addAction(actionCloseGhost);
+    menuFile->addAction(menuInputCentering->menuAction());
+    menuFile->addAction(actionSwapFiles);
+    menuFile->addAction(actionScrollTogether);
+
+    menuBar->addAction(menuFile->menuAction());
+}
+
+void TASToolKitEditor::addPlayerMenuItems()
+{
+    menuPlayer = new QMenu(menuBar);
+    actionUndoPlayer = new QAction(this);
+    actionRedoPlayer = new QAction(this);
+
+    menuPlayer->addAction(actionUndoPlayer);
+    menuPlayer->addAction(actionRedoPlayer);
+
+    menuBar->addAction(menuPlayer->menuAction());
+}
+
+void TASToolKitEditor::addGhostMenuItems()
+{
+    menuGhost = new QMenu(menuBar);
+    actionUndoGhost = new QAction(this);
+    actionRedoGhost = new QAction(this);
+
+    menuGhost->addAction(actionUndoGhost);
+    menuGhost->addAction(actionRedoGhost);
+
+    menuBar->addAction(menuGhost->menuAction());
+}
+
+void TASToolKitEditor::setupUi()
+{
+    resize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+    addMenuItems();
+
     centralWidget = new QWidget(this);
     horizontalLayoutWidget = new QWidget(centralWidget);
-    horizontalLayoutWidget->setGeometry(QRect(9, 0, 351, 341));
+    horizontalLayoutWidget->setGeometry(QRect(TABLE_SIDE_PADDING, TABLE_SIDE_PADDING, (TABLE_VIEW_WIDTH * 2) + TABLE_SIDE_PADDING, DEFAULT_WINDOW_HEIGHT - (2 * TABLE_SIDE_PADDING)));
     mainHorizLayout = new QHBoxLayout(horizontalLayoutWidget);
-    mainHorizLayout->setSpacing(6);
+    mainHorizLayout->setSpacing(TABLE_SIDE_PADDING);
     mainHorizLayout->setContentsMargins(11, 11, 11, 11);
     mainHorizLayout->setContentsMargins(0, 0, 0, 0);
     playerVLayout = new QVBoxLayout();
@@ -61,34 +123,6 @@ void TASToolKitEditor::setupUi()
     mainHorizLayout->addLayout(ghostVLayout);
 
     setCentralWidget(centralWidget);
-    menuBar = new QMenuBar(this);
-    menuBar->setGeometry(QRect(0, 0, 452, 21));
-    menuFile = new QMenu(menuBar);
-    menuInputCentering = new QMenu(menuFile);
-    menuPlayer = new QMenu(menuBar);
-    menuGhost = new QMenu(menuBar);
-    setMenuBar(menuBar);
-    mainToolBar = new QToolBar(this);
-    addToolBar(Qt::TopToolBarArea, mainToolBar);
-    statusBar = new QStatusBar(this);
-    setStatusBar(statusBar);
-
-    menuBar->addAction(menuFile->menuAction());
-    menuBar->addAction(menuPlayer->menuAction());
-    menuBar->addAction(menuGhost->menuAction());
-    menuFile->addAction(actionOpenPlayer);
-    menuFile->addAction(actionOpenGhost);
-    menuFile->addAction(actionClosePlayer);
-    menuFile->addAction(actionCloseGhost);
-    menuFile->addAction(menuInputCentering->menuAction());
-    menuFile->addAction(actionSwapFiles);
-    menuFile->addAction(actionScrollTogether);
-    menuInputCentering->addAction(action0Centered);
-    menuInputCentering->addAction(action7Centered);
-    menuPlayer->addAction(actionUndoPlayer);
-    menuPlayer->addAction(actionRedoPlayer);
-    menuGhost->addAction(actionUndoGhost);
-    menuGhost->addAction(actionRedoGhost);
 
     setTitles();
 }
