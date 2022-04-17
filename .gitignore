@@ -1,5 +1,4 @@
-bin/
-obj/
+x64/
 .vs/
-Properties/
-*.csproj.user
+*.vcxproj.user
+.github/
