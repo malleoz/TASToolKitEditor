@@ -1,6 +1,8 @@
 #include "TASToolKitEditor.h"
 
 #include <QFileDialog>
+#include <QMessageBox>
+#include <QTextStream>
 
 #include <iostream>
 
@@ -10,6 +12,8 @@
 #define DEFAULT_WINDOW_HEIGHT 500
 
 #define INVALID_IDX -1
+
+#define NUM_INPUT_COLUMNS 6
 
 /*
  * TODO
@@ -48,8 +52,34 @@ void TASToolKitEditor::onOpenGhost()
 
 void TASToolKitEditor::openFile(InputFile* inputFile)
 {
-    QFileDialog* fileDialog = new QFileDialog(nullptr, "Open File", "", "*.csv");
-    fileDialog->exec();
+    QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
+
+    if (inputFile->getPath() != "")
+    {
+        // Have user confirm they want to close file
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?", QMessageBox::No | QMessageBox::Yes);
+
+        if (reply != QMessageBox::Yes)
+            return;
+
+        inputFile->closeFile();
+    }
+    
+    FileStatus status = inputFile->loadFile(filePath);
+
+    if (status == FileStatus::Success)
+    {
+        Centering fileCentering = inputFile->getCentering();
+
+        action7Centered->setChecked(fileCentering == Centering::Seven);
+        action0Centered->setChecked(fileCentering == Centering::Zero);
+    }
+}
+
+void TASToolKitEditor::showError(const QString& errTitle, const QString& errMsg)
+{
+    QMessageBox::warning(this, errTitle, errMsg, QMessageBox::Ok);
 }
 
 void TASToolKitEditor::addMenuItems()
@@ -201,12 +231,120 @@ void TASToolKitEditor::setTitleShortcuts()
 
 InputFile::InputFile(QMenu* root, QAction* undo, QAction* redo)
     : m_filePath("")
+    , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)
     , pTableView(nullptr)
     , pRootMenu(root)
     , pUndoMenu(undo)
     , pRedoMenu(redo)
+    , m_frameParseError(INVALID_IDX)
 {
+}
+
+FileStatus InputFile::loadFile(QString path)
+{
+    m_filePath = path;
+
+    QFile fp(m_filePath);
+    if (!fp.open(QIODevice::ReadWrite))
+        return FileStatus::WritePermission;
+
+    QTextStream ts(&fp);
+
+    while (!ts.atEnd())
+    {
+        QString line = ts.readLine();
+        QStringList frameData = line.split(',');
+
+        if (!valuesFormattedProperly(frameData))
+        {
+            m_frameParseError = m_fileData.count();
+            clearData();
+            return FileStatus::Parse;
+        }
+    }
+}
+
+void InputFile::clearData()
+{
+    m_filePath = "";
+    m_fileData.clear();
+}
+
+bool InputFile::valuesFormattedProperly(const QStringList& data)
+{
+    // There should be 6 comma-separated values per line
+    if (data.count() != NUM_INPUT_COLUMNS)
+        return false;
+
+    // Certain columns have restricted values
+    if (!valueRestrictionsAreMet(data))
+        return false;
+
+    // Place other error checks here
+
+    return true;
+}
+
+bool InputFile::valueRestrictionsAreMet(const QStringList& data)
+{
+    for (int i = 0; i < data.count(); i++)
+    {
+        bool ret;
+        int value = data[i].toInt(&ret);
+
+        if (!ret)
+            return false;
+
+        int smallestAcceptedVal = getSmallestAcceptedValue(i, value);
+        int largestAcceptedVal = getLargestAcceptedValue(i, value);
+
+        if (value > largestAcceptedVal || value < smallestAcceptedVal)
+            return false;
+    }
+
+    return true;
+}
+
+int InputFile::getSmallestAcceptedValue(int index, int value)
+{
+    if (BUTTON_COL_IDXS.contains(index) || DPAD_COL_IDX == index)
+        return 0;
+
+    if (m_fileCentering == Centering::Unknown && !ableToDiscernCentering(value))
+        return 0;
+
+    return m_fileCentering == Centering::Seven ? 0 : -7;
+}
+
+int InputFile::getLargestAcceptedValue(int index, int value)
+{
+    if (DPAD_COL_IDX == index)
+        return 4;
+    if (BUTTON_COL_IDXS.contains(index))
+        return 1;
+    if (m_fileCentering == Centering::Unknown && !ableToDiscernCentering(value))
+        return 7;
+
+    return m_fileCentering == Centering::Seven ? 14 : 7;
+}
+
+bool InputFile::ableToDiscernCentering(int value)
+{
+    if (value > 7)
+        m_fileCentering = Centering::Seven;
+    else if (value < 0)
+        m_fileCentering = Centering::Zero;
+    else
+        return false;
+
+    return true;
+}
+
+
+void InputFile::closeFile()
+{
+
 }
 
 CellEditAction::CellEditAction()

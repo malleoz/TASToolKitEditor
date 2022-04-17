@@ -1,6 +1,7 @@
 #pragma once
 
-#include <stack>
+#include <Qstack>
+#include <QVector>
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
@@ -69,6 +70,7 @@ private:
     void addPlayerMenuItems();
     void addGhostMenuItems();
     void createInputFileInstances();
+    void showError(const QString& errTitle, const QString& errMsg);
 
     void onOpenPlayer();
     void onOpenGhost();
@@ -80,6 +82,7 @@ class CellEditAction
 {
 public:
     CellEditAction();
+
     bool operator==(const CellEditAction& rhs);
 
 private:
@@ -91,20 +94,51 @@ private:
     void flipValues();
 };
 
+enum class FileStatus
+{
+    Success = 0,
+    WritePermission,
+    Parse,
+};
+
+enum Centering
+{
+    Unknown = 0,
+    Seven,
+    Zero,
+};
+
 class InputFile
 {
 public:
     InputFile(QMenu* root, QAction* undo, QAction* redo);
 
+    QString getPath() { return m_filePath; }
+    FileStatus loadFile(QString path);
+    void closeFile();
+    Centering getCentering() { return m_fileCentering; }
+
 private:
 
-    std::string m_filePath;
-    std::vector<std::vector<int>> m_fileData;
+    QString m_filePath;
+    QVector<QVector<int>> m_fileData;
+    Centering m_fileCentering;
     bool m_tableViewLoaded;
-    std::stack<CellEditAction*> m_undoStack;
-    std::stack<CellEditAction*> m_redoStack;
+    QStack<CellEditAction> m_undoStack;
+    QStack<CellEditAction> m_redoStack;
     QTableView* pTableView;
     QMenu* pRootMenu;
     QAction* pUndoMenu;
     QAction* pRedoMenu;
+    int m_frameParseError;
+
+    bool valuesFormattedProperly(const QStringList& data);
+    bool valueRestrictionsAreMet(const QStringList& data);
+    int getSmallestAcceptedValue(int index, int value);
+    int getLargestAcceptedValue(int index, int value);
+    bool ableToDiscernCentering(int value);
+    void clearData();
+
+    const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
+    const static int DPAD_COL_IDX = 5;
 };
