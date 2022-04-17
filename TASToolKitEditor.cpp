@@ -1,13 +1,18 @@
 #include "TASToolKitEditor.h"
 
+#include <QFileDialog>
+
+#include <iostream>
+
 #define TABLE_VIEW_WIDTH 200
 #define TABLE_SIDE_PADDING 10
 #define DEFAULT_WINDOW_WIDTH ((TABLE_VIEW_WIDTH) + (2 * TABLE_SIDE_PADDING))
 #define DEFAULT_WINDOW_HEIGHT 500
 
+#define INVALID_IDX -1
+
 /*
  * TODO
- * - std::vector for inputs data
  * - figure out QTableView and how to specify vector as source
  */
 
@@ -16,11 +21,35 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 {
     setupUi();
     connectActions();
+    createInputFileInstances();
+}
+
+void TASToolKitEditor::createInputFileInstances()
+{
+    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer);
+    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost);
 }
 
 void TASToolKitEditor::connectActions()
 {
+    connect(actionOpenPlayer, &QAction::triggered, this, &TASToolKitEditor::onOpenPlayer);
+    connect(actionOpenGhost, &QAction::triggered, this, &TASToolKitEditor::onOpenGhost);
+}
 
+void TASToolKitEditor::onOpenPlayer()
+{
+    openFile(playerFile);
+}
+
+void TASToolKitEditor::onOpenGhost()
+{
+    openFile(ghostFile);
+}
+
+void TASToolKitEditor::openFile(InputFile* inputFile)
+{
+    QFileDialog* fileDialog = new QFileDialog(nullptr, "Open File", "", "*.csv");
+    fileDialog->exec();
 }
 
 void TASToolKitEditor::addMenuItems()
@@ -168,4 +197,34 @@ void TASToolKitEditor::setTitleShortcuts()
     actionClosePlayer->setShortcut(QString("Esc"));
     actionCloseGhost->setShortcut(QString("Shift+Esc"));
 #endif
+}
+
+InputFile::InputFile(QMenu* root, QAction* undo, QAction* redo)
+    : m_filePath("")
+    , m_tableViewLoaded(false)
+    , pTableView(nullptr)
+    , pRootMenu(root)
+    , pUndoMenu(undo)
+    , pRedoMenu(redo)
+{
+}
+
+CellEditAction::CellEditAction()
+    : m_rowIdx(INVALID_IDX)
+    , m_colIdx(INVALID_IDX)
+    , m_prev(0)
+    , m_cur(0)
+{
+}
+
+bool CellEditAction::operator==(const CellEditAction& rhs)
+{
+    return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
+}
+
+void CellEditAction::flipValues()
+{
+    int temp = m_cur;
+    m_cur = m_prev;
+    m_prev = temp;
 }
