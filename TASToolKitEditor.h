@@ -20,6 +20,8 @@
 
 #include <QtWidgets/QMainWindow>
 
+typedef QVector<QVector<QString>> TtkFileData;
+
 class InputFile;
 
 class TASToolKitEditor : public QMainWindow
@@ -71,6 +73,7 @@ private:
     void addGhostMenuItems();
     void createInputFileInstances();
     void showError(const QString& errTitle, const QString& errMsg);
+    void loadDataToTableView(InputFile* inputFile);
 
     void onOpenPlayer();
     void onOpenGhost();
@@ -101,7 +104,7 @@ enum class FileStatus
     Parse,
 };
 
-enum Centering
+enum class Centering
 {
     Unknown = 0,
     Seven,
@@ -111,17 +114,22 @@ enum Centering
 class InputFile
 {
 public:
-    InputFile(QMenu* root, QAction* undo, QAction* redo);
+    InputFile(QMenu* root, QAction* undo, QAction* redo, QTableView* tableView);
 
     QString getPath() { return m_filePath; }
+    TtkFileData getData() { return m_fileData; }
+    QString getCellValue(int rowIdx, int colIdx) { return m_fileData[rowIdx][colIdx]; }
+    void setCellValue(int rowIdx, int colIdx, QString value) { m_fileData[rowIdx][colIdx] = value; }
     FileStatus loadFile(QString path);
     void closeFile();
     Centering getCentering() { return m_fileCentering; }
+    void setTableView(QTableView* tableView) { pTableView = tableView; }
+    QTableView* getTableView() { return pTableView; }
 
 private:
 
     QString m_filePath;
-    QVector<QVector<int>> m_fileData;
+    TtkFileData m_fileData;
     Centering m_fileCentering;
     bool m_tableViewLoaded;
     QStack<CellEditAction> m_undoStack;
@@ -140,5 +148,20 @@ private:
     void clearData();
 
     const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
-    const static int DPAD_COL_IDX = 5;
+    const int DPAD_COL_IDX = 5;
+};
+
+class InputFileModel : public QAbstractTableModel
+{
+    Q_OBJECT
+public:
+    InputFileModel(InputFile* pFile, QObject* parent = nullptr);
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
+private:
+    InputFile* m_pFile;
 };

@@ -14,6 +14,7 @@
 #define INVALID_IDX -1
 
 #define NUM_INPUT_COLUMNS 6
+#define FRAMECOUNT_COLUMN 1
 
 /*
  * TODO
@@ -30,8 +31,8 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 
 void TASToolKitEditor::createInputFileInstances()
 {
-    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer);
-    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost);
+    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer, playerTableView);
+    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost, ghostTableView);
 }
 
 void TASToolKitEditor::connectActions()
@@ -75,6 +76,14 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
         action7Centered->setChecked(fileCentering == Centering::Seven);
         action0Centered->setChecked(fileCentering == Centering::Zero);
     }
+
+    loadDataToTableView(inputFile);
+}
+
+void TASToolKitEditor::loadDataToTableView(InputFile* inputFile)
+{
+    InputFileModel* pInputFileModel = new InputFileModel(inputFile);
+    inputFile->getTableView()->setModel(pInputFileModel);
 }
 
 void TASToolKitEditor::showError(const QString& errTitle, const QString& errMsg)
@@ -99,13 +108,13 @@ void TASToolKitEditor::addFileMenuItems()
     actionClosePlayer = new QAction(this);
     actionCloseGhost = new QAction(this);
     actionSwapFiles = new QAction(this);
-
+    action0Centered = new QAction(this);
+    action0Centered->setCheckable(true);
+    action7Centered = new QAction(this);
+    action7Centered->setCheckable(true);
     menuInputCentering = new QMenu(menuFile);
     menuInputCentering->addAction(action0Centered);
     menuInputCentering->addAction(action7Centered);
-
-    action0Centered = new QAction(this);
-    action7Centered = new QAction(this);
     actionScrollTogether = new QAction(this);
 
     menuFile->addAction(actionOpenPlayer);
@@ -229,11 +238,11 @@ void TASToolKitEditor::setTitleShortcuts()
 #endif
 }
 
-InputFile::InputFile(QMenu* root, QAction* undo, QAction* redo)
+InputFile::InputFile(QMenu* root, QAction* undo, QAction* redo, QTableView* tableView)
     : m_filePath("")
     , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)
-    , pTableView(nullptr)
+    , pTableView(tableView)
     , pRootMenu(root)
     , pUndoMenu(undo)
     , pRedoMenu(redo)
@@ -262,7 +271,11 @@ FileStatus InputFile::loadFile(QString path)
             clearData();
             return FileStatus::Parse;
         }
+
+        m_fileData.append(frameData.toVector());
     }
+
+    return FileStatus::Success;
 }
 
 void InputFile::clearData()
@@ -365,4 +378,67 @@ void CellEditAction::flipValues()
     int temp = m_cur;
     m_cur = m_prev;
     m_prev = temp;
+}
+
+InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
+    : QAbstractTableModel(parent)
+    , m_pFile(pFile)
+{
+}
+
+int InputFileModel::rowCount(const QModelIndex& /*parent*/) const
+{
+    return m_pFile->getData().count();
+}
+
+int InputFileModel::columnCount(const QModelIndex& /*parent*/) const
+{
+    return NUM_INPUT_COLUMNS + FRAMECOUNT_COLUMN;
+}
+
+QVariant InputFileModel::data(const QModelIndex& index, int role) const
+{
+    if (role == Qt::DisplayRole)
+        return m_pFile->getCellValue(index.row(), index.column());
+
+    return QVariant();
+}
+
+QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
+    {
+        switch (section)
+        {
+        case 0:
+            return QString("Framecount");
+        case 1:
+            return QString("A");
+        case 2:
+            return QString("B");
+        case 3:
+            return QString("L");
+        case 4:
+            return QString("LR");
+        case 5:
+            return QString("UD");
+        case 6:
+            return QString("DPad");
+        }
+    }
+
+    return QVariant();
+}
+
+bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, int role)
+{
+    if (role == Qt::EditRole) {
+        if (!checkIndex(index))
+            return false;
+
+        m_pFile->setCellValue(index.row(), index.column(), value.toString());
+        return true;
+    }
+
+    return false;
 }
