@@ -109,7 +109,10 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     pInputFile->getLabel()->setVisible(true);
 
     if (m_filesLoaded == 2)
+    {
         actionSwapFiles->setEnabled(true);
+        resize(width() * 2, height());
+    }
 }
 
 void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
