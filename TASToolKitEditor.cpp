@@ -116,7 +116,8 @@ void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
 void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
 {
     pTable->setMinimumWidth(20);
-    pTable->setColumnWidth(0, 40);
+    pTable->setColumnWidth(0, 10);
+    pTable->setItemDelegateForColumn(0, new BackgroundBrushDelegate(QBrush(Qt::gray), pTable));
     for (int i = 1; i < NUM_INPUT_COLUMNS; i++)
         pTable->setColumnWidth(i, 20);
 
