@@ -98,7 +98,6 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     m_filesLoaded++;
 
     adjustUiOnFileLoad(inputFile);
-    inputFile->getTableView()->setVisible(true);
 }
 
 void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
@@ -106,6 +105,8 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     adjustInputCenteringMenu(pInputFile);
     pInputFile->getMenus().root->menuAction()->setVisible(true);
     pInputFile->getMenus().close->setEnabled(true);
+    pInputFile->getTableView()->setVisible(true);
+    pInputFile->getLabel()->setVisible(true);
 
     if (m_filesLoaded == 2)
         actionSwapFiles->setEnabled(true);
@@ -203,12 +204,14 @@ void TASToolKitEditor::setupUi()
     addMenuItems();
 
     centralWidget = new QWidget(this);
+    
     horizontalLayoutWidget = new QWidget(centralWidget);
-    horizontalLayoutWidget->setGeometry(QRect(TABLE_SIDE_PADDING, TABLE_SIDE_PADDING, (TABLE_VIEW_WIDTH * 2) + TABLE_SIDE_PADDING, DEFAULT_WINDOW_HEIGHT - (2 * TABLE_SIDE_PADDING)));
     mainHorizLayout = new QHBoxLayout(horizontalLayoutWidget);
     mainHorizLayout->setSpacing(TABLE_SIDE_PADDING);
     mainHorizLayout->setContentsMargins(11, 11, 11, 11);
-    mainHorizLayout->setContentsMargins(0, 0, 0, 0);
+   
+    centralWidget->setLayout(mainHorizLayout);
+
     playerVLayout = new QVBoxLayout();
     playerVLayout->setSpacing(6);
     playerLabel = new QLabel(horizontalLayoutWidget);

@@ -74,6 +74,7 @@ public:
     void setTableView(QTableView* tableView) { pTableView = tableView; }
     QTableView* getTableView() { return pTableView; }
     const InputFileMenus& getMenus() { return m_menus; }
+    QLabel* getLabel() { return pLabel; }
 
 private:
 
