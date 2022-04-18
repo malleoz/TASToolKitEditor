@@ -19,8 +19,13 @@ int InputFileModel::columnCount(const QModelIndex& /*parent*/) const
 QVariant InputFileModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole)
-        return m_pFile->getCellValue(index.row(), index.column());
+    {
+        if (index.column() == 0)
+            return QString::number(index.row() + 1);
 
+        return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+    }
+        
     return QVariant();
 }
 

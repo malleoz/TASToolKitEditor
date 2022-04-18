@@ -13,16 +13,7 @@
 #define TABLE_SIDE_PADDING 10
 #define DEFAULT_WINDOW_WIDTH ((TABLE_VIEW_WIDTH) + (2 * TABLE_SIDE_PADDING))
 #define DEFAULT_WINDOW_HEIGHT 500
-
-#define INVALID_IDX -1
-
-#define NUM_INPUT_COLUMNS 6
-#define FRAMECOUNT_COLUMN 1
-
-/*
- * TODO
- * - figure out QTableView and how to specify vector as source
- */
+#define DEFAULT_TABLE_COL_WIDTH 30
 
 TASToolKitEditor::TASToolKitEditor(QWidget *parent)
     : QMainWindow(parent)
