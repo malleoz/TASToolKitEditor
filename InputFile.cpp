@@ -28,15 +28,12 @@ void CellEditAction::flipValues()
     m_prev = temp;
 }
 
-InputFile::InputFile(QMenu* root, QAction* undo, QAction* redo, QAction* close, QTableView* tableView)
+InputFile::InputFile(const InputFileMenus& menus, QTableView* tableView)
     : m_filePath("")
     , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)
     , pTableView(tableView)
-    , pRootMenu(root)
-    , pUndoMenu(undo)
-    , pRedoMenu(redo)
-    , pCloseMenu(close)
+    , m_menus(menus)
     , m_frameParseError(INVALID_IDX)
 {
 }

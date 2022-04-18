@@ -25,8 +25,10 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 
 void TASToolKitEditor::createInputFileInstances()
 {
-    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer, playerTableView);
-    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost, ghostTableView);
+    InputFileMenus playerMenus = InputFileMenus(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer);
+    InputFileMenus ghostMenus = InputFileMenus(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost);
+    playerFile = new InputFile(playerMenus, playerTableView);
+    ghostFile = new InputFile(ghostMenus, ghostTableView);
 }
 
 void TASToolKitEditor::connectActions()
@@ -80,8 +82,8 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
 void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
 {
     adjustInputCenteringMenu(pInputFile);
-    pInputFile->getRootMenu()->menuAction()->setVisible(true);
-    pInputFile->getCloseMenu()->setEnabled(true);
+    pInputFile->getMenus().root->menuAction()->setVisible(true);
+    pInputFile->getMenus().close->setEnabled(true);
 
     if (m_filesLoaded == 2)
         actionSwapFiles->setEnabled(true);

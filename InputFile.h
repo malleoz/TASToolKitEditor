@@ -41,11 +41,27 @@ class QAction;
 class QMenu;
 class QTableView;
 
+struct InputFileMenus
+{
+    InputFileMenus(QMenu* root, QAction* undo, QAction* redo, QAction* close)
+        : root(root)
+        , undo(undo)
+        , redo(redo)
+        , close(close)
+    {
+    }
+
+    QMenu* root;
+    QAction* undo;
+    QAction* redo;
+    QAction* close;
+};
+
 
 class InputFile
 {
 public:
-    InputFile(QMenu* root, QAction* undo, QAction* redo, QAction* close, QTableView* tableView);
+    InputFile(const InputFileMenus& menus, QTableView* tableView);
 
     QString getPath() { return m_filePath; }
     TtkFileData getData() { return m_fileData; }
@@ -56,8 +72,7 @@ public:
     Centering getCentering() { return m_fileCentering; }
     void setTableView(QTableView* tableView) { pTableView = tableView; }
     QTableView* getTableView() { return pTableView; }
-    QMenu* getRootMenu() { return pRootMenu; }
-    QAction* getCloseMenu() { return pCloseMenu; }
+    const InputFileMenus& getMenus() { return m_menus; }
 
 private:
 
@@ -68,10 +83,7 @@ private:
     QStack<CellEditAction> m_undoStack;
     QStack<CellEditAction> m_redoStack;
     QTableView* pTableView;
-    QMenu* pRootMenu;
-    QAction* pUndoMenu;
-    QAction* pRedoMenu;
-    QAction* pCloseMenu;
+    InputFileMenus m_menus;
     int m_frameParseError;
 
     bool valuesFormattedProperly(const QStringList& data);
