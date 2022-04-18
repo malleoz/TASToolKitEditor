@@ -72,6 +72,11 @@ private:
     void createInputFileInstances();
     void showError(const QString& errTitle, const QString& errMsg);
     void loadDataToTableView(InputFile* inputFile);
+    bool userClosedPreviousFile(InputFile* inputFile);
+    void adjustInputCenteringMenu(InputFile* inputFile);
+    void setModel(InputFile* inputFile);
+    void setTableViewSettings(QTableView* pTable);
+    void adjustUiOnFileLoad(InputFile* pInputFile);
 
     void onOpenPlayer();
     void onOpenGhost();

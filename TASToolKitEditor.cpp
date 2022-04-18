@@ -45,39 +45,70 @@ void TASToolKitEditor::onOpenGhost()
     openFile(ghostFile);
 }
 
+bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
+{
+    // Have user confirm they want to close file
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?",
+        QMessageBox::No | QMessageBox::Yes);
+
+    if (reply != QMessageBox::Yes)
+        return false;
+
+    inputFile->closeFile();
+    return true;
+}
+
 void TASToolKitEditor::openFile(InputFile* inputFile)
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
 
-    if (inputFile->getPath() != "")
-    {
-        // Have user confirm they want to close file
-        QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?", QMessageBox::No | QMessageBox::Yes);
-
-        if (reply != QMessageBox::Yes)
-            return;
-
-        inputFile->closeFile();
-    }
+    if (inputFile->getPath() != "" && !userClosedPreviousFile(inputFile))
+        return;
     
     FileStatus status = inputFile->loadFile(filePath);
 
-    if (status == FileStatus::Success)
-    {
-        Centering fileCentering = inputFile->getCentering();
+    if (status != FileStatus::Success)
+        return;
 
-        action7Centered->setChecked(fileCentering == Centering::Seven);
-        action0Centered->setChecked(fileCentering == Centering::Zero);
-    }
-
+    adjustUiOnFileLoad(inputFile);
     loadDataToTableView(inputFile);
+}
+
+void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
+{
+    adjustInputCenteringMenu(pInputFile);
+    pInputFile->getRootMenu()->menuAction()->setVisible(true);
+}
+
+void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
+{
+    Centering fileCentering = inputFile->getCentering();
+    action7Centered->setChecked(fileCentering == Centering::Seven);
+    action0Centered->setChecked(fileCentering == Centering::Zero);
+}
+
+void TASToolKitEditor::setModel(InputFile* inputFile)
+{
+    QTableView* pTable = inputFile->getTableView();
+    InputFileModel* pInputFileModel = new InputFileModel(inputFile);
+    pTable->setModel(pInputFileModel);
+}
+
+void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
+{
+    pTable->setMinimumWidth(20);
+    pTable->setColumnWidth(0, 40);
+    for (int i = 1; i < NUM_INPUT_COLUMNS; i++)
+        pTable->setColumnWidth(i, 20);
+
+    pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 }
 
 void TASToolKitEditor::loadDataToTableView(InputFile* inputFile)
 {
-    InputFileModel* pInputFileModel = new InputFileModel(inputFile);
-    inputFile->getTableView()->setModel(pInputFileModel);
+    setModel(inputFile);
+    setTableViewSettings(inputFile->getTableView());
 }
 
 void TASToolKitEditor::showError(const QString& errTitle, const QString& errMsg)
@@ -100,17 +131,22 @@ void TASToolKitEditor::addFileMenuItems()
     actionOpenPlayer = new QAction(this);
     actionOpenGhost = new QAction(this);
     actionClosePlayer = new QAction(this);
+    actionClosePlayer->setEnabled(false);
     actionCloseGhost = new QAction(this);
-    actionSwapFiles = new QAction(this);
+    actionCloseGhost->setEnabled(false);
     action0Centered = new QAction(this);
     action0Centered->setCheckable(true);
+    action0Centered->setEnabled(false);
     action7Centered = new QAction(this);
     action7Centered->setCheckable(true);
+    action7Centered->setEnabled(false);
     menuInputCentering = new QMenu(menuFile);
     menuInputCentering->addAction(action0Centered);
     menuInputCentering->addAction(action7Centered);
+    actionSwapFiles = new QAction(this);
+    actionSwapFiles->setEnabled(false);
     actionScrollTogether = new QAction(this);
-
+    actionScrollTogether->setEnabled(false);
     menuFile->addAction(actionOpenPlayer);
     menuFile->addAction(actionOpenGhost);
     menuFile->addAction(actionClosePlayer);
@@ -118,31 +154,28 @@ void TASToolKitEditor::addFileMenuItems()
     menuFile->addAction(menuInputCentering->menuAction());
     menuFile->addAction(actionSwapFiles);
     menuFile->addAction(actionScrollTogether);
-
     menuBar->addAction(menuFile->menuAction());
 }
 
 void TASToolKitEditor::addPlayerMenuItems()
 {
     menuPlayer = new QMenu(menuBar);
+    menuPlayer->menuAction()->setVisible(false);
     actionUndoPlayer = new QAction(this);
     actionRedoPlayer = new QAction(this);
-
     menuPlayer->addAction(actionUndoPlayer);
     menuPlayer->addAction(actionRedoPlayer);
-
     menuBar->addAction(menuPlayer->menuAction());
 }
 
 void TASToolKitEditor::addGhostMenuItems()
 {
     menuGhost = new QMenu(menuBar);
+    menuGhost->menuAction()->setVisible(false);
     actionUndoGhost = new QAction(this);
     actionRedoGhost = new QAction(this);
-
     menuGhost->addAction(actionUndoGhost);
     menuGhost->addAction(actionRedoGhost);
-
     menuBar->addAction(menuGhost->menuAction());
 }
 

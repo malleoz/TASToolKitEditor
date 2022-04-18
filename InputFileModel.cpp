@@ -36,7 +36,7 @@ QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, in
         switch (section)
         {
         case 0:
-            return QString("Framecount");
+            return QString("Frame");
         case 1:
             return QString("A");
         case 2:

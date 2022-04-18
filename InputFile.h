@@ -56,6 +56,7 @@ public:
     Centering getCentering() { return m_fileCentering; }
     void setTableView(QTableView* tableView) { pTableView = tableView; }
     QTableView* getTableView() { return pTableView; }
+    QMenu* getRootMenu() { return pRootMenu; }
 
 private:
 
