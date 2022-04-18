@@ -2,6 +2,7 @@
 
 #include <QAction>
 #include <QFile>
+#include <QLabel>
 #include <QMenu>
 #include <QTableView>
 #include <QTextStream>
@@ -28,12 +29,13 @@ void CellEditAction::flipValues()
     m_prev = temp;
 }
 
-InputFile::InputFile(const InputFileMenus& menus, QTableView* tableView)
+InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView)
     : m_filePath("")
     , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)
     , pTableView(tableView)
     , m_menus(menus)
+    , pLabel(label)
     , m_frameParseError(INVALID_IDX)
 {
 }
@@ -145,5 +147,7 @@ bool InputFile::ableToDiscernCentering(int value)
 
 void InputFile::closeFile()
 {
-
+    clearData();
+    pLabel->setVisible(false);
+    pTableView->setVisible(false);
 }

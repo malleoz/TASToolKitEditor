@@ -38,6 +38,7 @@ private:
 typedef QVector<QVector<QString>> TtkFileData;
 
 class QAction;
+class QLabel;
 class QMenu;
 class QTableView;
 
@@ -61,7 +62,7 @@ struct InputFileMenus
 class InputFile
 {
 public:
-    InputFile(const InputFileMenus& menus, QTableView* tableView);
+    InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView);
 
     QString getPath() { return m_filePath; }
     TtkFileData getData() { return m_fileData; }
@@ -83,6 +84,7 @@ private:
     QStack<CellEditAction> m_undoStack;
     QStack<CellEditAction> m_redoStack;
     QTableView* pTableView;
+    QLabel* pLabel;
     InputFileMenus m_menus;
     int m_frameParseError;
 

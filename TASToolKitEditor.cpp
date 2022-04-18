@@ -37,8 +37,8 @@ void TASToolKitEditor::createInputFileInstances()
 {
     InputFileMenus playerMenus = InputFileMenus(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer);
     InputFileMenus ghostMenus = InputFileMenus(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost);
-    playerFile = new InputFile(playerMenus, playerTableView);
-    ghostFile = new InputFile(ghostMenus, ghostTableView);
+    playerFile = new InputFile(playerMenus, playerLabel, playerTableView);
+    ghostFile = new InputFile(ghostMenus, ghostLabel, ghostTableView);
 }
 
 void TASToolKitEditor::connectActions()
@@ -61,17 +61,12 @@ void TASToolKitEditor::onOpenGhost()
 
 void TASToolKitEditor::onClosePlayer()
 {
-    closeFile(playerFile);
+    playerFile->closeFile();
 }
 
 void TASToolKitEditor::onCloseGhost()
 {
-    closeFile(ghostFile);
-}
-
-void TASToolKitEditor::closeFile(InputFile* pInputFile)
-{
-    QMessageBox::warning(this, "SUS", "You have vented!");
+    ghostFile->closeFile();
 }
 
 bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
