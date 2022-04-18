@@ -20,17 +20,7 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 {
     setupUi();
     createInputFileInstances();
-    finishSettingUpTableViews();
     connectActions();
-}
-
-void TASToolKitEditor::finishSettingUpTableViews()
-{
-    playerTableView->setModel(new InputFileModel(playerFile));
-    setTableViewSettings(playerTableView);
-
-    ghostTableView->setModel(new InputFileModel(ghostFile));
-    setTableViewSettings(ghostTableView);
 }
 
 void TASToolKitEditor::createInputFileInstances()
@@ -105,6 +95,7 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     adjustInputCenteringMenu(pInputFile);
     pInputFile->getMenus().root->menuAction()->setVisible(true);
     pInputFile->getMenus().close->setEnabled(true);
+    pInputFile->getTableView()->setModel(new InputFileModel(pInputFile));
     pInputFile->getTableView()->setVisible(true);
     pInputFile->getLabel()->setVisible(true);
 
@@ -222,6 +213,7 @@ void TASToolKitEditor::setupUi()
     playerVLayout->addWidget(playerLabel);
 
     playerTableView = new QTableView(horizontalLayoutWidget);
+    setTableViewSettings(playerTableView);
 
     playerVLayout->addWidget(playerTableView);
 
@@ -238,6 +230,7 @@ void TASToolKitEditor::setupUi()
     ghostTableView = new QTableView(horizontalLayoutWidget);
 
     ghostVLayout->addWidget(ghostTableView);
+    setTableViewSettings(ghostTableView);
 
 
     mainHorizLayout->addLayout(ghostVLayout);

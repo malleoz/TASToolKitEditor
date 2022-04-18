@@ -63,7 +63,6 @@ private:
     int m_filesLoaded;
 
     void setupUi();
-    void finishSettingUpTableViews();
     void setTitles();
     void setTitleNames();
     void setTitleShortcuts();
