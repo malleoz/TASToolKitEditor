@@ -63,6 +63,7 @@ private:
     int m_filesLoaded;
 
     void setupUi();
+    void finishSettingUpTableViews();
     void setTitles();
     void setTitleNames();
     void setTitleShortcuts();
@@ -73,15 +74,15 @@ private:
     void addGhostMenuItems();
     void createInputFileInstances();
     void showError(const QString& errTitle, const QString& errMsg);
-    void loadDataToTableView(InputFile* inputFile);
     bool userClosedPreviousFile(InputFile* inputFile);
     void adjustInputCenteringMenu(InputFile* inputFile);
-    void setModel(InputFile* inputFile);
     void setTableViewSettings(QTableView* pTable);
     void adjustUiOnFileLoad(InputFile* pInputFile);
 
     void onOpenPlayer();
     void onOpenGhost();
     void openFile(InputFile* inputFile);
-
+    void onClosePlayer();
+    void onCloseGhost();
+    void closeFile(InputFile* pInputFile);
 };

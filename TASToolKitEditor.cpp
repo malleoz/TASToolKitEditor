@@ -19,8 +19,18 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi();
-    connectActions();
     createInputFileInstances();
+    finishSettingUpTableViews();
+    connectActions();
+}
+
+void TASToolKitEditor::finishSettingUpTableViews()
+{
+    playerTableView->setModel(new InputFileModel(playerFile));
+    setTableViewSettings(playerTableView);
+
+    ghostTableView->setModel(new InputFileModel(ghostFile));
+    setTableViewSettings(ghostTableView);
 }
 
 void TASToolKitEditor::createInputFileInstances()
@@ -35,6 +45,8 @@ void TASToolKitEditor::connectActions()
 {
     connect(actionOpenPlayer, &QAction::triggered, this, &TASToolKitEditor::onOpenPlayer);
     connect(actionOpenGhost, &QAction::triggered, this, &TASToolKitEditor::onOpenGhost);
+    connect(actionClosePlayer, &QAction::triggered, this, &TASToolKitEditor::onClosePlayer);
+    connect(actionCloseGhost, &QAction::triggered, this, &TASToolKitEditor::onCloseGhost);
 }
 
 void TASToolKitEditor::onOpenPlayer()
@@ -45,6 +57,21 @@ void TASToolKitEditor::onOpenPlayer()
 void TASToolKitEditor::onOpenGhost()
 {
     openFile(ghostFile);
+}
+
+void TASToolKitEditor::onClosePlayer()
+{
+    closeFile(playerFile);
+}
+
+void TASToolKitEditor::onCloseGhost()
+{
+    closeFile(ghostFile);
+}
+
+void TASToolKitEditor::closeFile(InputFile* pInputFile)
+{
+    QMessageBox::warning(this, "SUS", "You have vented!");
 }
 
 bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
@@ -76,7 +103,7 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     m_filesLoaded++;
 
     adjustUiOnFileLoad(inputFile);
-    loadDataToTableView(inputFile);
+    inputFile->getTableView()->setVisible(true);
 }
 
 void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
@@ -96,13 +123,6 @@ void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
     action0Centered->setChecked(fileCentering == Centering::Zero);
 }
 
-void TASToolKitEditor::setModel(InputFile* inputFile)
-{
-    QTableView* pTable = inputFile->getTableView();
-    InputFileModel* pInputFileModel = new InputFileModel(inputFile);
-    pTable->setModel(pInputFileModel);
-}
-
 void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
 {
     pTable->setMinimumWidth(20);
@@ -111,12 +131,7 @@ void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
         pTable->setColumnWidth(i, 20);
 
     pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-}
-
-void TASToolKitEditor::loadDataToTableView(InputFile* inputFile)
-{
-    setModel(inputFile);
-    setTableViewSettings(inputFile->getTableView());
+    pTable->setVisible(false);
 }
 
 void TASToolKitEditor::showError(const QString& errTitle, const QString& errMsg)
@@ -202,7 +217,7 @@ void TASToolKitEditor::setupUi()
     playerVLayout = new QVBoxLayout();
     playerVLayout->setSpacing(6);
     playerLabel = new QLabel(horizontalLayoutWidget);
-
+    playerLabel->setVisible(false);
     playerVLayout->addWidget(playerLabel);
 
     playerTableView = new QTableView(horizontalLayoutWidget);
@@ -210,12 +225,13 @@ void TASToolKitEditor::setupUi()
     playerVLayout->addWidget(playerTableView);
 
 
+
     mainHorizLayout->addLayout(playerVLayout);
 
     ghostVLayout = new QVBoxLayout();
     ghostVLayout->setSpacing(6);
     ghostLabel = new QLabel(horizontalLayoutWidget);
-
+    ghostLabel->setVisible(false);
     ghostVLayout->addWidget(ghostLabel);
 
     ghostTableView = new QTableView(horizontalLayoutWidget);
