@@ -25,8 +25,8 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 
 void TASToolKitEditor::createInputFileInstances()
 {
-    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer, playerTableView);
-    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost, ghostTableView);
+    playerFile = new InputFile(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer, playerTableView);
+    ghostFile = new InputFile(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost, ghostTableView);
 }
 
 void TASToolKitEditor::connectActions()
@@ -71,6 +71,8 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     if (status != FileStatus::Success)
         return;
 
+    m_filesLoaded++;
+
     adjustUiOnFileLoad(inputFile);
     loadDataToTableView(inputFile);
 }
@@ -79,6 +81,10 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
 {
     adjustInputCenteringMenu(pInputFile);
     pInputFile->getRootMenu()->menuAction()->setVisible(true);
+    pInputFile->getCloseMenu()->setEnabled(true);
+
+    if (m_filesLoaded == 2)
+        actionSwapFiles->setEnabled(true);
 }
 
 void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
@@ -218,6 +224,8 @@ void TASToolKitEditor::setupUi()
     mainHorizLayout->addLayout(ghostVLayout);
 
     setCentralWidget(centralWidget);
+
+    m_filesLoaded = 0;
 
     setTitles();
 }

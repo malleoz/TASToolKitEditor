@@ -60,6 +60,8 @@ private:
     InputFile* playerFile;
     InputFile* ghostFile;
 
+    int m_filesLoaded;
+
     void setupUi();
     void setTitles();
     void setTitleNames();

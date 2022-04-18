@@ -45,7 +45,7 @@ class QTableView;
 class InputFile
 {
 public:
-    InputFile(QMenu* root, QAction* undo, QAction* redo, QTableView* tableView);
+    InputFile(QMenu* root, QAction* undo, QAction* redo, QAction* close, QTableView* tableView);
 
     QString getPath() { return m_filePath; }
     TtkFileData getData() { return m_fileData; }
@@ -57,6 +57,7 @@ public:
     void setTableView(QTableView* tableView) { pTableView = tableView; }
     QTableView* getTableView() { return pTableView; }
     QMenu* getRootMenu() { return pRootMenu; }
+    QAction* getCloseMenu() { return pCloseMenu; }
 
 private:
 
@@ -70,6 +71,7 @@ private:
     QMenu* pRootMenu;
     QAction* pUndoMenu;
     QAction* pRedoMenu;
+    QAction* pCloseMenu;
     int m_frameParseError;
 
     bool valuesFormattedProperly(const QStringList& data);
