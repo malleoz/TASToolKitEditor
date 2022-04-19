@@ -3,7 +3,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <QAction>
 #include <QBrush>
+#include <QTableView>
 
 InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
@@ -81,13 +83,46 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         if (!(m_pFile->inputValid(index, value.toInt())))
             return false;
 
+        QString prevValue = m_pFile->getCellValue(index.row(), index.column());
         setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
+        addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, value.toString()));
         writeFileOnDisk();
 
         return true;
     }
 
     return false;
+}
+
+void InputFileModel::updateActionMenus()
+{
+    m_pFile->getMenus().undo->setEnabled(m_pFile->getUndoStack()->count() > 0);
+    m_pFile->getMenus().redo->setEnabled(m_pFile->getRedoStack()->count() > 0);
+}
+
+void InputFileModel::addToStack(CellEditAction action)
+{
+    if (m_pFile->getRedoStack()->count() > 0)
+        addToStackWithNonEmptyRedo(action);
+    else
+        m_pFile->getUndoStack()->append(action);
+    
+    updateActionMenus();
+}
+
+void InputFileModel::addToStackWithNonEmptyRedo(CellEditAction action)
+{
+    CellEditAction redoTop = m_pFile->getRedoStack()->top();
+    redoTop.flipValues();
+
+    // Scenario 1: user performs same action as in top of redo stack
+    if (action == redoTop)
+        m_pFile->getRedoStack()->pop();
+    // Scenario 2: user performs action not in redo stack, so clear it first
+    else
+        m_pFile->getRedoStack()->clear();
+
+    m_pFile->getUndoStack()->push(action);
 }
 
 void InputFileModel::setCachedFileData(int rowIdx, int colIdx, QString val)

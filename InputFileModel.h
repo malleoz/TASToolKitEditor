@@ -19,6 +19,9 @@ public:
 private:
     void inline setCachedFileData(int rowIdx, int colIdx, QString val);
     void writeFileOnDisk();
+    void addToStack(CellEditAction action);
+    void addToStackWithNonEmptyRedo(CellEditAction action);
+    void updateActionMenus();
 
     InputFile* m_pFile;
 };

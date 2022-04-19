@@ -39,6 +39,67 @@ void TASToolKitEditor::connectActions()
     connect(actionOpenGhost, &QAction::triggered, this, &TASToolKitEditor::onOpenGhost);
     connect(actionClosePlayer, &QAction::triggered, this, &TASToolKitEditor::onClosePlayer);
     connect(actionCloseGhost, &QAction::triggered, this, &TASToolKitEditor::onCloseGhost);
+    connect(actionUndoPlayer, &QAction::triggered, this, &TASToolKitEditor::onUndoPlayer);
+    connect(actionUndoGhost, &QAction::triggered, this, &TASToolKitEditor::onUndoGhost);
+    connect(actionRedoPlayer, &QAction::triggered, this, &TASToolKitEditor::onRedoPlayer);
+    connect(actionRedoGhost, &QAction::triggered, this, &TASToolKitEditor::onRedoGhost);
+}
+
+void TASToolKitEditor::onUndoPlayer()
+{
+    onUndoRedo(playerFile, EOperationType::Undo);
+}
+
+void TASToolKitEditor::onUndoGhost()
+{
+    onUndoRedo(ghostFile, EOperationType::Undo);
+}
+
+void TASToolKitEditor::onRedoPlayer()
+{
+    onUndoRedo(playerFile, EOperationType::Redo);
+}
+
+void TASToolKitEditor::onRedoGhost()
+{
+    onUndoRedo(ghostFile, EOperationType::Redo);
+}
+
+void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
+{
+    bool bUndo = opType == EOperationType::Undo;
+
+    TtkStack* undoStack = pInputFile->getUndoStack();
+    TtkStack* redoStack = pInputFile->getRedoStack();
+
+    // Refuse operation if the associated stack is empty
+    if (bUndo && undoStack->count() == 0)
+        return;
+    if (!bUndo && redoStack->count() == 0)
+        return;
+
+    CellEditAction action = bUndo ? undoStack->pop() : redoStack->pop();
+    action.flipValues();
+
+    if (bUndo)
+        redoStack->push(action);
+    else
+        undoStack->push(action);
+
+    pInputFile->setCellValue(action.row(), action.col(), action.curVal());
+    emit pInputFile->getTableView()->model()->layoutChanged();
+
+    // Adjust menu items
+    pInputFile->getMenus().redo->setEnabled(redoStack->count() > 0);
+    pInputFile->getMenus().undo->setEnabled(undoStack->count() > 0);
+
+    // Move tableview to the row that was just modified
+    // Determine if the row is visible on-screen right now
+    int rowUpper = pInputFile->getTableView()->rowAt(0);
+    int rowLower = pInputFile->getTableView()->rowAt(pInputFile->getTableView()->height());
+
+    if (action.row() < rowUpper || action.row() > rowLower)
+        pInputFile->getTableView()->scrollTo(pInputFile->getTableView()->model()->index(action.row(), 0));
 }
 
 void TASToolKitEditor::onOpenPlayer()
@@ -101,6 +162,11 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     {
         showError("Error Opening File", "This program does not have sufficient permissions to modify the file.\n\n" \
             "Try running this program in administrator mode and make sure the file is not open in another program.");
+        return;
+    }
+    if (status == FileStatus::Parse)
+    {
+        showError("Error Parsing File", QString("There is an issue with the file on line %1.\n").arg(inputFile->getParseError()));
         return;
     }
 
@@ -214,7 +280,9 @@ void TASToolKitEditor::addPlayerMenuItems()
     menuPlayer = new QMenu(menuBar);
     menuPlayer->menuAction()->setVisible(false);
     actionUndoPlayer = new QAction(this);
+    actionUndoPlayer->setEnabled(false);
     actionRedoPlayer = new QAction(this);
+    actionRedoPlayer->setEnabled(false);
     action0CenteredPlayer = new QAction(this);
     action0CenteredPlayer->setCheckable(true);
     action7CenteredPlayer = new QAction(this);
@@ -233,8 +301,9 @@ void TASToolKitEditor::addGhostMenuItems()
     menuGhost = new QMenu(menuBar);
     menuGhost->menuAction()->setVisible(false);
     actionUndoGhost = new QAction(this);
+    actionUndoGhost->setEnabled(false);
     actionRedoGhost = new QAction(this);
-
+    actionRedoGhost->setEnabled(false);
     action0CenteredGhost = new QAction(this);
     action0CenteredGhost->setCheckable(true);
     action7CenteredGhost = new QAction(this);

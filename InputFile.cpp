@@ -12,21 +12,22 @@
 CellEditAction::CellEditAction()
     : m_rowIdx(INVALID_IDX)
     , m_colIdx(INVALID_IDX)
-    , m_prev(0)
-    , m_cur(0)
+    , m_prev("")
+    , m_cur("")
+{
+}
+
+CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
+    : m_rowIdx(row)
+    , m_colIdx(col)
+    , m_prev(prev)
+    , m_cur(cur)
 {
 }
 
 bool CellEditAction::operator==(const CellEditAction& rhs)
 {
     return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
-}
-
-void CellEditAction::flipValues()
-{
-    int temp = m_cur;
-    m_cur = m_prev;
-    m_prev = temp;
 }
 
 InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView)
@@ -57,7 +58,7 @@ FileStatus InputFile::loadFile(QString path)
 
         if (!valuesFormattedProperly(frameData))
         {
-            m_frameParseError = m_fileData.count();
+            m_frameParseError = m_fileData.count() + 1;
             clearData();
             return FileStatus::Parse;
         }

@@ -22,6 +22,7 @@
 #include <QtWidgets/QMainWindow>
 
 class InputFile;
+enum class EOperationType;
 
 class TASToolKitEditor : public QMainWindow
 {
@@ -84,10 +85,15 @@ private:
     void adjustUiOnFileClose(InputFile* pInputFile);
     void adjustMenuOnClose(InputFile* inputFile);
 
-    void onOpenPlayer();
-    void onOpenGhost();
+    inline void onOpenPlayer();
+    inline void onOpenGhost();
     void openFile(InputFile* inputFile);
-    void onClosePlayer();
-    void onCloseGhost();
+    inline void onClosePlayer();
+    inline void onCloseGhost();
     void closeFile(InputFile* pInputFile);
+    inline void onUndoPlayer();
+    inline void onUndoGhost();
+    inline void onRedoPlayer();
+    inline void onRedoGhost();
+    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
 };

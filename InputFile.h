@@ -23,19 +23,35 @@ class CellEditAction
 {
 public:
     CellEditAction();
+    CellEditAction(int row, int col, QString prev, QString cur);
 
     bool operator==(const CellEditAction& rhs);
+    inline void flipValues()
+    {
+        QString temp = m_cur;
+        m_cur = m_prev;
+        m_prev = temp;
+    }
+    inline int row() { return m_rowIdx; }
+    inline int col() { return m_colIdx; }
+    inline QString curVal() { return m_cur; }
 
 private:
     int m_rowIdx;
     int m_colIdx;
-    int m_prev;
-    int m_cur;
+    QString m_prev;
+    QString m_cur;
+};
 
-    void flipValues();
+enum class EOperationType
+{
+    Normal = 0,
+    Undo,
+    Redo,
 };
 
 typedef QVector<QVector<QString>> TtkFileData;
+typedef QStack<CellEditAction> TtkStack;
 
 class QAction;
 class QLabel;
@@ -82,6 +98,9 @@ public:
     const inline InputFileMenus& getMenus() { return m_menus; }
     inline QLabel* getLabel() { return pLabel; }
     bool inputValid(const QModelIndex& index, int value);
+    inline int getParseError() { return m_frameParseError; }
+    inline QStack<CellEditAction>* getUndoStack() { return &m_undoStack; }
+    inline QStack<CellEditAction>* getRedoStack() { return &m_redoStack; }
 
 private:
 
