@@ -1,11 +1,19 @@
 #include "InputFileModel.h"
 
+#include <iostream>
+#include <fstream>
+
 #include <QBrush>
 
 InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
     , m_pFile(pFile)
 {
+}
+
+Qt::ItemFlags InputFileModel::flags(const QModelIndex& index) const
+{
+    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 }
 
 int InputFileModel::rowCount(const QModelIndex& /*parent*/) const
@@ -70,9 +78,44 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         if (!checkIndex(index))
             return false;
 
-        m_pFile->setCellValue(index.row(), index.column(), value.toString());
+        setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
+        writeFileOnDisk();
+
         return true;
     }
 
     return false;
+}
+
+void InputFileModel::setCachedFileData(int rowIdx, int colIdx, QString val)
+{
+    m_pFile->setCellValue(rowIdx, colIdx, val);
+    assert(m_pFile->getCellValue(rowIdx, colIdx) == val);
+}
+
+void InputFileModel::writeFileOnDisk()
+{
+    std::ofstream file;
+    file.open(m_pFile->getPath().toStdString());
+
+    // Iterate across the data frame-by-frame to write a new line
+    const TtkFileData& data = m_pFile->getData();
+
+    for (int i = 0; i < data.count(); i++)
+    {
+        std::string frameData = "";
+
+        for (int j = 0; j < NUM_INPUT_COLUMNS; j++)
+        {
+            frameData += data[i][j].toStdString();
+            frameData += ",";
+        }
+
+        frameData.pop_back();
+
+        file << frameData;
+        file << "\n";
+    }
+
+    file.close();
 }

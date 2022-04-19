@@ -68,17 +68,17 @@ class InputFile
 public:
     InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView);
 
-    QString getPath() { return m_filePath; }
-    TtkFileData getData() { return m_fileData; }
-    QString getCellValue(int rowIdx, int colIdx) { return m_fileData[rowIdx][colIdx]; }
-    void setCellValue(int rowIdx, int colIdx, QString value) { m_fileData[rowIdx][colIdx] = value; }
+    inline QString getPath() { return m_filePath; }
+    const inline TtkFileData& getData() { return m_fileData; }
+    inline QString getCellValue(int rowIdx, int colIdx) { return m_fileData[rowIdx][colIdx]; }
+    inline void setCellValue(int rowIdx, int colIdx, QString value) { m_fileData[rowIdx][colIdx] = value; }
     FileStatus loadFile(QString path);
     void closeFile();
-    Centering getCentering() { return m_fileCentering; }
-    void setTableView(QTableView* tableView) { pTableView = tableView; }
-    QTableView* getTableView() { return pTableView; }
-    const InputFileMenus& getMenus() { return m_menus; }
-    QLabel* getLabel() { return pLabel; }
+    inline Centering getCentering() { return m_fileCentering; }
+    inline void setTableView(QTableView* tableView) { pTableView = tableView; }
+    inline QTableView* getTableView() { return pTableView; }
+    const inline InputFileMenus& getMenus() { return m_menus; }
+    inline QLabel* getLabel() { return pLabel; }
 
 private:
 
