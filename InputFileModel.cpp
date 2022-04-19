@@ -83,7 +83,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         if (!(m_pFile->inputValid(index, value.toInt())))
             return false;
 
-        QString prevValue = m_pFile->getCellValue(index.row(), index.column());
+        QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
         setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
         addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, value.toString()));
         writeFileOnDisk();
