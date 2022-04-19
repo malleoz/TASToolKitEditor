@@ -153,3 +153,23 @@ void InputFile::closeFile()
     pTableView->setVisible(false);
     m_menus.root->setVisible(false);
 }
+
+bool InputFile::inputValid(const QModelIndex& index, int value)
+{
+    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+        return (value == 0 || value == 1);
+    if (index.row() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
+        return (value >= 0 && value <= 4);
+    
+    if (m_fileCentering == Centering::Seven)
+        return (value >= 0 && value <= 14);
+    if (m_fileCentering == Centering::Zero)
+        return (value >= -7 && value <= 7);
+    
+    // File centering is unknown... check extreme bounds
+    if (value < -7 || value > 14)
+        return false;
+
+    ableToDiscernCentering(value);
+    return true;
+}

@@ -40,7 +40,9 @@ typedef QVector<QVector<QString>> TtkFileData;
 class QAction;
 class QLabel;
 class QMenu;
+class QModelIndex;
 class QTableView;
+class QVariant;
 
 struct InputFileMenus
 {
@@ -79,6 +81,7 @@ public:
     inline QTableView* getTableView() { return pTableView; }
     const inline InputFileMenus& getMenus() { return m_menus; }
     inline QLabel* getLabel() { return pLabel; }
+    bool inputValid(const QModelIndex& index, int value);
 
 private:
 

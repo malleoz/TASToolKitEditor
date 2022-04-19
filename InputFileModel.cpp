@@ -77,6 +77,9 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     if (role == Qt::EditRole) {
         if (!checkIndex(index))
             return false;
+        
+        if (!(m_pFile->inputValid(index, value.toInt())))
+            return false;
 
         setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
         writeFileOnDisk();
