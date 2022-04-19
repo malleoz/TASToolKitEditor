@@ -27,8 +27,8 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
 
 void TASToolKitEditor::createInputFileInstances()
 {
-    InputFileMenus playerMenus = InputFileMenus(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer);
-    InputFileMenus ghostMenus = InputFileMenus(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost);
+    InputFileMenus playerMenus = InputFileMenus(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer, action0CenteredPlayer, action7CenteredPlayer);
+    InputFileMenus ghostMenus = InputFileMenus(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost, action0CenteredGhost, action7CenteredGhost);
     playerFile = new InputFile(playerMenus, playerLabel, playerTableView);
     ghostFile = new InputFile(ghostMenus, ghostLabel, ghostTableView);
 }
@@ -53,12 +53,19 @@ void TASToolKitEditor::onOpenGhost()
 
 void TASToolKitEditor::onClosePlayer()
 {
-    playerFile->closeFile();
+    closeFile(playerFile);
 }
 
 void TASToolKitEditor::onCloseGhost()
 {
-    ghostFile->closeFile();
+    closeFile(ghostFile);
+}
+
+void TASToolKitEditor::closeFile(InputFile* pInputFile)
+{
+    pInputFile->closeFile();
+    m_filesLoaded--;
+    adjustUiOnFileClose(pInputFile);
 }
 
 bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
@@ -113,6 +120,9 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     for (int i = 0; i < NUM_INPUT_COLUMNS - 1; i++)
         pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, TABLE_COLUMN_WIDTH);
 
+    //D-Pad column
+    pTable->setColumnWidth(6, TABLE_COLUMN_WIDTH + 5);
+
     if (m_filesLoaded == 2)
     {
         actionSwapFiles->setEnabled(true);
@@ -120,11 +130,27 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     }
 }
 
+void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
+{
+    adjustMenuOnClose(pInputFile);
+}
+
 void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
 {
     Centering fileCentering = inputFile->getCentering();
-    action7Centered->setChecked(fileCentering == Centering::Seven);
-    action0Centered->setChecked(fileCentering == Centering::Zero);
+
+    inputFile->getMenus().center7->setChecked(fileCentering == Centering::Seven);
+    inputFile->getMenus().center0->setChecked(fileCentering == Centering::Zero);
+}
+
+void TASToolKitEditor::adjustMenuOnClose(InputFile* inputFile)
+{
+    if (m_filesLoaded == 0)
+    {
+        inputFile->getMenus().center7->setChecked(false);
+        inputFile->getMenus().center0->setChecked(false);
+        actionSwapFiles->setEnabled(false);
+    }
 }
 
 void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
@@ -157,15 +183,6 @@ void TASToolKitEditor::addFileMenuItems()
     actionClosePlayer->setEnabled(false);
     actionCloseGhost = new QAction(this);
     actionCloseGhost->setEnabled(false);
-    action0Centered = new QAction(this);
-    action0Centered->setCheckable(true);
-    action0Centered->setEnabled(false);
-    action7Centered = new QAction(this);
-    action7Centered->setCheckable(true);
-    action7Centered->setEnabled(false);
-    menuInputCentering = new QMenu(menuFile);
-    menuInputCentering->addAction(action0Centered);
-    menuInputCentering->addAction(action7Centered);
     actionSwapFiles = new QAction(this);
     actionSwapFiles->setEnabled(false);
     actionScrollTogether = new QAction(this);
@@ -174,7 +191,6 @@ void TASToolKitEditor::addFileMenuItems()
     menuFile->addAction(actionOpenGhost);
     menuFile->addAction(actionClosePlayer);
     menuFile->addAction(actionCloseGhost);
-    menuFile->addAction(menuInputCentering->menuAction());
     menuFile->addAction(actionSwapFiles);
     menuFile->addAction(actionScrollTogether);
     menuBar->addAction(menuFile->menuAction());
@@ -186,8 +202,16 @@ void TASToolKitEditor::addPlayerMenuItems()
     menuPlayer->menuAction()->setVisible(false);
     actionUndoPlayer = new QAction(this);
     actionRedoPlayer = new QAction(this);
+    action0CenteredPlayer = new QAction(this);
+    action0CenteredPlayer->setCheckable(true);
+    action7CenteredPlayer = new QAction(this);
+    action7CenteredPlayer->setCheckable(true);
+    menuCenterPlayer = new QMenu(menuFile);
+    menuCenterPlayer->addAction(action0CenteredPlayer);
+    menuCenterPlayer->addAction(action7CenteredPlayer);
     menuPlayer->addAction(actionUndoPlayer);
     menuPlayer->addAction(actionRedoPlayer);
+    menuPlayer->addAction(menuCenterPlayer->menuAction());
     menuBar->addAction(menuPlayer->menuAction());
 }
 
@@ -197,8 +221,18 @@ void TASToolKitEditor::addGhostMenuItems()
     menuGhost->menuAction()->setVisible(false);
     actionUndoGhost = new QAction(this);
     actionRedoGhost = new QAction(this);
+
+    action0CenteredGhost = new QAction(this);
+    action0CenteredGhost->setCheckable(true);
+    action7CenteredGhost = new QAction(this);
+    action7CenteredGhost->setCheckable(true);
+    menuCenterGhost = new QMenu(menuFile);
+    menuCenterGhost->addAction(action0CenteredGhost);
+    menuCenterGhost->addAction(action7CenteredGhost);
+
     menuGhost->addAction(actionUndoGhost);
     menuGhost->addAction(actionRedoGhost);
+    menuGhost->addAction(menuCenterGhost->menuAction());
     menuBar->addAction(menuGhost->menuAction());
 }
 
@@ -266,14 +300,17 @@ void TASToolKitEditor::setTitleNames()
     actionOpenGhost->setText("Open Ghost");
     actionClosePlayer->setText("Close Player");
     actionCloseGhost->setText("Close Ghost");
-    action0Centered->setText("0 Centered");
-    action7Centered->setText("7 Centered");
+    action0CenteredGhost->setText("0 Centered");
+    action0CenteredPlayer->setText("0 Centered");
+    action7CenteredGhost->setText("7 Centered");
+    action7CenteredPlayer->setText("7 Centered");
     actionSwapFiles->setText("Swap Player and Ghost");
     actionScrollTogether->setText("Scroll Together");
     playerLabel->setText("Player");
     ghostLabel->setText("Ghost");
     menuFile->setTitle("File");
-    menuInputCentering->setTitle("Input Centering");
+    menuCenterGhost->setTitle("Input Centering");
+    menuCenterPlayer->setTitle("Input Centering");
     menuPlayer->setTitle("Player");
     menuGhost->setTitle("Ghost");
 }

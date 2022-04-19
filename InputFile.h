@@ -44,11 +44,13 @@ class QTableView;
 
 struct InputFileMenus
 {
-    InputFileMenus(QMenu* root, QAction* undo, QAction* redo, QAction* close)
+    InputFileMenus(QMenu* root, QAction* undo, QAction* redo, QAction* close, QAction* center0, QAction* center7)
         : root(root)
         , undo(undo)
         , redo(redo)
         , close(close)
+        , center0(center0)
+        , center7(center7)
     {
     }
 
@@ -56,6 +58,8 @@ struct InputFileMenus
     QAction* undo;
     QAction* redo;
     QAction* close;
+    QAction* center0;
+    QAction* center7;
 };
 
 

@@ -148,6 +148,8 @@ bool InputFile::ableToDiscernCentering(int value)
 void InputFile::closeFile()
 {
     clearData();
+    m_fileCentering = Centering::Unknown;
     pLabel->setVisible(false);
     pTableView->setVisible(false);
+    m_menus.root->setVisible(false);
 }

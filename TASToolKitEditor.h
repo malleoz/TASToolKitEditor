@@ -39,8 +39,10 @@ private:
     QAction* actionOpenGhost;
     QAction* actionClosePlayer;
     QAction* actionCloseGhost;
-    QAction* action0Centered;
-    QAction* action7Centered;
+    QAction* action0CenteredPlayer;
+    QAction* action0CenteredGhost;
+    QAction* action7CenteredPlayer;
+    QAction* action7CenteredGhost;
     QAction* actionSwapFiles;
     QAction* actionScrollTogether;
     QWidget* centralWidget;
@@ -54,7 +56,8 @@ private:
     QTableView* ghostTableView;
     QMenuBar* menuBar;
     QMenu* menuFile;
-    QMenu* menuInputCentering;
+    QMenu* menuCenterPlayer;
+    QMenu* menuCenterGhost;
     QMenu* menuPlayer;
     QMenu* menuGhost;
 
@@ -78,6 +81,8 @@ private:
     void adjustInputCenteringMenu(InputFile* inputFile);
     void setTableViewSettings(QTableView* pTable);
     void adjustUiOnFileLoad(InputFile* pInputFile);
+    void adjustUiOnFileClose(InputFile* pInputFile);
+    void adjustMenuOnClose(InputFile* inputFile);
 
     void onOpenPlayer();
     void onOpenGhost();
