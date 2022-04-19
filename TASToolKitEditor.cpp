@@ -97,6 +97,13 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
 
     FileStatus status = inputFile->loadFile(filePath);
 
+    if (status == FileStatus::WritePermission)
+    {
+        showError("Error Opening File", "This program does not have sufficient permissions to modify the file.\n\n" \
+            "Try running this program in administrator mode and make sure the file is not open in another program.");
+        return;
+    }
+
     if (status != FileStatus::Success)
         return;
 
