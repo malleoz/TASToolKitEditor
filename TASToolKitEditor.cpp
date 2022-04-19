@@ -9,7 +9,9 @@
 
 #include <iostream>
 
-#define TABLE_VIEW_WIDTH 200
+#define FRAMECOUNT_COLUMN_WIDTH 50
+#define TABLE_COLUMN_WIDTH 30
+#define TABLE_VIEW_WIDTH (FRAMECOUNT_COLUMN_WIDTH + (7 * TABLE_COLUMN_WIDTH))
 #define TABLE_SIDE_PADDING 10
 #define DEFAULT_WINDOW_WIDTH ((TABLE_VIEW_WIDTH) + (2 * TABLE_SIDE_PADDING))
 #define DEFAULT_WINDOW_HEIGHT 500
@@ -95,9 +97,21 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     adjustInputCenteringMenu(pInputFile);
     pInputFile->getMenus().root->menuAction()->setVisible(true);
     pInputFile->getMenus().close->setEnabled(true);
-    pInputFile->getTableView()->setModel(new InputFileModel(pInputFile));
-    pInputFile->getTableView()->setVisible(true);
     pInputFile->getLabel()->setVisible(true);
+
+    QTableView* pTable = pInputFile->getTableView();
+    pTable->setModel(new InputFileModel(pInputFile));
+    pTable->setVisible(true);
+
+    /* This stuff really should be constant, but I can't do any of this until
+    // the model is set, but I can't set the model until I instantiate the model
+    // instance, but I can't instantiate the instance until I have the InputFile
+    // instance, at which point I have to have the table instance already, which
+    // means I can't yet give the table a model instance...
+    // THIS IS SO CONFUSING!*/
+    pTable->setColumnWidth(0, FRAMECOUNT_COLUMN_WIDTH);
+    for (int i = 0; i < NUM_INPUT_COLUMNS - 1; i++)
+        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, TABLE_COLUMN_WIDTH);
 
     if (m_filesLoaded == 2)
     {
@@ -115,13 +129,8 @@ void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
 
 void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
 {
-    pTable->setMinimumWidth(20);
-    pTable->setColumnWidth(0, 10);
-    pTable->setItemDelegateForColumn(0, new BackgroundBrushDelegate(QBrush(Qt::gray), pTable));
-    for (int i = 1; i < NUM_INPUT_COLUMNS; i++)
-        pTable->setColumnWidth(i, 20);
-
     pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    pTable->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement
     pTable->setVisible(false);
 }
 
@@ -218,8 +227,6 @@ void TASToolKitEditor::setupUi()
 
     playerVLayout->addWidget(playerTableView);
 
-
-
     mainHorizLayout->addLayout(playerVLayout);
 
     ghostVLayout = new QVBoxLayout();
@@ -229,10 +236,9 @@ void TASToolKitEditor::setupUi()
     ghostVLayout->addWidget(ghostLabel);
 
     ghostTableView = new QTableView(horizontalLayoutWidget);
-
-    ghostVLayout->addWidget(ghostTableView);
     setTableViewSettings(ghostTableView);
 
+    ghostVLayout->addWidget(ghostTableView);
 
     mainHorizLayout->addLayout(ghostVLayout);
 

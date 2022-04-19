@@ -1,5 +1,7 @@
 #include "InputFileModel.h"
 
+#include <QBrush>
+
 InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
     , m_pFile(pFile)
@@ -18,12 +20,19 @@ int InputFileModel::columnCount(const QModelIndex& /*parent*/) const
 
 QVariant InputFileModel::data(const QModelIndex& index, int role) const
 {
-    if (role == Qt::DisplayRole)
+    switch (role)
     {
-        if (index.column() == 0)
-            return QString::number(index.row() + 1);
+    case Qt::DisplayRole:
+        {
+            if (index.column() == 0)
+                return QString::number(index.row() + 1);
 
-        return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+            return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+        }
+    case Qt::TextAlignmentRole:
+        return Qt::AlignCenter;
+    case Qt::BackgroundRole:
+        return index.column() == 0 ? QBrush(Qt::gray) : QVariant();
     }
         
     return QVariant();

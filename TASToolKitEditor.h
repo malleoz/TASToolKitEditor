@@ -86,35 +86,3 @@ private:
     void onCloseGhost();
     void closeFile(InputFile* pInputFile);
 };
-
-class BackgroundBrushDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-        Q_PROPERTY(QBrush backgroundBrush READ backgroundBrush WRITE setBackgroundBrush NOTIFY backgroundBrushChanged)
-        Q_DISABLE_COPY(BackgroundBrushDelegate)
-public:
-    explicit BackgroundBrushDelegate(QObject* parent = nullptr)
-        : QStyledItemDelegate(parent)
-    {}
-    BackgroundBrushDelegate(const QBrush& brush, QObject* parent = nullptr)
-        : QStyledItemDelegate(parent)
-        , m_backgroundBrush(brush)
-    {}
-    const QBrush& backgroundBrush() const { return m_backgroundBrush; }
-    void setBackgroundBrush(const QBrush& brush)
-    {
-        if (m_backgroundBrush == brush)
-            return;
-        m_backgroundBrush = brush;
-        backgroundBrushChanged(m_backgroundBrush);
-    }
-signals:
-    void backgroundBrushChanged(const QBrush& brush);
-protected:
-    void initStyleOption(QStyleOptionViewItem* option, const QModelIndex& index) const override
-    {
-        QStyledItemDelegate::initStyleOption(option, index);
-        option->backgroundBrush = m_backgroundBrush;
-    }
-private:
-    QBrush m_backgroundBrush;
-};
