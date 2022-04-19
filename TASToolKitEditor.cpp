@@ -88,7 +88,13 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
 
     if (inputFile->getPath() != "" && !userClosedPreviousFile(inputFile))
         return;
-    
+
+    if (filePath == playerFile->getPath() || filePath == ghostFile->getPath())
+    {
+        showError("Error Opening File", "This file is already open in the program!");
+        return;
+    }
+
     FileStatus status = inputFile->loadFile(filePath);
 
     if (status != FileStatus::Success)
