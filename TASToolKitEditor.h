@@ -66,6 +66,7 @@ private:
     InputFile* ghostFile;
 
     int m_filesLoaded;
+    bool m_bScrollTogether;
 
     void setupUi();
     void setTitles();
@@ -96,4 +97,5 @@ private:
     inline void onRedoPlayer();
     inline void onRedoGhost();
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
+    void onToggleScrollTogether(bool bTogether);
 };

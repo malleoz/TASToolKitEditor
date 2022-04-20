@@ -55,6 +55,14 @@ QVariant InputFileModel::data(const QModelIndex& index, int role) const
 
             return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
         }
+    case Qt::CheckStateRole:
+        {
+            if (index.column() == 0 || index.column() > 3)
+                return QVariant();
+
+            QString value = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+            return (value == "1") ? Qt::Checked : Qt::Unchecked;
+        }
     case Qt::TextAlignmentRole:
         return Qt::AlignCenter;
     case Qt::BackgroundRole:
@@ -105,6 +113,10 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         writeFileOnDisk();
 
         return true;
+    }
+    else if (role == Qt::CheckStateRole)
+    {
+        //DO SOMETHING HERE
     }
 
     return false;

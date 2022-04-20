@@ -43,6 +43,27 @@ void TASToolKitEditor::connectActions()
     connect(actionUndoGhost, &QAction::triggered, this, &TASToolKitEditor::onUndoGhost);
     connect(actionRedoPlayer, &QAction::triggered, this, &TASToolKitEditor::onRedoPlayer);
     connect(actionRedoGhost, &QAction::triggered, this, &TASToolKitEditor::onRedoGhost);
+    connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
+}
+
+void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
+{
+    m_bScrollTogether = bTogether;
+
+    actionScrollTogether->setChecked(m_bScrollTogether);
+
+    if (!m_bScrollTogether)
+        return;
+
+    // Jump ghost view to same row as player view]
+    QTableView* pPlayerTable = playerFile->getTableView();
+    QTableView* pGhostTable = ghostFile->getTableView();
+
+    int playerTopRow = pPlayerTable->rowAt(0);
+
+    QModelIndex index = pGhostTable->model()->index(playerTopRow, 0);
+    pGhostTable->setCurrentIndex(index);
+    pGhostTable->scrollTo(index);
 }
 
 void TASToolKitEditor::onUndoPlayer()
@@ -205,6 +226,7 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     if (m_filesLoaded == 2)
     {
         actionSwapFiles->setEnabled(true);
+        actionScrollTogether->setEnabled(true);
         resize(width() * 2, height());
     }
 }
@@ -266,6 +288,8 @@ void TASToolKitEditor::addFileMenuItems()
     actionSwapFiles->setEnabled(false);
     actionScrollTogether = new QAction(this);
     actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setCheckable(true);
+    actionScrollTogether->setChecked(false);
     menuFile->addAction(actionOpenPlayer);
     menuFile->addAction(actionOpenGhost);
     menuFile->addAction(actionClosePlayer);
@@ -361,6 +385,7 @@ void TASToolKitEditor::setupUi()
     setCentralWidget(centralWidget);
 
     m_filesLoaded = 0;
+    m_bScrollTogether = false;
 
     setTitles();
 }
