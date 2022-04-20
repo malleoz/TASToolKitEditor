@@ -15,7 +15,23 @@ InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
 
 Qt::ItemFlags InputFileModel::flags(const QModelIndex& index) const
 {
-    return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+
+    switch (index.column())
+    {
+    case 0:
+        return flags;
+    case 1:
+    case 2:
+    case 3:
+        return flags |= Qt::ItemIsUserCheckable;
+    case 4:
+    case 5:
+    case 6:
+        return flags |= Qt::ItemIsEditable;
+    }
+
+    return flags;
 }
 
 int InputFileModel::rowCount(const QModelIndex& /*parent*/) const
@@ -80,7 +96,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         if (!checkIndex(index))
             return false;
         
-        if (!(m_pFile->inputValid(index, value.toInt())))
+        if (!(m_pFile->inputValid(index, value)))
             return false;
 
         QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);

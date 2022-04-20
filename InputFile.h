@@ -97,7 +97,7 @@ public:
     inline QTableView* getTableView() { return pTableView; }
     const inline InputFileMenus& getMenus() { return m_menus; }
     inline QLabel* getLabel() { return pLabel; }
-    bool inputValid(const QModelIndex& index, int value);
+    bool inputValid(const QModelIndex& index, const QVariant& value);
     inline int getParseError() { return m_frameParseError; }
     inline QStack<CellEditAction>* getUndoStack() { return &m_undoStack; }
     inline QStack<CellEditAction>* getRedoStack() { return &m_redoStack; }

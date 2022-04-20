@@ -155,22 +155,26 @@ void InputFile::closeFile()
     m_menus.root->setVisible(false);
 }
 
-bool InputFile::inputValid(const QModelIndex& index, int value)
+bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
 {
-    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
-        return (value == 0 || value == 1);
-    if (index.row() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
-        return (value >= 0 && value <= 4);
-    
-    if (m_fileCentering == Centering::Seven)
-        return (value >= 0 && value <= 14);
-    if (m_fileCentering == Centering::Zero)
-        return (value >= -7 && value <= 7);
-    
-    // File centering is unknown... check extreme bounds
-    if (value < -7 || value > 14)
+    if (value == "")
         return false;
 
-    ableToDiscernCentering(value);
+    int iValue = value.toInt();
+    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+        return (iValue == 0 || iValue == 1);
+    if (index.row() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
+        return (iValue >= 0 && iValue <= 4);
+    
+    if (m_fileCentering == Centering::Seven)
+        return (iValue >= 0 && iValue <= 14);
+    if (m_fileCentering == Centering::Zero)
+        return (iValue >= -7 && iValue <= 7);
+    
+    // File centering is unknown... check extreme bounds
+    if (iValue < -7 || iValue > 14)
+        return false;
+
+    ableToDiscernCentering(iValue);
     return true;
 }
