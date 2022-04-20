@@ -35,14 +35,14 @@ void TASToolKitEditor::createInputFileInstances()
 
 void TASToolKitEditor::connectActions()
 {
-    connect(actionOpenPlayer, &QAction::triggered, this, &TASToolKitEditor::onOpenPlayer);
-    connect(actionOpenGhost, &QAction::triggered, this, &TASToolKitEditor::onOpenGhost);
-    connect(actionClosePlayer, &QAction::triggered, this, &TASToolKitEditor::onClosePlayer);
-    connect(actionCloseGhost, &QAction::triggered, this, &TASToolKitEditor::onCloseGhost);
-    connect(actionUndoPlayer, &QAction::triggered, this, &TASToolKitEditor::onUndoPlayer);
-    connect(actionUndoGhost, &QAction::triggered, this, &TASToolKitEditor::onUndoGhost);
-    connect(actionRedoPlayer, &QAction::triggered, this, &TASToolKitEditor::onRedoPlayer);
-    connect(actionRedoGhost, &QAction::triggered, this, &TASToolKitEditor::onRedoGhost);
+    connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(playerFile); });
+    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(ghostFile); });
+    connect(actionClosePlayer, &QAction::triggered, this, [this]() { closeFile(playerFile); });
+    connect(actionCloseGhost, &QAction::triggered, this, [this]() { closeFile(ghostFile); });
+    connect(actionUndoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
+    connect(actionUndoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
+    connect(actionRedoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
+    connect(actionRedoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
     connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
 }
 
@@ -64,26 +64,6 @@ void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
     QModelIndex index = pGhostTable->model()->index(playerTopRow, 0);
     pGhostTable->setCurrentIndex(index);
     pGhostTable->scrollTo(index);
-}
-
-void TASToolKitEditor::onUndoPlayer()
-{
-    onUndoRedo(playerFile, EOperationType::Undo);
-}
-
-void TASToolKitEditor::onUndoGhost()
-{
-    onUndoRedo(ghostFile, EOperationType::Undo);
-}
-
-void TASToolKitEditor::onRedoPlayer()
-{
-    onUndoRedo(playerFile, EOperationType::Redo);
-}
-
-void TASToolKitEditor::onRedoGhost()
-{
-    onUndoRedo(ghostFile, EOperationType::Redo);
 }
 
 void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
@@ -121,26 +101,6 @@ void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
 
     if (action.row() < rowUpper || action.row() > rowLower)
         pInputFile->getTableView()->scrollTo(pInputFile->getTableView()->model()->index(action.row(), 0));
-}
-
-void TASToolKitEditor::onOpenPlayer()
-{
-    openFile(playerFile);
-}
-
-void TASToolKitEditor::onOpenGhost()
-{
-    openFile(ghostFile);
-}
-
-void TASToolKitEditor::onClosePlayer()
-{
-    closeFile(playerFile);
-}
-
-void TASToolKitEditor::onCloseGhost()
-{
-    closeFile(ghostFile);
 }
 
 void TASToolKitEditor::closeFile(InputFile* pInputFile)

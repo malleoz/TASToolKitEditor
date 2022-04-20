@@ -86,16 +86,8 @@ private:
     void adjustUiOnFileClose(InputFile* pInputFile);
     void adjustMenuOnClose(InputFile* inputFile);
 
-    inline void onOpenPlayer();
-    inline void onOpenGhost();
     void openFile(InputFile* inputFile);
-    inline void onClosePlayer();
-    inline void onCloseGhost();
     void closeFile(InputFile* pInputFile);
-    inline void onUndoPlayer();
-    inline void onUndoGhost();
-    inline void onRedoPlayer();
-    inline void onRedoGhost();
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onToggleScrollTogether(bool bTogether);
 };
