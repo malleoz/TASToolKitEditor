@@ -6,6 +6,7 @@
 //#include <QAbstractSlider>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QScrollBar>
 #include <QTextStream>
 
@@ -46,8 +47,8 @@ void TASToolKitEditor::connectActions()
     connect(actionRedoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
     connect(actionRedoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
     connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
-    connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int) { onScroll(playerFile); });
-    connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int) { onScroll(ghostFile); });
+    connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
+    connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
 }
 
 void TASToolKitEditor::onScroll(InputFile* pInputFile)
@@ -156,6 +157,11 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     if (inputFile->getPath() != "" && !userClosedPreviousFile(inputFile))
         return;
 
+    openFile(inputFile, filePath);
+}
+
+void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
+{
     if (filePath == playerFile->getPath() || filePath == ghostFile->getPath())
     {
         showError("Error Opening File", "This file is already open in the program!");

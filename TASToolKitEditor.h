@@ -87,6 +87,7 @@ private:
     void adjustMenuOnClose(InputFile* inputFile);
 
     void openFile(InputFile* inputFile);
+    void openFile(InputFile* inputFile, QString filePath);
     void closeFile(InputFile* pInputFile);
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onScroll(InputFile* pInputFile);
