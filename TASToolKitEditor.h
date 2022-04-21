@@ -23,6 +23,7 @@
 
 class InputFile;
 enum class EOperationType;
+enum class Centering;
 
 class TASToolKitEditor : public QMainWindow
 {
@@ -92,6 +93,6 @@ private:
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onScroll(InputFile* pInputFile);
     void onToggleScrollTogether(bool bTogether);
-
+    void onReCenter(InputFile* pInputFile, Centering centering);
     void scrollToFirstTable(QTableView* dst, QTableView* src);
 };

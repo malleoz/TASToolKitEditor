@@ -49,6 +49,46 @@ void TASToolKitEditor::connectActions()
     connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
     connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
     connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
+    
+    connect(action0CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Zero); });
+    connect(action0CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Zero); });
+    connect(action7CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Seven); });
+    connect(action7CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Seven); });
+}
+
+void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)
+{
+    if (pInputFile->getCentering() == centering)
+        return;
+    else if (pInputFile->getCentering() == Centering::Unknown)
+        return;
+    else
+        pInputFile->setCentering(centering);
+
+    // Adjust UI
+    pInputFile->getMenus().center0->setChecked(centering == Centering::Zero);
+    pInputFile->getMenus().center7->setChecked(centering == Centering::Seven);
+
+    int stickOffset = (centering == Centering::Seven) ? 7 : -7;
+
+    // Iterate across data to readjust all stick values
+    const TtkFileData& data = pInputFile->getData();
+    for (int i = 0; i < data.count(); i++)
+    {
+        for (int j = 3; j < 5; j++)
+        {
+            QString strVal = pInputFile->getCellValue(i, j);
+            pInputFile->setCellValue(i, j, QString::number(strVal.toInt() + stickOffset));
+        }
+    }
+
+    // So rather than have thousands of undo operations appear because of this operation,
+    // just clear the stacks...
+    pInputFile->getUndoStack()->clear();
+    pInputFile->getRedoStack()->clear();
+
+    // Finally, save to the file
+    InputFileModel::writeFileOnDisk(pInputFile);
 }
 
 void TASToolKitEditor::onScroll(InputFile* pInputFile)

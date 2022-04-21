@@ -110,7 +110,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
         setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
         addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, value.toString()));
-        writeFileOnDisk();
+        writeFileOnDisk(m_pFile);
 
         return true;
     }
@@ -159,13 +159,13 @@ void InputFileModel::setCachedFileData(int rowIdx, int colIdx, QString val)
     assert(m_pFile->getCellValue(rowIdx, colIdx) == val);
 }
 
-void InputFileModel::writeFileOnDisk()
+void InputFileModel::writeFileOnDisk(InputFile* pInputFile)
 {
     std::ofstream file;
-    file.open(m_pFile->getPath().toStdString());
+    file.open(pInputFile->getPath().toStdString());
 
     // Iterate across the data frame-by-frame to write a new line
-    const TtkFileData& data = m_pFile->getData();
+    const TtkFileData& data = pInputFile->getData();
 
     for (int i = 0; i < data.count(); i++)
     {
