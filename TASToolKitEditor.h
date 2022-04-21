@@ -89,5 +89,8 @@ private:
     void openFile(InputFile* inputFile);
     void closeFile(InputFile* pInputFile);
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
+    void onScroll(InputFile* pInputFile);
     void onToggleScrollTogether(bool bTogether);
+
+    void scrollToFirstTable(QTableView* dst, QTableView* src);
 };

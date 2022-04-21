@@ -3,8 +3,10 @@
 #include "InputFile.h"
 #include "InputFileModel.h"
 
+//#include <QAbstractSlider>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QScrollBar>
 #include <QTextStream>
 
 #include <iostream>
@@ -44,6 +46,28 @@ void TASToolKitEditor::connectActions()
     connect(actionRedoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
     connect(actionRedoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
     connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
+    connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int) { onScroll(playerFile); });
+    connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this](int) { onScroll(ghostFile); });
+}
+
+void TASToolKitEditor::onScroll(InputFile* pInputFile)
+{
+    if (!m_bScrollTogether)
+        return;
+
+    // What row is the current table at?
+    int topRow = pInputFile->getTableView()->rowAt(0);
+
+    // Find other table
+    InputFile* otherFile;
+
+    if (pInputFile == playerFile)
+        otherFile = ghostFile;
+    else
+        otherFile = playerFile;
+
+    // Scroll other table to that row
+    scrollToFirstTable(pInputFile->getTableView(), otherFile->getTableView());
 }
 
 void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
@@ -55,15 +79,16 @@ void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
     if (!m_bScrollTogether)
         return;
 
-    // Jump ghost view to same row as player view]
-    QTableView* pPlayerTable = playerFile->getTableView();
-    QTableView* pGhostTable = ghostFile->getTableView();
+    // Jump ghost view to same row as player view
+    scrollToFirstTable(playerTableView, ghostTableView);
+}
 
-    int playerTopRow = pPlayerTable->rowAt(0);
-
-    QModelIndex index = pGhostTable->model()->index(playerTopRow, 0);
-    pGhostTable->setCurrentIndex(index);
-    pGhostTable->scrollTo(index);
+void TASToolKitEditor::scrollToFirstTable(QTableView* dst, QTableView* src)
+{
+    int dstTopRow = dst->rowAt(0);
+    QModelIndex index = src->model()->index(dstTopRow, 0);
+    src->setCurrentIndex(index);
+    src->scrollTo(index);
 }
 
 void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
