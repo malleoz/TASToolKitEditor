@@ -237,6 +237,10 @@ void TASToolKitEditor::adjustMenuOnClose(InputFile* inputFile)
         inputFile->getMenus().center0->setChecked(false);
         actionSwapFiles->setEnabled(false);
     }
+    
+    m_bScrollTogether = false;
+    actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setChecked(false);
 }
 
 void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
