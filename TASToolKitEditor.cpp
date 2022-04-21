@@ -89,7 +89,7 @@ void TASToolKitEditor::scrollToFirstTable(QTableView* dst, QTableView* src)
     int dstTopRow = dst->rowAt(0);
     QModelIndex index = src->model()->index(dstTopRow, 0);
     src->setCurrentIndex(index);
-    src->scrollTo(index);
+    src->scrollTo(index, QAbstractItemView::PositionAtTop);
 }
 
 void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
