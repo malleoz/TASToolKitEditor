@@ -185,6 +185,7 @@ void InputFile::closeFile()
     pLabel->setVisible(false);
     pTableView->setVisible(false);
     m_menus.root->setVisible(false);
+    m_menus.close->setEnabled(false);
 }
 
 bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
