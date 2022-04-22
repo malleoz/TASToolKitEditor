@@ -200,6 +200,9 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
 
+    if (filePath == "")
+        return;
+
     if (inputFile->getPath() != "" && !userClosedPreviousFile(inputFile))
         return;
 
