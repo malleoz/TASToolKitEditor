@@ -13,11 +13,16 @@
 
 #include <iostream>
 
-#define FRAMECOUNT_COLUMN_WIDTH 50
-#define TABLE_COLUMN_WIDTH 30
-#define TABLE_VIEW_WIDTH (FRAMECOUNT_COLUMN_WIDTH + (7 * TABLE_COLUMN_WIDTH))
+#define FRAMECOUNT_COLUMN_WIDTH 40
+#define BUTTON_COLUMN_WIDTH 20
+#define STICK_COLUMN_WIDTH 25
+#define PAD_COLUMN_WIDTH 35
+
+#define COLUMN_WIDTH_SUM (FRAMECOUNT_COLUMN_WIDTH + (3 * BUTTON_COLUMN_WIDTH) + (2 * STICK_COLUMN_WIDTH) + PAD_COLUMN_WIDTH + 25)
+
 #define TABLE_SIDE_PADDING 10
-#define DEFAULT_WINDOW_WIDTH ((TABLE_VIEW_WIDTH) + (2 * TABLE_SIDE_PADDING))
+#define SINGLE_FILE_WINDOW_WIDTH ((COLUMN_WIDTH_SUM) + (2 * TABLE_SIDE_PADDING))
+#define DOUBLE_FILE_WINDOW_WIDTH (SINGLE_FILE_WINDOW_WIDTH * 2)
 #define DEFAULT_WINDOW_HEIGHT 500
 #define DEFAULT_TABLE_COL_WIDTH 30
 
@@ -251,11 +256,14 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     // means I can't yet give the table a model instance...
     // THIS IS SO CONFUSING!*/
     pTable->setColumnWidth(0, FRAMECOUNT_COLUMN_WIDTH);
-    for (int i = 0; i < NUM_INPUT_COLUMNS - 1; i++)
-        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, TABLE_COLUMN_WIDTH);
 
-    //D-Pad column
-    pTable->setColumnWidth(6, TABLE_COLUMN_WIDTH + 5);
+    for (int i = 0; i < 3; i++)
+        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, BUTTON_COLUMN_WIDTH);
+
+    for (int i = 3; i < NUM_INPUT_COLUMNS - 1; i++)
+        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, STICK_COLUMN_WIDTH);
+
+    pTable->setColumnWidth(NUM_INPUT_COLUMNS - 1 + FRAMECOUNT_COLUMN, PAD_COLUMN_WIDTH);
 
     if (m_filesLoaded == 2)
     {
@@ -267,6 +275,8 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
 
 void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
 {
+    resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+
     adjustMenuOnClose(pInputFile);
 }
 
@@ -382,7 +392,7 @@ void TASToolKitEditor::addGhostMenuItems()
 
 void TASToolKitEditor::setupUi()
 {
-    resize(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+    resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     addMenuItems();
 
     centralWidget = new QWidget(this);

@@ -52,6 +52,8 @@ QVariant InputFileModel::data(const QModelIndex& index, int role) const
         {
             if (index.column() == 0)
                 return QString::number(index.row() + 1);
+            if (index.column() < 4)
+                return QVariant();
 
             return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
         }
@@ -100,24 +102,31 @@ QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, in
 
 bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+    if (!checkIndex(index))
+        return false;
+
+    QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+    QString curValue = "";
+
     if (role == Qt::EditRole) {
-        if (!checkIndex(index))
-            return false;
-        
         if (!(m_pFile->inputValid(index, value)))
             return false;
 
-        QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
-        setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, value.toString());
-        addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, value.toString()));
-        writeFileOnDisk(m_pFile);
-
-        return true;
+        curValue = value.toString();
     }
     else if (role == Qt::CheckStateRole)
     {
-        //DO SOMETHING HERE
+        if ((Qt::CheckState)value.toInt() == Qt::Checked)
+            curValue = "1";
+        else
+            curValue = "0";
     }
+
+    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
+    addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+    writeFileOnDisk(m_pFile);
+
+    m_pFile->getTableView()->update();
 
     return false;
 }
@@ -156,7 +165,6 @@ void InputFileModel::addToStackWithNonEmptyRedo(CellEditAction action)
 void InputFileModel::setCachedFileData(int rowIdx, int colIdx, QString val)
 {
     m_pFile->setCellValue(rowIdx, colIdx, val);
-    assert(m_pFile->getCellValue(rowIdx, colIdx) == val);
 }
 
 void InputFileModel::writeFileOnDisk(InputFile* pInputFile)
