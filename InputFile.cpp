@@ -196,7 +196,7 @@ bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
 
     if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
         return (iValue == 0 || iValue == 1);
-    if (index.row() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
+    if (index.column() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
         return (iValue >= 0 && iValue <= 4);
     
     if (m_fileCentering == Centering::Seven)

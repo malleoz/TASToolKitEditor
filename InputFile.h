@@ -4,6 +4,7 @@
 
 #define NUM_INPUT_COLUMNS 6
 #define FRAMECOUNT_COLUMN 1
+#define DPAD_COL_IDX 5
 
 enum class FileStatus
 {
@@ -129,6 +130,5 @@ private:
     void clearData();
 
     const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
-    const int DPAD_COL_IDX = 5;
 };
 
