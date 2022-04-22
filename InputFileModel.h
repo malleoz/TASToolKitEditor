@@ -17,6 +17,7 @@ public:
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
     static void writeFileOnDisk(InputFile* pInputFile);
+    void inline setCellClicked(bool bClicked) { m_bCellClicked = bClicked; }
 
 private:
     void inline setCachedFileData(int rowIdx, int colIdx, QString val);
@@ -25,4 +26,5 @@ private:
     void updateActionMenus();
 
     InputFile* m_pFile;
+    bool m_bCellClicked;
 };

@@ -10,6 +10,7 @@
 InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
     , m_pFile(pFile)
+    , m_bCellClicked(false)
 {
 }
 
@@ -108,18 +109,24 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
     QString curValue = "";
 
-    if (role == Qt::EditRole) {
-        if (!(m_pFile->inputValid(index, value)))
-            return false;
+    if (role != Qt::EditRole)
+        return false;
 
-        curValue = value.toString();
-    }
-    else if (role == Qt::CheckStateRole)
+    if (m_bCellClicked)
     {
         if ((Qt::CheckState)value.toInt() == Qt::Checked)
             curValue = "1";
         else
             curValue = "0";
+
+        m_bCellClicked = false;
+    }
+    else
+    {
+        if (!(m_pFile->inputValid(index, value)))
+            return false;
+
+        curValue = value.toString();
     }
 
     setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);

@@ -105,6 +105,7 @@ public:
     inline QStack<CellEditAction>* getRedoStack() { return &m_redoStack; }
     inline QFileSystemWatcher* getFsWatcher() { return m_pFsWatcher; }
     void fileChanged();
+    void onCellClicked(const QModelIndex& index);
 
 private:
 

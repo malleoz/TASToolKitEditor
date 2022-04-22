@@ -1,4 +1,5 @@
 #include "InputFile.h"
+#include "InputFileModel.h"
 
 #include <QAction>
 #include <QFile>
@@ -71,6 +72,20 @@ FileStatus InputFile::loadFile(QString path)
     m_pFsWatcher = new QFileSystemWatcher(QStringList(path));
 
     return FileStatus::Success;
+}
+
+void InputFile::onCellClicked(const QModelIndex& index)
+{
+    // Only care about the button columns
+    if (index.column() < 1 || index.column() > 3)
+        return;
+
+    // Get current value
+    QVariant prevVal = pTableView->model()->data(index, Qt::CheckStateRole);
+    QVariant newVal = (prevVal == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
+    
+    ((InputFileModel*) pTableView->model())->setCellClicked(true);
+    pTableView->model()->setData(index, newVal, Qt::EditRole);
 }
 
 void InputFile::fileChanged()

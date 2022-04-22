@@ -236,6 +236,7 @@ void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
     adjustUiOnFileLoad(inputFile);
 
     connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
+    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 }
 
 void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
