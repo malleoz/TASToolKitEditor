@@ -394,6 +394,7 @@ void TASToolKitEditor::addGhostMenuItems()
 void TASToolKitEditor::setupUi()
 {
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
+    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
     addMenuItems();
 
     centralWidget = new QWidget(this);
