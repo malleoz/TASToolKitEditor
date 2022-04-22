@@ -5,6 +5,7 @@
 
 //#include <QAbstractSlider>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QScrollBar>
@@ -228,6 +229,8 @@ void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
     m_filesLoaded++;
 
     adjustUiOnFileLoad(inputFile);
+
+    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
 }
 
 void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)

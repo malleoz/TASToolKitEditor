@@ -54,6 +54,7 @@ typedef QVector<QVector<QString>> TtkFileData;
 typedef QStack<CellEditAction> TtkStack;
 
 class QAction;
+class QFileSystemWatcher;
 class QLabel;
 class QMenu;
 class QModelIndex;
@@ -102,6 +103,8 @@ public:
     inline int getParseError() { return m_frameParseError; }
     inline QStack<CellEditAction>* getUndoStack() { return &m_undoStack; }
     inline QStack<CellEditAction>* getRedoStack() { return &m_redoStack; }
+    inline QFileSystemWatcher* getFsWatcher() { return m_pFsWatcher; }
+    void fileChanged();
 
 private:
 
@@ -115,6 +118,7 @@ private:
     QLabel* pLabel;
     InputFileMenus m_menus;
     int m_frameParseError;
+    QFileSystemWatcher* m_pFsWatcher;
 
     bool valuesFormattedProperly(const QStringList& data);
     bool valueRestrictionsAreMet(const QStringList& data);

@@ -2,6 +2,7 @@
 
 #include <QAction>
 #include <QFile>
+#include <QFileSystemWatcher>
 #include <QLabel>
 #include <QMenu>
 #include <QTableView>
@@ -38,6 +39,7 @@ InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tab
     , m_menus(menus)
     , pLabel(label)
     , m_frameParseError(INVALID_IDX)
+    , m_pFsWatcher(nullptr)
 {
 }
 
@@ -66,7 +68,15 @@ FileStatus InputFile::loadFile(QString path)
         m_fileData.append(frameData.toVector());
     }
 
+    m_pFsWatcher = new QFileSystemWatcher(QStringList(path));
+
     return FileStatus::Success;
+}
+
+void InputFile::fileChanged()
+{
+    m_fileData.clear();
+    loadFile(m_filePath);
 }
 
 void InputFile::clearData()
@@ -150,6 +160,7 @@ void InputFile::closeFile()
 {
     clearData();
     m_fileCentering = Centering::Unknown;
+    delete m_pFsWatcher;
     pLabel->setVisible(false);
     pTableView->setVisible(false);
     m_menus.root->setVisible(false);
