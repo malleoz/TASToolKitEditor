@@ -192,7 +192,13 @@ bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
     if (value == "")
         return false;
 
-    int iValue = (int)value.toFloat();
+    bool bToFloat = false;
+
+    int iValue = (int)value.toFloat(&bToFloat);
+
+    // Check if conversion fails (user entered invalid chars)
+    if (!bToFloat)
+        return false;
 
     if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
         return (iValue == 0 || iValue == 1);
