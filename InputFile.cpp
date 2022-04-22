@@ -184,7 +184,7 @@ void InputFile::closeFile()
     delete m_pFsWatcher;
     pLabel->setVisible(false);
     pTableView->setVisible(false);
-    m_menus.root->setVisible(false);
+    m_menus.root->menuAction()->setVisible(false);
     m_menus.close->setEnabled(false);
 }
 
