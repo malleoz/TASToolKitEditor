@@ -126,7 +126,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
     writeFileOnDisk(m_pFile);
 
-    m_pFile->getTableView()->update();
+    m_pFile->getTableView()->viewport()->update();
 
     return false;
 }
