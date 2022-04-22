@@ -119,6 +119,12 @@ bool InputFile::valueRestrictionsAreMet(const QStringList& data)
 {
     for (int i = 0; i < data.count(); i++)
     {
+        // -0 actually succeeds in the toInt() conversion
+        // so we need to manually catch it, since this value
+        // won't work when used in Dolphin
+        if (data[i] == "-0")
+            return false;
+
         bool ret;
         int value = data[i].toInt(&ret);
 
@@ -186,7 +192,8 @@ bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
     if (value == "")
         return false;
 
-    int iValue = value.toInt();
+    int iValue = (int)value.toFloat();
+
     if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
         return (iValue == 0 || iValue == 1);
     if (index.row() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)

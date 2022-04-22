@@ -126,7 +126,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         if (!(m_pFile->inputValid(index, value)))
             return false;
 
-        curValue = value.toString();
+        curValue = QString::number((int)value.toFloat());
     }
 
     setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
