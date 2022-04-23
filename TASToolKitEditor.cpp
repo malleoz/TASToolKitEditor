@@ -273,7 +273,9 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     {
         actionSwapFiles->setEnabled(true);
         actionScrollTogether->setEnabled(true);
-        resize(width() * 2, height());
+        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+        resize(DOUBLE_FILE_WINDOW_WIDTH, height());
     }
 }
 
@@ -396,8 +398,10 @@ void TASToolKitEditor::addGhostMenuItems()
 
 void TASToolKitEditor::setupUi()
 {
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-    setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+    setWindowFlags(Qt::Dialog);
     addMenuItems();
 
     centralWidget = new QWidget(this);
