@@ -275,7 +275,6 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
         actionScrollTogether->setEnabled(true);
         setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
         setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-        resize(DOUBLE_FILE_WINDOW_WIDTH, height());
     }
 }
 
@@ -283,7 +282,6 @@ void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
 {
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
     setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
     adjustMenuOnClose(pInputFile);
 }
