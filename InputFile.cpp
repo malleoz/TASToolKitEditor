@@ -68,10 +68,20 @@ FileStatus InputFile::loadFile(QString path)
 
 void InputFile::onCellClicked(const QModelIndex& index)
 {
-    // Only care about the button columns
-    if (index.column() < 1 || index.column() > 3)
-        return;
+    // Only care about framecount and button columns
+    if (index.column() == 0)
+        onClickFramecountColumn(index);
+    else if (index.column() < 4)
+        onClickButtonColumn(index);
+}
 
+void InputFile::onClickFramecountColumn(const QModelIndex& index)
+{
+    pTableView->selectRow(index.row());
+}
+
+void InputFile::onClickButtonColumn(const QModelIndex& index)
+{
     // Get current value
     QVariant prevVal = pTableView->model()->data(index, Qt::CheckStateRole);
     QVariant newVal = (prevVal == Qt::Checked) ? Qt::Unchecked : Qt::Checked;

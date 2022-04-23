@@ -131,6 +131,8 @@ private:
     int getLargestAcceptedValue(int index, int value);
     bool ableToDiscernCentering(int value);
     void clearData();
+    void onClickFramecountColumn(const QModelIndex& index);
+    void onClickButtonColumn(const QModelIndex& index);
 
     const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
 };
