@@ -41,6 +41,8 @@ InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tab
     , pLabel(label)
     , m_frameParseError(INVALID_IDX)
     , m_pFsWatcher(nullptr)
+    , m_bModified(false)
+    , m_iModifiedCheck(0)
 {
 }
 
@@ -90,6 +92,19 @@ void InputFile::onCellClicked(const QModelIndex& index)
 
 void InputFile::fileChanged()
 {
+    // QFileSystemWatcher will send the event when our own program modifies the file
+    // But it will do so twice for some reason... So prevent this function from running twice
+    if (m_bModified)
+    {
+        if (++m_iModifiedCheck == 2)
+        {
+            m_bModified = false;
+            m_iModifiedCheck = 0;
+        }
+        
+        return;
+    }
+
     m_fileData.clear();
     loadFile(m_filePath);
 }

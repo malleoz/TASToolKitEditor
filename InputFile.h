@@ -108,6 +108,7 @@ public:
     void fileChanged();
     void onCellClicked(const QModelIndex& index);
     void swap(InputFile* rhs);
+    inline void setModified(bool bSet) { m_bModified = bSet; }
 
 private:
 
@@ -122,6 +123,8 @@ private:
     InputFileMenus m_menus;
     int m_frameParseError;
     QFileSystemWatcher* m_pFsWatcher;
+    bool m_bModified;
+    int m_iModifiedCheck;
 
     bool valuesFormattedProperly(const QStringList& data);
     bool valueRestrictionsAreMet(const QStringList& data);

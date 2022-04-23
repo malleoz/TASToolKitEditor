@@ -199,4 +199,6 @@ void InputFileModel::writeFileOnDisk(InputFile* pInputFile)
     }
 
     file.close();
+
+    pInputFile->setModified(true);
 }
