@@ -9,16 +9,6 @@
 #include <QTableView>
 #include <QTextStream>
 
-#define INVALID_IDX -1
-
-CellEditAction::CellEditAction()
-    : m_rowIdx(INVALID_IDX)
-    , m_colIdx(INVALID_IDX)
-    , m_prev("")
-    , m_cur("")
-{
-}
-
 CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
     : m_rowIdx(row)
     , m_colIdx(col)
@@ -39,7 +29,7 @@ InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tab
     , pTableView(tableView)
     , m_menus(menus)
     , pLabel(label)
-    , m_frameParseError(INVALID_IDX)
+    , m_frameParseError(0)
     , m_pFsWatcher(nullptr)
     , m_bModified(false)
     , m_iModifiedCheck(0)

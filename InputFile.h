@@ -23,8 +23,7 @@ enum class Centering
 class CellEditAction
 {
 public:
-    CellEditAction();
-    CellEditAction(int row, int col, QString prev, QString cur);
+    CellEditAction(int row = 0, int col = 0, QString prev = "", QString cur = "");
 
     bool operator==(const CellEditAction& rhs);
     inline void flipValues()
