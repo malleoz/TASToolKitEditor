@@ -281,6 +281,8 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
 
 void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
 {
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
 
     adjustMenuOnClose(pInputFile);
