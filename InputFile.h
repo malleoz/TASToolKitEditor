@@ -107,6 +107,7 @@ public:
     inline QFileSystemWatcher* getFsWatcher() { return m_pFsWatcher; }
     void fileChanged();
     void onCellClicked(const QModelIndex& index);
+    void swap(InputFile* rhs);
 
 private:
 

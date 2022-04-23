@@ -55,11 +55,11 @@ void TASToolKitEditor::connectActions()
     connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
     connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
     connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
-    
     connect(action0CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Zero); });
     connect(action0CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Zero); });
     connect(action7CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Seven); });
     connect(action7CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Seven); });
+    connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
 }
 
 void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)

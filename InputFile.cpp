@@ -218,3 +218,19 @@ bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
     ableToDiscernCentering(iValue);
     return true;
 }
+
+void InputFile::swap(InputFile* rhs)
+{
+    std::swap(m_fileData, rhs->m_fileData);
+    std::swap(m_fileCentering, rhs->m_fileCentering);
+    std::swap(m_undoStack, rhs->m_undoStack);
+    std::swap(m_redoStack, rhs->m_redoStack);
+    std::swap(pTableView, rhs->pTableView);
+    std::swap(m_pFsWatcher, rhs->m_pFsWatcher);
+
+    InputFileModel::writeFileOnDisk(this);
+    InputFileModel::writeFileOnDisk(rhs);
+
+    this->getTableView()->viewport()->update();
+    rhs->getTableView()->viewport()->update();
+}
