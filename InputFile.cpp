@@ -239,3 +239,10 @@ void InputFile::swap(InputFile* rhs)
     this->getTableView()->viewport()->update();
     rhs->getTableView()->viewport()->update();
 }
+
+void InputFile::setCentering(Centering center)
+{
+    m_fileCentering = center;
+    m_menus.center0->setChecked(center == Centering::Zero);
+    m_menus.center7->setChecked(center == Centering::Seven);
+}

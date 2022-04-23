@@ -3,7 +3,6 @@
 #include "InputFile.h"
 #include "InputFileModel.h"
 
-//#include <QAbstractSlider>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
 #include <QMessageBox>
@@ -24,20 +23,31 @@
 #define SINGLE_FILE_WINDOW_WIDTH ((COLUMN_WIDTH_SUM) + (2 * TABLE_SIDE_PADDING))
 #define DOUBLE_FILE_WINDOW_WIDTH (SINGLE_FILE_WINDOW_WIDTH * 2)
 #define DEFAULT_WINDOW_HEIGHT 500
-#define DEFAULT_TABLE_COL_WIDTH 30
 
 TASToolKitEditor::TASToolKitEditor(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi();
-    createInputFileInstances();
+    createInputFiles();
     connectActions();
 }
 
-void TASToolKitEditor::createInputFileInstances()
+void TASToolKitEditor::createInputFiles()
 {
-    InputFileMenus playerMenus = InputFileMenus(menuPlayer, actionUndoPlayer, actionRedoPlayer, actionClosePlayer, action0CenteredPlayer, action7CenteredPlayer);
-    InputFileMenus ghostMenus = InputFileMenus(menuGhost, actionUndoGhost, actionRedoGhost, actionCloseGhost, action0CenteredGhost, action7CenteredGhost);
+    InputFileMenus playerMenus = InputFileMenus(menuPlayer,
+                                                actionUndoPlayer,
+                                                actionRedoPlayer,
+                                                actionClosePlayer,
+                                                action0CenteredPlayer,
+                                                action7CenteredPlayer);
+
+    InputFileMenus ghostMenus = InputFileMenus(menuGhost,
+                                               actionUndoGhost,
+                                               actionRedoGhost,
+                                               actionCloseGhost,
+                                               action0CenteredGhost,
+                                               action7CenteredGhost);
+
     playerFile = new InputFile(playerMenus, playerLabel, playerTableView);
     ghostFile = new InputFile(ghostMenus, ghostLabel, ghostTableView);
 }
@@ -64,21 +74,16 @@ void TASToolKitEditor::connectActions()
 
 void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)
 {
-    if (pInputFile->getCentering() == centering)
+    Centering curCentering = pInputFile->getCentering();
+    if (curCentering == centering || curCentering == Centering::Unknown)
         return;
-    else if (pInputFile->getCentering() == Centering::Unknown)
-        return;
-    else
-        pInputFile->setCentering(centering);
-
-    // Adjust UI
-    pInputFile->getMenus().center0->setChecked(centering == Centering::Zero);
-    pInputFile->getMenus().center7->setChecked(centering == Centering::Seven);
+    
+    pInputFile->setCentering(centering);
 
     int stickOffset = (centering == Centering::Seven) ? 7 : -7;
 
     // Iterate across data to readjust all stick values
-    const TtkFileData& data = pInputFile->getData();
+    auto data = pInputFile->getData();
     for (int i = 0; i < data.count(); i++)
     {
         for (int j = 3; j < 5; j++)
@@ -345,9 +350,15 @@ void TASToolKitEditor::addFileMenuItems()
     actionScrollTogether->setCheckable(true);
     actionScrollTogether->setChecked(false);
     menuFile->addAction(actionOpenPlayer);
-    menuFile->addAction(actionOpenGhost);
     menuFile->addAction(actionClosePlayer);
+
+    menuFile->addSeparator();
+
+    menuFile->addAction(actionOpenGhost);
     menuFile->addAction(actionCloseGhost);
+
+    menuFile->addSeparator();
+
     menuFile->addAction(actionSwapFiles);
     menuFile->addAction(actionScrollTogether);
     menuBar->addAction(menuFile->menuAction());
@@ -401,7 +412,7 @@ void TASToolKitEditor::setupUi()
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
     setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
-    setWindowFlags(Qt::Dialog);
+    
     addMenuItems();
 
     centralWidget = new QWidget(this);

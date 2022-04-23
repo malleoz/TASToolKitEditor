@@ -94,7 +94,7 @@ public:
     FileStatus loadFile(QString path);
     void closeFile();
     inline Centering getCentering() { return m_fileCentering; }
-    inline void setCentering(Centering center) { m_fileCentering = center; }
+    void setCentering(Centering center);
     inline void setTableView(QTableView* tableView) { pTableView = tableView; }
     inline QTableView* getTableView() { return pTableView; }
     const inline InputFileMenus& getMenus() { return m_menus; }

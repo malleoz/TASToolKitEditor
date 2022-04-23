@@ -78,7 +78,7 @@ private:
     void addFileMenuItems();
     void addPlayerMenuItems();
     void addGhostMenuItems();
-    void createInputFileInstances();
+    void createInputFiles();
     void showError(const QString& errTitle, const QString& errMsg);
     bool userClosedPreviousFile(InputFile* inputFile);
     void adjustInputCenteringMenu(InputFile* inputFile);
