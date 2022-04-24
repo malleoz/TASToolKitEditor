@@ -256,3 +256,16 @@ void InputFile::setCentering(Centering center)
     m_menus.center0->setChecked(center == Centering::Zero);
     m_menus.center7->setChecked(center == Centering::Seven);
 }
+
+void InputFile::applyStickOffset(int offset)
+{
+    // Iterate across data to readjust all stick values
+    for (int i = 0; i < m_fileData.count(); i++)
+    {
+        for (int j = 3; j < 5; j++)
+        {
+            QString strVal = m_fileData[i][j];
+            m_fileData[i][j] = QString::number(strVal.toInt() + offset);
+        }
+    }
+}

@@ -81,17 +81,7 @@ void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)
     pInputFile->setCentering(centering);
 
     int stickOffset = (centering == Centering::Seven) ? 7 : -7;
-
-    // Iterate across data to readjust all stick values
-    auto data = pInputFile->getData();
-    for (int i = 0; i < data.count(); i++)
-    {
-        for (int j = 3; j < 5; j++)
-        {
-            QString strVal = pInputFile->getCellValue(i, j);
-            pInputFile->setCellValue(i, j, QString::number(strVal.toInt() + stickOffset));
-        }
-    }
+    pInputFile->applyStickOffset(stickOffset);
 
     // So rather than have thousands of undo operations appear because of this operation,
     // just clear the stacks...

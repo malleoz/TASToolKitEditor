@@ -108,6 +108,7 @@ public:
     void onCellClicked(const QModelIndex& index);
     void swap(InputFile* rhs);
     inline void setModified(bool bSet) { m_bModified = bSet; }
+    void applyStickOffset(int offset);
 
 private:
 

@@ -7,6 +7,8 @@
 #include <QBrush>
 #include <QTableView>
 
+#define UNDO_STACK_LIMIT 100
+
 InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
     , m_pFile(pFile)
@@ -147,9 +149,20 @@ void InputFileModel::updateActionMenus()
 void InputFileModel::addToStack(CellEditAction action)
 {
     if (m_pFile->getRedoStack()->count() > 0)
+    {
         addToStackWithNonEmptyRedo(action);
+    }
     else
-        m_pFile->getUndoStack()->append(action);
+    {
+        TtkStack* undoStack = m_pFile->getUndoStack();
+        undoStack->push(action);
+
+        // Restrict max length
+        while (undoStack->count() > UNDO_STACK_LIMIT)
+        {
+            undoStack->pop_front();
+        }
+    }
     
     updateActionMenus();
 }
