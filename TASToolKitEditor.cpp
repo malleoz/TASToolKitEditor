@@ -222,7 +222,9 @@ void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
     }
     if (status == FileStatus::Parse)
     {
-        showError("Error Parsing File", QString("There is an issue with the file on line %1.\n").arg(inputFile->getParseError()));
+        QString errMsg = QString("There is an issue with the file on line %1.\n").arg(inputFile->getParseError());
+        errMsg += inputFile->getParseMsg();
+        showError("Error Parsing File", errMsg);
         return;
     }
 

@@ -118,6 +118,7 @@ public:
     inline void setModified(bool bSet) { m_bModified = bSet; }
     void applyStickOffset(int offset);
     void addData(int rowTemplate, int atRow, int count);
+    inline QString getParseMsg() { return m_sParseErrorVal; }
 
 private:
 
@@ -131,6 +132,7 @@ private:
     QLabel* pLabel;
     InputFileMenus m_menus;
     int m_frameParseError;
+    QString m_sParseErrorVal;
     QFileSystemWatcher* m_pFsWatcher;
     bool m_bModified;
     int m_iModifiedCheck;

@@ -65,6 +65,7 @@ InputFile::InputFile(const InputFileMenus& menus, QLabel* label, InputTableView*
     , m_menus(menus)
     , pLabel(label)
     , m_frameParseError(0)
+    , m_sParseErrorVal("")
     , m_pFsWatcher(nullptr)
     , m_bModified(false)
     , m_iModifiedCheck(0)
@@ -88,7 +89,6 @@ FileStatus InputFile::loadFile(QString path)
 
         if (!valuesFormattedProperly(frameData))
         {
-            m_frameParseError = m_fileData.count() + 1;
             clearData();
             return FileStatus::Parse;
         }
@@ -159,11 +159,19 @@ bool InputFile::valuesFormattedProperly(const QStringList& data)
 {
     // There should be 6 comma-separated values per line
     if (data.count() != NUM_INPUT_COLUMNS)
+    {
+        m_frameParseError = m_fileData.count() + 1;
+        m_sParseErrorVal = QString("Expected 6 comma-separated values, found %1.").arg(QString::number(data.count()));
         return false;
+    }
 
     // Certain columns have restricted values
     if (!valueRestrictionsAreMet(data))
+    {
+        m_frameParseError = m_fileData.count() + 1;
         return false;
+    }
+        
 
     // Place other error checks here
 
@@ -178,19 +186,28 @@ bool InputFile::valueRestrictionsAreMet(const QStringList& data)
         // so we need to manually catch it, since this value
         // won't work when used in Dolphin
         if (data[i] == "-0")
+        {
+            m_sParseErrorVal = QString("-0 is not a valid input.");
             return false;
+        }
 
         bool ret;
         int value = data[i].toInt(&ret);
 
         if (!ret)
+        {
+            m_sParseErrorVal = QString("Could not convert %1 to an integer.").arg(data[i]);
             return false;
+        }
 
         int smallestAcceptedVal = getSmallestAcceptedValue(i, value);
         int largestAcceptedVal = getLargestAcceptedValue(i, value);
 
         if (value > largestAcceptedVal || value < smallestAcceptedVal)
+        {
+            m_sParseErrorVal = QString("Expected a value between %1 and %2, got %3.").arg(QString::number(smallestAcceptedVal), QString::number(largestAcceptedVal), QString::number(value));
             return false;
+        }
     }
 
     return true;
