@@ -228,6 +228,9 @@ bool InputFile::ableToDiscernCentering(int value)
     else
         return false;
 
+    m_menus.center0->setEnabled(true);
+    m_menus.center7->setEnabled(true);
+
     return true;
 }
 
@@ -241,6 +244,8 @@ void InputFile::closeFile()
     pTableView->setVisible(false);
     m_menus.root->menuAction()->setVisible(false);
     m_menus.close->setEnabled(false);
+    m_menus.center0->setEnabled(false);
+    m_menus.center7->setEnabled(false);
 }
 
 bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
