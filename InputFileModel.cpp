@@ -13,6 +13,7 @@ InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
     : QAbstractTableModel(parent)
     , m_pFile(pFile)
     , m_bCellClicked(false)
+    , m_iTemplateRow(0)
 {
 }
 
@@ -103,6 +104,17 @@ QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, in
     return QVariant();
 }
 
+bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
+{
+    beginResetModel();
+
+    m_pFile->addData(m_iTemplateRow, row, count);
+
+    endResetModel();
+
+    return true;
+}
+
 bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!checkIndex(index))
@@ -116,7 +128,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
 
     if (m_bCellClicked)
     {
-        if ((Qt::CheckState)value.toInt() == Qt::Checked)
+        if (value.toInt() == Qt::Checked)
             curValue = "1";
         else
             curValue = "0";

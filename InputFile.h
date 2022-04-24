@@ -51,6 +51,7 @@ enum class EOperationType
     Redo,
 };
 
+typedef QVector<QString> FrameData;
 typedef QVector<QVector<QString>> TtkFileData;
 typedef QStack<CellEditAction> TtkStack;
 
@@ -116,6 +117,7 @@ public:
     void swap(InputFile* rhs);
     inline void setModified(bool bSet) { m_bModified = bSet; }
     void applyStickOffset(int offset);
+    void addData(int rowTemplate, int atRow, int count);
 
 private:
 

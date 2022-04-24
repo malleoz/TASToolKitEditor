@@ -50,6 +50,9 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
         }
         else
         {
+            InputFileModel* pModel = (InputFileModel*)model();
+            pModel->setTemplateRow(index.row());
+            pModel->insertRows(index.row() + 1, 1);
         }
     }
 }
@@ -305,4 +308,13 @@ void InputFile::applyStickOffset(int offset)
             m_fileData[i][j] = QString::number(strVal.toInt() + offset);
         }
     }
+}
+
+// Insert count new rows at index atRow using values from row rowTemplate
+void InputFile::addData(int rowTemplate, int atRow, int count)
+{
+    FrameData data = m_fileData[rowTemplate];
+
+    for (int i = 0; i < count; i++)
+        m_fileData.insert(atRow, data);
 }
