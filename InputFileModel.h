@@ -19,6 +19,9 @@ public:
     static void writeFileOnDisk(InputFile* pInputFile);
     void inline setCellClicked(bool bClicked) { m_bCellClicked = bClicked; }
 
+    inline void beginReset() { beginResetModel(); }
+    inline void endReset() { endResetModel(); }
+
 private:
     void inline setCachedFileData(int rowIdx, int colIdx, QString val);
     void addToStack(CellEditAction action);

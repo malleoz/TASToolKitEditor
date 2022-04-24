@@ -105,8 +105,13 @@ void InputFile::fileChanged()
         return;
     }
 
+    InputFileModel* pModel = (InputFileModel*)pTableView->model();
+    pModel->beginReset();
+
     m_fileData.clear();
     loadFile(m_filePath);
+
+    pModel->endReset();
 }
 
 void InputFile::clearData()
