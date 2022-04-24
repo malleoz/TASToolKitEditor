@@ -55,6 +55,8 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
             pModel->insertRows(index.row() + 1, 1);
         }
     }
+
+    QTableView::keyPressEvent(event);
 }
 
 InputFile::InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView)
