@@ -4,6 +4,7 @@
 #include <QAction>
 #include <QFile>
 #include <QFileSystemWatcher>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
 #include <QTableView>
@@ -22,7 +23,38 @@ bool CellEditAction::operator==(const CellEditAction& rhs)
     return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
 }
 
-InputFile::InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView)
+InputTableView::InputTableView(QWidget* parent)
+{
+}
+
+void InputTableView::keyPressEvent(QKeyEvent* event)
+{
+    // Allow user to scroll up or down with the use of the arrow keys
+    int key = event->key();
+    QModelIndex index = currentIndex();
+
+    if (key == Qt::Key_Up)
+    {
+        if (index.row() == 0)
+            return;
+
+        selectRow(index.row() - 1);
+        return;
+    }
+
+    if (key == Qt::Key_Down)
+    {
+        if (index.row() < model()->rowCount() - 1)
+        {
+            selectRow(index.row() + 1);
+        }
+        else
+        {
+        }
+    }
+}
+
+InputFile::InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView)
     : m_filePath("")
     , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)

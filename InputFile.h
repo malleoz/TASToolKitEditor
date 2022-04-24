@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStack>
+#include <QTableView>
 
 #define NUM_INPUT_COLUMNS 6
 #define FRAMECOUNT_COLUMN 1
@@ -58,8 +59,8 @@ class QFileSystemWatcher;
 class QLabel;
 class QMenu;
 class QModelIndex;
-class QTableView;
 class QVariant;
+class QWidget;
 
 struct InputFileMenus
 {
@@ -81,11 +82,17 @@ struct InputFileMenus
     QAction* center7;
 };
 
+class InputTableView : public QTableView
+{
+public:
+    InputTableView(QWidget* parent = nullptr);
+    void keyPressEvent(QKeyEvent* event) override;
+};
 
 class InputFile
 {
 public:
-    InputFile(const InputFileMenus& menus, QLabel* label, QTableView* tableView);
+    InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView);
 
     inline QString getPath() { return m_filePath; }
     const inline TtkFileData& getData() { return m_fileData; }
@@ -95,8 +102,8 @@ public:
     void closeFile();
     inline Centering getCentering() { return m_fileCentering; }
     void setCentering(Centering center);
-    inline void setTableView(QTableView* tableView) { pTableView = tableView; }
-    inline QTableView* getTableView() { return pTableView; }
+    inline void setTableView(InputTableView* tableView) { pTableView = tableView; }
+    inline InputTableView* getTableView() { return pTableView; }
     const inline InputFileMenus& getMenus() { return m_menus; }
     inline QLabel* getLabel() { return pLabel; }
     bool inputValid(const QModelIndex& index, const QVariant& value);
@@ -118,7 +125,7 @@ private:
     bool m_tableViewLoaded;
     QStack<CellEditAction> m_undoStack;
     QStack<CellEditAction> m_redoStack;
-    QTableView* pTableView;
+    InputTableView* pTableView;
     QLabel* pLabel;
     InputFileMenus m_menus;
     int m_frameParseError;

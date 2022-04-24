@@ -420,7 +420,7 @@ void TASToolKitEditor::setupUi()
     playerLabel->setVisible(false);
     playerVLayout->addWidget(playerLabel);
 
-    playerTableView = new QTableView(horizontalLayoutWidget);
+    playerTableView = new InputTableView(horizontalLayoutWidget);
     setTableViewSettings(playerTableView);
 
     playerVLayout->addWidget(playerTableView);
@@ -433,7 +433,7 @@ void TASToolKitEditor::setupUi()
     ghostLabel->setVisible(false);
     ghostVLayout->addWidget(ghostLabel);
 
-    ghostTableView = new QTableView(horizontalLayoutWidget);
+    ghostTableView = new InputTableView(horizontalLayoutWidget);
     setTableViewSettings(ghostTableView);
 
     ghostVLayout->addWidget(ghostTableView);

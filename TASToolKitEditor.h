@@ -22,6 +22,7 @@
 #include <QtWidgets/QMainWindow>
 
 class InputFile;
+class InputTableView;
 enum class EOperationType;
 enum class Centering;
 
@@ -52,10 +53,10 @@ private:
     QHBoxLayout* mainHorizLayout;
     QVBoxLayout* playerVLayout;
     QLabel* playerLabel;
-    QTableView* playerTableView;
+    InputTableView* playerTableView;
     QVBoxLayout* ghostVLayout;
     QLabel* ghostLabel;
-    QTableView* ghostTableView;
+    InputTableView* ghostTableView;
     QMenuBar* menuBar;
     QMenu* menuFile;
     QMenu* menuCenterPlayer;
