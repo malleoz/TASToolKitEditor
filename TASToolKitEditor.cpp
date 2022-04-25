@@ -168,6 +168,8 @@ void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
 
     if (action.row() < rowUpper || action.row() > rowLower)
         pInputFile->getTableView()->scrollTo(pInputFile->getTableView()->model()->index(action.row(), 0));
+
+    InputFileModel::writeFileOnDisk(pInputFile);
 }
 
 void TASToolKitEditor::closeFile(InputFile* pInputFile)
