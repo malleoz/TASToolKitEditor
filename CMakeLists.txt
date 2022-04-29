@@ -49,13 +49,15 @@ if(WIN32)
 		get_target_property(WIDGETDLL Qt5::QWindowsIntegrationPlugin IMPORTED_LOCATION_RELEASE)
 	endif($<CONFIG:Debug>)
 	
+        #TODO: use different copy solution for QWindows
+
 	add_custom_command(
 		TARGET TTKEditor POST_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Widgets> $<TARGET_FILE_DIR:TTKEditor>
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Core> $<TARGET_FILE_DIR:TTKEditor>
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Gui> $<TARGET_FILE_DIR:TTKEditor>
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin> $<TARGET_FILE_DIR:TTKEditor>
-		COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin> $<TARGET_FILE_DIR:TTKEditor>
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin> "$<TARGET_FILE_DIR:TTKEditor>/platforms/qwindows.dll"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin> "$<TARGET_FILE_DIR:TTKEditor>/styles/qwindowsvistastyle.dll"
 	)
 endif(WIN32)
 
