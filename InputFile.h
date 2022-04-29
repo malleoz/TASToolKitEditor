@@ -3,9 +3,13 @@
 #include <QStack>
 #include <QTableView>
 
+#include "InputTableView.h"
+
 #define NUM_INPUT_COLUMNS 6
 #define FRAMECOUNT_COLUMN 1
 #define DPAD_COL_IDX 5
+
+
 
 enum class FileStatus
 {
@@ -29,7 +33,7 @@ enum class EOperationType
 };
 
 typedef QVector<QString> FrameData;
-typedef QVector<QVector<QString>> TtkFileData;
+typedef QVector<FrameData> TtkFileData;
 
 class QAction;
 class QFileSystemWatcher;
@@ -59,13 +63,40 @@ struct InputFileMenus
     QAction* center7;
 };
 
-/// Custom QTableView to implement QoL features
-class InputTableView : public QTableView
+
+
+class InputFileHandler
 {
+
 public:
-    InputTableView(QWidget* parent = nullptr);
-    void keyPressEvent(QKeyEvent* event) override;
+    InputFileHandler();
+
+    FileStatus loadFile(const QString path, TtkFileData& o_emptyTTK, Centering o_centering);
+    void closeFile();
+    void fileChanged();
+
+
+    inline QString getPath() { return m_filePath; }
+    inline QFileSystemWatcher* getFsWatcher() { return m_pFsWatcher; }
+
+    inline uint32_t getParseError() { return m_frameParseError; }
+    inline QString getParseMsg() { return m_ParseErrorDesc; }
+
+private:
+    bool checkFormatting(const QStringList& data, const Centering centering);
+    Centering getCentering(const QStringList& data) const;
+
+    bool checkCentering(const Centering centering, const int32_t value) const;
+
+private:
+    QString m_filePath;
+    QFileSystemWatcher* m_pFsWatcher;
+
+
+    uint32_t m_frameParseError;
+    QString m_ParseErrorDesc;
 };
+
 
 
 /// Data manager and controller for the \ref<InputTableView>
