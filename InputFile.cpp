@@ -41,23 +41,24 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
         selectRow(index.row() - 1);
         return;
     }
-
-    if (key == Qt::Key_Down)
+    else if (key == Qt::Key_Down)
     {
-        if (index.row() < model()->rowCount() - 1)
-        {
-            selectRow(index.row() + 1);
-        }
-        else
-        {
+        if (index.row() >= model()->rowCount() - 1) {
             InputFileModel* pModel = (InputFileModel*)model();
             pModel->setTemplateRow(index.row());
             pModel->insertRows(index.row() + 1, 1);
         }
+
+        selectRow(index.row() + 1);
+        return;
     }
 
     QTableView::keyPressEvent(event);
 }
+
+
+
+//########### Start of Input File
 
 InputFile::InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView)
     : m_filePath("")
