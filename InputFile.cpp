@@ -10,7 +10,7 @@
 #include <QTableView>
 #include <QTextStream>
 
-CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
+InputFile::CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
     : m_rowIdx(row)
     , m_colIdx(col)
     , m_prev(prev)
@@ -18,7 +18,7 @@ CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
 {
 }
 
-bool CellEditAction::operator==(const CellEditAction& rhs)
+bool InputFile::CellEditAction::operator==(const CellEditAction& rhs)
 {
     return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
 }

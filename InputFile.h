@@ -21,30 +21,6 @@ enum class Centering
     Zero,
 };
 
-/// Class for storing latest table edits
-class CellEditAction
-{
-public:
-    CellEditAction(int row = 0, int col = 0, QString prev = "", QString cur = "");
-
-    bool operator==(const CellEditAction& rhs);
-    inline void flipValues()
-    {
-        QString temp = m_cur;
-        m_cur = m_prev;
-        m_prev = temp;
-    }
-    inline int row() { return m_rowIdx; }
-    inline int col() { return m_colIdx; }
-    inline QString curVal() { return m_cur; }
-
-private:
-    int m_rowIdx;
-    int m_colIdx;
-    QString m_prev;
-    QString m_cur;
-};
-
 enum class EOperationType
 {
     Normal = 0,
@@ -54,7 +30,6 @@ enum class EOperationType
 
 typedef QVector<QString> FrameData;
 typedef QVector<QVector<QString>> TtkFileData;
-typedef QStack<CellEditAction> TtkStack;
 
 class QAction;
 class QFileSystemWatcher;
@@ -96,6 +71,33 @@ public:
 /// Data manager and controller for the \ref<InputTableView>
 class InputFile
 {
+public:
+    /// Class for storing latest table edits
+    class CellEditAction
+    {
+    public:
+        CellEditAction(int row = 0, int col = 0, QString prev = "", QString cur = "");
+
+        bool operator==(const CellEditAction& rhs);
+        inline void flipValues()
+        {
+            QString temp = m_cur;
+            m_cur = m_prev;
+            m_prev = temp;
+        }
+        inline int row() { return m_rowIdx; }
+        inline int col() { return m_colIdx; }
+        inline QString curVal() { return m_cur; }
+
+    private:
+        int m_rowIdx;
+        int m_colIdx;
+        QString m_prev;
+        QString m_cur;
+    };
+
+    typedef QStack<CellEditAction> TtkStack;
+
 public:
     InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView);
 

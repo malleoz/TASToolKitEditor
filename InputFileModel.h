@@ -27,8 +27,8 @@ public:
 
 private:
     void inline setCachedFileData(int rowIdx, int colIdx, QString val);
-    void addToStack(CellEditAction action);
-    void addToStackWithNonEmptyRedo(CellEditAction action);
+    void addToStack(InputFile::CellEditAction action);
+    void addToStackWithNonEmptyRedo(InputFile::CellEditAction action);
     void updateActionMenus();
 
     InputFile* m_pFile;

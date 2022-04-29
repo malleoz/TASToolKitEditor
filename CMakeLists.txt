@@ -21,9 +21,11 @@ find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 add_executable(TTKEditor
     main.cpp
-    TASToolKitEditor.cpp
+    TTKMainWindow.cpp
     InputFile.cpp
     InputFileModel.cpp
+    InputFileMenu.cpp
+    InputTableView.cpp
 )
 
 target_include_directories(TTKEditor PUBLIC

@@ -26,12 +26,12 @@ class InputTableView;
 enum class EOperationType;
 enum class Centering;
 
-class TASToolKitEditor : public QMainWindow
+class TTKMainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    TASToolKitEditor(QWidget *parent = Q_NULLPTR);
+    TTKMainWindow(QWidget *parent = Q_NULLPTR);
 
 private:
     QAction* actionUndoPlayer;
