@@ -1,4 +1,4 @@
-#include "TASToolKitEditor.h"
+#include "TTKMainWindow.h"
 
 #include "InputFile.h"
 #include "InputFileModel.h"
@@ -24,7 +24,7 @@
 #define DOUBLE_FILE_WINDOW_WIDTH (SINGLE_FILE_WINDOW_WIDTH * 2)
 #define DEFAULT_WINDOW_HEIGHT 500
 
-TASToolKitEditor::TASToolKitEditor(QWidget *parent)
+TTKMainWindow::TTKMainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi();
@@ -32,7 +32,7 @@ TASToolKitEditor::TASToolKitEditor(QWidget *parent)
     connectActions();
 }
 
-void TASToolKitEditor::createInputFiles()
+void TTKMainWindow::createInputFiles()
 {
     InputFileMenus playerMenus = InputFileMenus(menuPlayer,
                                                 actionUndoPlayer,
@@ -52,7 +52,7 @@ void TASToolKitEditor::createInputFiles()
     ghostFile = new InputFile(ghostMenus, ghostLabel, ghostTableView);
 }
 
-void TASToolKitEditor::connectActions()
+void TTKMainWindow::connectActions()
 {
     connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(playerFile); });
     connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(ghostFile); });
@@ -62,7 +62,7 @@ void TASToolKitEditor::connectActions()
     connect(actionUndoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
     connect(actionRedoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
     connect(actionRedoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
-    connect(actionScrollTogether, &QAction::toggled, this, &TASToolKitEditor::onToggleScrollTogether);
+    connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
     connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
     connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
     connect(action0CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Zero); });
@@ -72,7 +72,7 @@ void TASToolKitEditor::connectActions()
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
 }
 
-void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)
+void TTKMainWindow::onReCenter(InputFile* pInputFile, Centering centering)
 {
     Centering curCentering = pInputFile->getCentering();
     if (curCentering == centering || curCentering == Centering::Unknown)
@@ -92,7 +92,7 @@ void TASToolKitEditor::onReCenter(InputFile* pInputFile, Centering centering)
     InputFileModel::writeFileOnDisk(pInputFile);
 }
 
-void TASToolKitEditor::onScroll(InputFile* pInputFile)
+void TTKMainWindow::onScroll(InputFile* pInputFile)
 {
     if (!m_bScrollTogether)
         return;
@@ -112,7 +112,7 @@ void TASToolKitEditor::onScroll(InputFile* pInputFile)
     scrollToFirstTable(pInputFile->getTableView(), otherFile->getTableView());
 }
 
-void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
+void TTKMainWindow::onToggleScrollTogether(bool bTogether)
 {
     m_bScrollTogether = bTogether;
 
@@ -125,7 +125,7 @@ void TASToolKitEditor::onToggleScrollTogether(bool bTogether)
     scrollToFirstTable(playerTableView, ghostTableView);
 }
 
-void TASToolKitEditor::scrollToFirstTable(QTableView* dst, QTableView* src)
+void TTKMainWindow::scrollToFirstTable(QTableView* dst, QTableView* src)
 {
     int dstTopRow = dst->rowAt(0);
     QModelIndex index = src->model()->index(dstTopRow, 0);
@@ -133,12 +133,12 @@ void TASToolKitEditor::scrollToFirstTable(QTableView* dst, QTableView* src)
     src->scrollTo(index, QAbstractItemView::PositionAtTop);
 }
 
-void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
+void TTKMainWindow::onUndoRedo(InputFile* pInputFile, EOperationType opType)
 {
     bool bUndo = opType == EOperationType::Undo;
 
-    TtkStack* undoStack = pInputFile->getUndoStack();
-    TtkStack* redoStack = pInputFile->getRedoStack();
+    InputFile::TtkStack* undoStack = pInputFile->getUndoStack();
+    InputFile::TtkStack* redoStack = pInputFile->getRedoStack();
 
     // Refuse operation if the associated stack is empty
     if (bUndo && undoStack->count() == 0)
@@ -146,7 +146,7 @@ void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
     if (!bUndo && redoStack->count() == 0)
         return;
 
-    CellEditAction action = bUndo ? undoStack->pop() : redoStack->pop();
+    InputFile::CellEditAction action = bUndo ? undoStack->pop() : redoStack->pop();
     action.flipValues();
 
     if (bUndo)
@@ -172,14 +172,14 @@ void TASToolKitEditor::onUndoRedo(InputFile* pInputFile, EOperationType opType)
     InputFileModel::writeFileOnDisk(pInputFile);
 }
 
-void TASToolKitEditor::closeFile(InputFile* pInputFile)
+void TTKMainWindow::closeFile(InputFile* pInputFile)
 {
     pInputFile->closeFile();
     m_filesLoaded--;
     adjustUiOnFileClose(pInputFile);
 }
 
-bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
+bool TTKMainWindow::userClosedPreviousFile(InputFile* inputFile)
 {
     // Have user confirm they want to close file
     QMessageBox::StandardButton reply;
@@ -193,7 +193,7 @@ bool TASToolKitEditor::userClosedPreviousFile(InputFile* inputFile)
     return true;
 }
 
-void TASToolKitEditor::openFile(InputFile* inputFile)
+void TTKMainWindow::openFile(InputFile* inputFile)
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
 
@@ -206,7 +206,7 @@ void TASToolKitEditor::openFile(InputFile* inputFile)
     openFile(inputFile, filePath);
 }
 
-void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
+void TTKMainWindow::openFile(InputFile* inputFile, QString filePath)
 {
     if (filePath == playerFile->getPath() || filePath == ghostFile->getPath())
     {
@@ -241,7 +241,7 @@ void TASToolKitEditor::openFile(InputFile* inputFile, QString filePath)
     connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 }
 
-void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
+void TTKMainWindow::adjustUiOnFileLoad(InputFile* pInputFile)
 {
     adjustInputCenteringMenu(pInputFile);
     pInputFile->getMenus().root->menuAction()->setVisible(true);
@@ -277,7 +277,7 @@ void TASToolKitEditor::adjustUiOnFileLoad(InputFile* pInputFile)
     }
 }
 
-void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
+void TTKMainWindow::adjustUiOnFileClose(InputFile* pInputFile)
 {
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
     setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
@@ -285,7 +285,7 @@ void TASToolKitEditor::adjustUiOnFileClose(InputFile* pInputFile)
     adjustMenuOnClose(pInputFile);
 }
 
-void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
+void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
 {
     Centering fileCentering = inputFile->getCentering();
 
@@ -293,7 +293,7 @@ void TASToolKitEditor::adjustInputCenteringMenu(InputFile* inputFile)
     inputFile->getMenus().center0->setChecked(fileCentering == Centering::Zero);
 }
 
-void TASToolKitEditor::adjustMenuOnClose(InputFile* inputFile)
+void TTKMainWindow::adjustMenuOnClose(InputFile* inputFile)
 {
     if (m_filesLoaded == 0)
     {
@@ -307,19 +307,19 @@ void TASToolKitEditor::adjustMenuOnClose(InputFile* inputFile)
     actionScrollTogether->setChecked(false);
 }
 
-void TASToolKitEditor::setTableViewSettings(QTableView* pTable)
+void TTKMainWindow::setTableViewSettings(QTableView* pTable)
 {
     pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTable->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement
     pTable->setVisible(false);
 }
 
-void TASToolKitEditor::showError(const QString& errTitle, const QString& errMsg)
+void TTKMainWindow::showError(const QString& errTitle, const QString& errMsg)
 {
     QMessageBox::warning(this, errTitle, errMsg, QMessageBox::Ok);
 }
 
-void TASToolKitEditor::addMenuItems()
+void TTKMainWindow::addMenuItems()
 {
     setMenuBar(menuBar = new QMenuBar(this));
 
@@ -328,7 +328,7 @@ void TASToolKitEditor::addMenuItems()
     addGhostMenuItems();
 }
 
-void TASToolKitEditor::addFileMenuItems()
+void TTKMainWindow::addFileMenuItems()
 {
     menuFile = new QMenu(menuBar);
     actionOpenPlayer = new QAction(this);
@@ -358,7 +358,7 @@ void TASToolKitEditor::addFileMenuItems()
     menuBar->addAction(menuFile->menuAction());
 }
 
-void TASToolKitEditor::addPlayerMenuItems()
+void TTKMainWindow::addPlayerMenuItems()
 {
     menuPlayer = new QMenu(menuBar);
     menuPlayer->menuAction()->setVisible(false);
@@ -379,7 +379,7 @@ void TASToolKitEditor::addPlayerMenuItems()
     menuBar->addAction(menuPlayer->menuAction());
 }
 
-void TASToolKitEditor::addGhostMenuItems()
+void TTKMainWindow::addGhostMenuItems()
 {
     menuGhost = new QMenu(menuBar);
     menuGhost->menuAction()->setVisible(false);
@@ -401,7 +401,7 @@ void TASToolKitEditor::addGhostMenuItems()
     menuBar->addAction(menuGhost->menuAction());
 }
 
-void TASToolKitEditor::setupUi()
+void TTKMainWindow::setupUi()
 {
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
     setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
@@ -452,13 +452,13 @@ void TASToolKitEditor::setupUi()
     setTitles();
 }
 
-void TASToolKitEditor::setTitles()
+void TTKMainWindow::setTitles()
 {
     setTitleNames();
     setTitleShortcuts();
 }
 
-void TASToolKitEditor::setTitleNames()
+void TTKMainWindow::setTitleNames()
 {
     setWindowTitle("TTK Input Editor");
     actionUndoPlayer->setText("Undo");
@@ -484,7 +484,7 @@ void TASToolKitEditor::setTitleNames()
     menuGhost->setTitle("Ghost");
 }
 
-void TASToolKitEditor::setTitleShortcuts()
+void TTKMainWindow::setTitleShortcuts()
 {
 #if QT_CONFIG(shortcut)
     actionUndoPlayer->setShortcut(QString("Ctrl+Z"));

@@ -144,7 +144,7 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     }
 
     setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
-    addToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
     writeFileOnDisk(m_pFile);
 
     m_pFile->getTableView()->viewport()->update();
@@ -158,7 +158,7 @@ void InputFileModel::updateActionMenus()
     m_pFile->getMenus().redo->setEnabled(m_pFile->getRedoStack()->count() > 0);
 }
 
-void InputFileModel::addToStack(CellEditAction action)
+void InputFileModel::addToStack(InputFile::CellEditAction action)
 {
     if (m_pFile->getRedoStack()->count() > 0)
     {
@@ -166,7 +166,7 @@ void InputFileModel::addToStack(CellEditAction action)
     }
     else
     {
-        TtkStack* undoStack = m_pFile->getUndoStack();
+        InputFile::TtkStack* undoStack = m_pFile->getUndoStack();
         undoStack->push(action);
 
         // Restrict max length
@@ -179,9 +179,9 @@ void InputFileModel::addToStack(CellEditAction action)
     updateActionMenus();
 }
 
-void InputFileModel::addToStackWithNonEmptyRedo(CellEditAction action)
+void InputFileModel::addToStackWithNonEmptyRedo(InputFile::CellEditAction action)
 {
-    CellEditAction redoTop = m_pFile->getRedoStack()->top();
+    InputFile::CellEditAction redoTop = m_pFile->getRedoStack()->top();
     redoTop.flipValues();
 
     // Scenario 1: user performs same action as in top of redo stack
