@@ -22,6 +22,7 @@
 #include <QtWidgets/QMainWindow>
 
 class InputFile;
+class InputFileMenu;
 class InputTableView;
 enum class EOperationType;
 enum class Centering;
@@ -34,18 +35,11 @@ public:
     TTKMainWindow(QWidget *parent = Q_NULLPTR);
 
 private:
-    QAction* actionUndoPlayer;
-    QAction* actionRedoPlayer;
-    QAction* actionUndoGhost;
-    QAction* actionRedoGhost;
+    InputFileMenu* m_pPlayerMenu;
+    InputFileMenu* m_pGhostMenu;
+
     QAction* actionOpenPlayer;
     QAction* actionOpenGhost;
-    QAction* actionClosePlayer;
-    QAction* actionCloseGhost;
-    QAction* action0CenteredPlayer;
-    QAction* action0CenteredGhost;
-    QAction* action7CenteredPlayer;
-    QAction* action7CenteredGhost;
     QAction* actionSwapFiles;
     QAction* actionScrollTogether;
     QWidget* centralWidget;
@@ -59,10 +53,6 @@ private:
     InputTableView* ghostTableView;
     QMenuBar* menuBar;
     QMenu* menuFile;
-    QMenu* menuCenterPlayer;
-    QMenu* menuCenterGhost;
-    QMenu* menuPlayer;
-    QMenu* menuGhost;
 
     InputFile* playerFile;
     InputFile* ghostFile;
@@ -77,8 +67,6 @@ private:
     void connectActions();
     void addMenuItems();
     void addFileMenuItems();
-    void addPlayerMenuItems();
-    void addGhostMenuItems();
     void createInputFiles();
     void showError(const QString& errTitle, const QString& errMsg);
     bool userClosedPreviousFile(InputFile* inputFile);
@@ -94,6 +82,6 @@ private:
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onScroll(InputFile* pInputFile);
     void onToggleScrollTogether(bool bTogether);
-    void onReCenter(InputFile* pInputFile, Centering centering);
+    void onReCenter(InputFile* pInputFile);
     void scrollToFirstTable(QTableView* dst, QTableView* src);
 };

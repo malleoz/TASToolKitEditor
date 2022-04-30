@@ -101,6 +101,7 @@
     <QtMoc Include="InputTableView.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Definitions.h" />
     <ClInclude Include="InputFile.h" />
     <QtMoc Include="InputFileMenu.h" />
   </ItemGroup>

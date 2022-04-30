@@ -1,6 +1,7 @@
 #include "TTKMainWindow.h"
 
 #include "InputFile.h"
+#include "InputFileMenu.h"
 #include "InputFileModel.h"
 
 #include <QFileDialog>
@@ -34,53 +35,39 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
 
 void TTKMainWindow::createInputFiles()
 {
-    InputFileMenus playerMenus = InputFileMenus(menuPlayer,
-                                                actionUndoPlayer,
-                                                actionRedoPlayer,
-                                                actionClosePlayer,
-                                                action0CenteredPlayer,
-                                                action7CenteredPlayer);
-
-    InputFileMenus ghostMenus = InputFileMenus(menuGhost,
-                                               actionUndoGhost,
-                                               actionRedoGhost,
-                                               actionCloseGhost,
-                                               action0CenteredGhost,
-                                               action7CenteredGhost);
-
-    playerFile = new InputFile(playerMenus, playerLabel, playerTableView);
-    ghostFile = new InputFile(ghostMenus, ghostLabel, ghostTableView);
+    playerFile = new InputFile(m_pPlayerMenu, playerLabel, playerTableView);
+    ghostFile = new InputFile(m_pGhostMenu, ghostLabel, ghostTableView);
 }
 
 void TTKMainWindow::connectActions()
 {
     connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(playerFile); });
     connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(ghostFile); });
-    connect(actionClosePlayer, &QAction::triggered, this, [this]() { closeFile(playerFile); });
-    connect(actionCloseGhost, &QAction::triggered, this, [this]() { closeFile(ghostFile); });
-    connect(actionUndoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
-    connect(actionUndoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
-    connect(actionRedoPlayer, &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
-    connect(actionRedoGhost, &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
+    connect(m_pPlayerMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(playerFile); });
+    connect(m_pGhostMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(ghostFile); });
+    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
+    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
+    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
+    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
     connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
     connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
-    connect(action0CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Zero); });
-    connect(action0CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Zero); });
-    connect(action7CenteredPlayer, &QAction::triggered, this, [this]() { onReCenter(playerFile, Centering::Seven); });
-    connect(action7CenteredGhost, &QAction::triggered, this, [this]() { onReCenter(ghostFile, Centering::Seven); });
+    connect(m_pPlayerMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(playerFile); });
+    connect(m_pGhostMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(ghostFile); });
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
 }
 
-void TTKMainWindow::onReCenter(InputFile* pInputFile, Centering centering)
+void TTKMainWindow::onReCenter(InputFile* pInputFile)
 {
     Centering curCentering = pInputFile->getCentering();
-    if (curCentering == centering || curCentering == Centering::Unknown)
+    if (curCentering == Centering::Unknown)
         return;
-    
-    pInputFile->setCentering(centering);
 
-    int stickOffset = (centering == Centering::Seven) ? 7 : -7;
+    Centering newCentering = (curCentering == Centering::Seven) ? Centering::Zero : Centering::Seven;
+    
+    pInputFile->setCentering(newCentering);
+
+    int stickOffset = (newCentering == Centering::Seven) ? 7 : -7;
     pInputFile->applyStickOffset(stickOffset);
 
     // So rather than have thousands of undo operations appear because of this operation,
@@ -158,8 +145,8 @@ void TTKMainWindow::onUndoRedo(InputFile* pInputFile, EOperationType opType)
     emit pInputFile->getTableView()->model()->layoutChanged();
 
     // Adjust menu items
-    pInputFile->getMenus().redo->setEnabled(redoStack->count() > 0);
-    pInputFile->getMenus().undo->setEnabled(undoStack->count() > 0);
+    pInputFile->getMenus()->getRedo()->setEnabled(redoStack->count() > 0);
+    pInputFile->getMenus()->getUndo()->setEnabled(undoStack->count() > 0);
 
     // Move tableview to the row that was just modified
     // Determine if the row is visible on-screen right now
@@ -216,7 +203,7 @@ void TTKMainWindow::openFile(InputFile* inputFile, QString filePath)
 
     FileStatus status = inputFile->loadFile(filePath);
 
-    if (status == FileStatus::WritePermission)
+    if (status == FileStatus::InsufficientWritePermission)
     {
         showError("Error Opening File", "This program does not have sufficient permissions to modify the file.\n\n" \
             "Try running this program in administrator mode and make sure the file is not open in another program.");
@@ -244,8 +231,7 @@ void TTKMainWindow::openFile(InputFile* inputFile, QString filePath)
 void TTKMainWindow::adjustUiOnFileLoad(InputFile* pInputFile)
 {
     adjustInputCenteringMenu(pInputFile);
-    pInputFile->getMenus().root->menuAction()->setVisible(true);
-    pInputFile->getMenus().close->setEnabled(true);
+    pInputFile->getMenus()->menuAction()->setVisible(true);
     pInputFile->getLabel()->setVisible(true);
 
     QTableView* pTable = pInputFile->getTableView();
@@ -293,18 +279,21 @@ void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
 {
     Centering fileCentering = inputFile->getCentering();
 
-    inputFile->getMenus().center7->setChecked(fileCentering == Centering::Seven);
-    inputFile->getMenus().center0->setChecked(fileCentering == Centering::Zero);
+    if (fileCentering == Centering::Unknown)
+    {
+        inputFile->getMenus()->getCenter7()->setChecked(false);
+        inputFile->getMenus()->getCenter7()->setEnabled(false);
+        return;
+    }
+
+    inputFile->getMenus()->getCenter7()->setEnabled(true);
+    inputFile->getMenus()->getCenter7()->setChecked(fileCentering == Centering::Seven);
 }
 
 void TTKMainWindow::adjustMenuOnClose(InputFile* inputFile)
 {
     if (m_filesLoaded == 0)
-    {
-        inputFile->getMenus().center7->setChecked(false);
-        inputFile->getMenus().center0->setChecked(false);
         actionSwapFiles->setEnabled(false);
-    }
     
     m_bScrollTogether = false;
     actionScrollTogether->setEnabled(false);
@@ -328,8 +317,12 @@ void TTKMainWindow::addMenuItems()
     setMenuBar(menuBar = new QMenuBar(this));
 
     addFileMenuItems();
-    addPlayerMenuItems();
-    addGhostMenuItems();
+
+    m_pPlayerMenu = new InputFileMenu("Player", "Ctrl+");
+    m_pGhostMenu = new InputFileMenu("Ghost", "Ctrl+");
+
+    menuBar->addAction(m_pPlayerMenu->menuAction());
+    menuBar->addAction(m_pGhostMenu->menuAction());
 }
 
 void TTKMainWindow::addFileMenuItems()
@@ -337,10 +330,6 @@ void TTKMainWindow::addFileMenuItems()
     menuFile = new QMenu(menuBar);
     actionOpenPlayer = new QAction(this);
     actionOpenGhost = new QAction(this);
-    actionClosePlayer = new QAction(this);
-    actionClosePlayer->setEnabled(false);
-    actionCloseGhost = new QAction(this);
-    actionCloseGhost->setEnabled(false);
     actionSwapFiles = new QAction(this);
     actionSwapFiles->setEnabled(false);
     actionScrollTogether = new QAction(this);
@@ -348,61 +337,16 @@ void TTKMainWindow::addFileMenuItems()
     actionScrollTogether->setCheckable(true);
     actionScrollTogether->setChecked(false);
     menuFile->addAction(actionOpenPlayer);
-    menuFile->addAction(actionClosePlayer);
 
     menuFile->addSeparator();
 
     menuFile->addAction(actionOpenGhost);
-    menuFile->addAction(actionCloseGhost);
 
     menuFile->addSeparator();
 
     menuFile->addAction(actionSwapFiles);
     menuFile->addAction(actionScrollTogether);
     menuBar->addAction(menuFile->menuAction());
-}
-
-void TTKMainWindow::addPlayerMenuItems()
-{
-    menuPlayer = new QMenu(menuBar);
-    menuPlayer->menuAction()->setVisible(false);
-    actionUndoPlayer = new QAction(this);
-    actionUndoPlayer->setEnabled(false);
-    actionRedoPlayer = new QAction(this);
-    actionRedoPlayer->setEnabled(false);
-    action0CenteredPlayer = new QAction(this);
-    action0CenteredPlayer->setCheckable(true);
-    action7CenteredPlayer = new QAction(this);
-    action7CenteredPlayer->setCheckable(true);
-    menuCenterPlayer = new QMenu(menuFile);
-    menuCenterPlayer->addAction(action0CenteredPlayer);
-    menuCenterPlayer->addAction(action7CenteredPlayer);
-    menuPlayer->addAction(actionUndoPlayer);
-    menuPlayer->addAction(actionRedoPlayer);
-    menuPlayer->addAction(menuCenterPlayer->menuAction());
-    menuBar->addAction(menuPlayer->menuAction());
-}
-
-void TTKMainWindow::addGhostMenuItems()
-{
-    menuGhost = new QMenu(menuBar);
-    menuGhost->menuAction()->setVisible(false);
-    actionUndoGhost = new QAction(this);
-    actionUndoGhost->setEnabled(false);
-    actionRedoGhost = new QAction(this);
-    actionRedoGhost->setEnabled(false);
-    action0CenteredGhost = new QAction(this);
-    action0CenteredGhost->setCheckable(true);
-    action7CenteredGhost = new QAction(this);
-    action7CenteredGhost->setCheckable(true);
-    menuCenterGhost = new QMenu(menuFile);
-    menuCenterGhost->addAction(action0CenteredGhost);
-    menuCenterGhost->addAction(action7CenteredGhost);
-
-    menuGhost->addAction(actionUndoGhost);
-    menuGhost->addAction(actionRedoGhost);
-    menuGhost->addAction(menuCenterGhost->menuAction());
-    menuBar->addAction(menuGhost->menuAction());
 }
 
 void TTKMainWindow::setupUi()
@@ -465,39 +409,19 @@ void TTKMainWindow::setTitles()
 void TTKMainWindow::setTitleNames()
 {
     setWindowTitle("TTK Input Editor");
-    actionUndoPlayer->setText("Undo");
-    actionRedoPlayer->setText("Redo");
-    actionUndoGhost->setText("Undo");
-    actionRedoGhost->setText("Redo");
     actionOpenPlayer->setText("Open Player");
     actionOpenGhost->setText("Open Ghost");
-    actionClosePlayer->setText("Close Player");
-    actionCloseGhost->setText("Close Ghost");
-    action0CenteredGhost->setText("0 Centered");
-    action0CenteredPlayer->setText("0 Centered");
-    action7CenteredGhost->setText("7 Centered");
-    action7CenteredPlayer->setText("7 Centered");
     actionSwapFiles->setText("Swap Player and Ghost");
     actionScrollTogether->setText("Scroll Together");
     playerLabel->setText("Player");
     ghostLabel->setText("Ghost");
     menuFile->setTitle("File");
-    menuCenterGhost->setTitle("Input Centering");
-    menuCenterPlayer->setTitle("Input Centering");
-    menuPlayer->setTitle("Player");
-    menuGhost->setTitle("Ghost");
 }
 
 void TTKMainWindow::setTitleShortcuts()
 {
 #if QT_CONFIG(shortcut)
-    actionUndoPlayer->setShortcut(QString("Ctrl+Z"));
-    actionRedoPlayer->setShortcut(QString("Ctrl+Y"));
-    actionUndoGhost->setShortcut(QString("Ctrl+Shift+Z"));
-    actionRedoGhost->setShortcut(QString("Ctrl+Shift+Y"));
     actionOpenPlayer->setShortcut(QString("Ctrl+O"));
     actionOpenGhost->setShortcut(QString("Ctrl+Shift+O"));
-    actionClosePlayer->setShortcut(QString("Esc"));
-    actionCloseGhost->setShortcut(QString("Shift+Esc"));
 #endif
 }

@@ -7,24 +7,32 @@
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
+#include <QMessageBox>
 #include <QTableView>
 #include <QTextStream>
 
 
-InputFileHandler::InputFileHandler()
-    : m_filePath("")
+InputFileHandler::InputFileHandler(QString path)
+    : m_filePath(path)
     , m_pFsWatcher(Q_NULLPTR)
-    , m_frameParseError(0)
-    , m_ParseErrorDesc("")
 {
 }
 
 
-FileStatus InputFileHandler::loadFile(const QString path, TTKFileData& o_emptyTTK, Centering o_centering)
+FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_centering)
 {
-    QFile fp(path);
+    QFile fp(m_filePath);
+
     if (!fp.open(QIODevice::ReadWrite))
-        return FileStatus::WritePermission;
+    {
+        QString errorTitle = "Error Opening File";
+        QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \
+            "Try running this program in administrator mode and make sure the file is not open in another program.";
+        QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
+
+        fp.close();
+        return FileStatus::InsufficientWritePermission;;
+    }
 
     QTextStream ts(&fp);
 
@@ -35,15 +43,23 @@ FileStatus InputFileHandler::loadFile(const QString path, TTKFileData& o_emptyTT
         QString line = ts.readLine();
         QStringList frameData = line.split(',');
 
-        if (!checkFormatting(frameData, o_centering))
+        ParseStatus formatStatus = checkFormatting(frameData, o_centering);
+
+
+        if (formatStatus != ParseStatus::Success)
         {
-            m_frameParseError = static_cast<uint32_t>(o_emptyTTK.count());
+            uint32_t errorFrame = static_cast<uint32_t>(o_emptyTTK.count());
+            QString errorTitle = "Error Parsing File";
+            QString errorMsg = DefinitionUtils::TranslateParseStatusToErrorString(formatStatus, errorFrame);
+            QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
 
             m_filePath = "";
             o_emptyTTK.clear();
 
+            fp.close();
             return FileStatus::Parse;
         }
+
         if (o_centering == Centering::Unknown)
         {
             o_centering = getCentering(frameData);
@@ -51,21 +67,19 @@ FileStatus InputFileHandler::loadFile(const QString path, TTKFileData& o_emptyTT
         o_emptyTTK.append(frameData.toVector());
     }
 
-    m_pFsWatcher = new QFileSystemWatcher(QStringList(path));
-    m_filePath = path;
+    m_pFsWatcher = new QFileSystemWatcher(QStringList(m_filePath));
+
+    fp.close();
 
     return FileStatus::Success;
 }
 
 
-bool InputFileHandler::checkFormatting(const QStringList& data, const Centering centering)
+/*static*/ ParseStatus InputFileHandler::checkFormatting(const QStringList& data, const Centering centering)
 {
     // There should be 6 comma-separated values per line
     if (data.count() != NUM_INPUT_COLUMNS)
-    {
-        m_ParseErrorDesc = QString("Expected 6 comma-separated values, found %1.").arg(QString::number(data.count()));
-        return false;
-    }
+        return ParseStatus::NumColumnsError;
 
     for (int i = 0; i < data.count(); i++)
     {
@@ -73,42 +87,31 @@ bool InputFileHandler::checkFormatting(const QStringList& data, const Centering 
         // so we need to manually catch it, since this value
         // won't work when used in Dolphin
         if (data[i] == "-0")
-        {
-            m_ParseErrorDesc = QString("-0 is not a valid input.");
-            return false;
-        }
+            return ParseStatus::NegativeZeroError;
 
         bool ret;
         int value = data[i].toInt(&ret);
 
         if (!ret)
-        {
-            m_ParseErrorDesc = QString("Could not convert %1 to an integer.").arg(data[i]);
-            return false;
-        }
+            return ParseStatus::ConvertError;
     }
 
     if (!DefinitionUtils::CheckCentering(centering, data[3].toInt()))
-    {
-        m_ParseErrorDesc = QString("Value is not within the centering range.");
-        return false;
-    }
+        return ParseStatus::CenteringError;
+
     if (!DefinitionUtils::CheckCentering(centering, data[4].toInt()))
-    {
-        m_ParseErrorDesc = QString("Value is not within the centering range.");
-        return false;
-    }
+        return ParseStatus::CenteringError;
 
 
     // Place other error checks here
 
-    return true;
+    return ParseStatus::Success;
 }
 
 
 Centering InputFileHandler::getCentering(const QStringList& data) const
 {
-    for (int i = 3; i < 4; i++)
+    for (int i = 3; i <= 4; i++)
     {
         int value = data[i].toInt();
 
@@ -118,7 +121,6 @@ Centering InputFileHandler::getCentering(const QStringList& data) const
 
     return Centering::Unknown;
 }
-
 
 
 
@@ -149,12 +151,12 @@ bool InputFile::CellEditAction::operator==(const CellEditAction& rhs)
 
 //########### Start of Input File
 
-InputFile::InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView)
+InputFile::InputFile(InputFileMenu* menu, QLabel* label, InputTableView* tableView)
     : m_filePath("")
     , m_fileCentering(Centering::Unknown)
     , m_tableViewLoaded(false)
     , pTableView(tableView)
-    , m_menus(menus)
+    , m_menus(menu)
     , pLabel(label)
     , m_frameParseError(0)
     , m_sParseErrorVal("")
@@ -170,7 +172,7 @@ FileStatus InputFile::loadFile(QString path)
 
     QFile fp(m_filePath);
     if (!fp.open(QIODevice::ReadWrite))
-        return FileStatus::WritePermission;
+        return FileStatus::InsufficientWritePermission;
 
     QTextStream ts(&fp);
 
@@ -337,8 +339,7 @@ bool InputFile::ableToDiscernCentering(int value)
     else
         return false;
 
-    m_menus.center0->setEnabled(true);
-    m_menus.center7->setEnabled(true);
+    m_menus->getCenter7()->setEnabled(m_fileCentering == Centering::Seven);
 
     return true;
 }
@@ -351,10 +352,7 @@ void InputFile::closeFile()
     delete m_pFsWatcher;
     pLabel->setVisible(false);
     pTableView->setVisible(false);
-    m_menus.root->menuAction()->setVisible(false);
-    m_menus.close->setEnabled(false);
-    m_menus.center0->setEnabled(false);
-    m_menus.center7->setEnabled(false);
+    m_menus->setVisible(false);
 }
 
 bool InputFile::inputValid(const QModelIndex& index, const QVariant& value)
@@ -407,8 +405,7 @@ void InputFile::swap(InputFile* rhs)
 void InputFile::setCentering(Centering center)
 {
     m_fileCentering = center;
-    m_menus.center0->setChecked(center == Centering::Zero);
-    m_menus.center7->setChecked(center == Centering::Seven);
+    m_menus->getCenter7()->setChecked(center == Centering::Seven);
 }
 
 void InputFile::applyStickOffset(int offset)
