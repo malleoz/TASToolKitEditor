@@ -9,13 +9,34 @@
 
 #define UNDO_STACK_LIMIT 100
 
-InputFileModel::InputFileModel(InputFile* pFile, QObject* parent)
-    : QAbstractTableModel(parent)
-    , m_pFile(pFile)
-    , m_bCellClicked(false)
-    , m_iTemplateRow(0)
+
+
+InputFileModel::CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
+    : m_rowIdx(row)
+    , m_colIdx(col)
+    , m_prev(prev)
+    , m_cur(cur)
 {
 }
+
+bool InputFileModel::CellEditAction::operator==(const CellEditAction& rhs)
+{
+    return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
+}
+
+
+InputFileModel::InputFileModel(const TTKFileData data, const Centering centering, QObject* parent)
+    : QAbstractTableModel(parent)
+    , m_fileData(data)
+    , m_fileCentering(centering)
+{
+}
+
+InputFileModel::~InputFileModel()
+{
+}
+
+
 
 Qt::ItemFlags InputFileModel::flags(const QModelIndex& index) const
 {
@@ -38,12 +59,12 @@ Qt::ItemFlags InputFileModel::flags(const QModelIndex& index) const
     return flags;
 }
 
-int InputFileModel::rowCount(const QModelIndex& /*parent*/) const
+int InputFileModel::rowCount(const QModelIndex&) const
 {
-    return m_pFile->getData().count();
+    return m_fileData.count();
 }
 
-int InputFileModel::columnCount(const QModelIndex& /*parent*/) const
+int InputFileModel::columnCount(const QModelIndex&) const
 {
     return NUM_INPUT_COLUMNS + FRAMECOUNT_COLUMN;
 }
@@ -59,14 +80,14 @@ QVariant InputFileModel::data(const QModelIndex& index, int role) const
             if (index.column() < 4)
                 return QVariant();
 
-            return m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+            return m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
         }
     case Qt::CheckStateRole:
         {
             if (index.column() == 0 || index.column() > 3)
                 return QVariant();
 
-            QString value = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+            QString value = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
             return (value == "1") ? Qt::Checked : Qt::Unchecked;
         }
     case Qt::TextAlignmentRole:
@@ -106,11 +127,10 @@ QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, in
 
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
 {
-    beginResetModel();
-
-    m_pFile->addData(m_iTemplateRow, row, count);
-
-    endResetModel();
+    beginInsertRows(parent, row, row + count - 1);
+    FrameData data = m_fileData[row];
+    m_fileData.insert(row, count, data);
+    endInsertRows();
 
     return true;
 }
@@ -120,110 +140,54 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     if (!checkIndex(index))
         return false;
 
-    QString prevValue = m_pFile->getCellValue(index.row(), index.column() - FRAMECOUNT_COLUMN);
+    QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
     QString curValue = "";
 
     if (role != Qt::EditRole)
         return false;
 
-    if (m_bCellClicked)
-    {
-        if (value.toInt() == Qt::Checked)
-            curValue = "1";
-        else
-            curValue = "0";
+    if (!inputValid(index, value))
+        return false;
 
-        m_bCellClicked = false;
+    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+    {
+        curValue = value.toInt() == Qt::Checked ? "1" : "0";
     }
     else
     {
-        if (!(m_pFile->inputValid(index, value)))
-            return false;
-
-        curValue = QString::number((int)value.toFloat());
+        curValue = QString::number(static_cast<int>(value.toFloat()));
     }
 
-    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
-    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
-    writeFileOnDisk(m_pFile);
+    m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN] = curValue;
 
-    m_pFile->getTableView()->viewport()->update();
+    return true;
 
-    return false;
+
+//    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
+//    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+//    writeFileOnDisk(m_pFile);
+
+//    m_pFile->getTableView()->viewport()->update();
+
+//    return false;
 }
 
-void InputFileModel::updateActionMenus()
+bool InputFileModel::inputValid(const QModelIndex& index, const QVariant& value) const
 {
-    m_pFile->getMenus().undo->setEnabled(m_pFile->getUndoStack()->count() > 0);
-    m_pFile->getMenus().redo->setEnabled(m_pFile->getRedoStack()->count() > 0);
-}
+    if (value == "")
+        return false;
 
-void InputFileModel::addToStack(InputFile::CellEditAction action)
-{
-    if (m_pFile->getRedoStack()->count() > 0)
-    {
-        addToStackWithNonEmptyRedo(action);
-    }
-    else
-    {
-        InputFile::TtkStack* undoStack = m_pFile->getUndoStack();
-        undoStack->push(action);
+    bool bToFloat = false;
+    int iValue = static_cast<int>(value.toFloat(&bToFloat));
 
-        // Restrict max length
-        while (undoStack->count() > UNDO_STACK_LIMIT)
-        {
-            undoStack->pop_front();
-        }
-    }
-    
-    updateActionMenus();
-}
+    // Check if conversion fails (user entered invalid chars)
+    if (!bToFloat)
+        return false;
 
-void InputFileModel::addToStackWithNonEmptyRedo(InputFile::CellEditAction action)
-{
-    InputFile::CellEditAction redoTop = m_pFile->getRedoStack()->top();
-    redoTop.flipValues();
+    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+        return (iValue == 0 || iValue == 1);
+    if (index.column() == DPAD_COL_IDX + FRAMECOUNT_COLUMN)
+        return (iValue >= 0 && iValue <= 4);
 
-    // Scenario 1: user performs same action as in top of redo stack
-    if (action == redoTop)
-        m_pFile->getRedoStack()->pop();
-    // Scenario 2: user performs action not in redo stack, so clear it first
-    else
-        m_pFile->getRedoStack()->clear();
-
-    m_pFile->getUndoStack()->push(action);
-}
-
-void InputFileModel::setCachedFileData(int rowIdx, int colIdx, QString val)
-{
-    m_pFile->setCellValue(rowIdx, colIdx, val);
-}
-
-void InputFileModel::writeFileOnDisk(InputFile* pInputFile)
-{
-    std::ofstream file;
-    file.open(pInputFile->getPath().toStdString());
-
-    // Iterate across the data frame-by-frame to write a new line
-    const TtkFileData& data = pInputFile->getData();
-
-    for (int i = 0; i < data.count(); i++)
-    {
-        std::string frameData = "";
-
-        for (int j = 0; j < NUM_INPUT_COLUMNS; j++)
-        {
-            frameData += data[i][j].toStdString();
-            frameData += ",";
-        }
-
-        frameData.pop_back();
-
-        file << frameData;
-        file << "\n";
-    }
-
-    file.close();
-
-    pInputFile->setModified(true);
+    return DefinitionUtils::CheckCentering(m_fileCentering, iValue);
 }

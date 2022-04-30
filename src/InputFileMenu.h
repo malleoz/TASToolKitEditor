@@ -10,13 +10,13 @@ public:
                   QString shortcutPrefix,
                   QWidget* parent = Q_NULLPTR);
 
-    QAction* getUndo() const { return m_pUndo; };
-    QAction* getRedo() const { return m_pRedo; };
+    inline QAction* getUndo() const { return m_pUndo; }
+    inline QAction* getRedo() const { return m_pRedo; }
 
-    QAction* getCenter7() const { return m_pCenter7; };
-    void     setCenter7(bool centerOn7) { m_pCenter7->setChecked(centerOn7); };
+    inline QAction* getCenter7() const { return m_pCenter7; }
+    inline void     setCenter7(bool centerOn7) { m_pCenter7->setChecked(centerOn7); }
 
-    QAction* getClose() const { return m_pClose; };
+    inline QAction* getClose() const { return m_pClose; }
 
 private:
     QAction* m_pUndo;
