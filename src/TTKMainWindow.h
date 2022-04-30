@@ -62,8 +62,6 @@ private:
 
     void setupUi();
     void setTitles();
-    void setTitleNames();
-    void setTitleShortcuts();
     void connectActions();
     void addMenuItems();
     void addFileMenuItems();

@@ -402,12 +402,6 @@ void TTKMainWindow::setupUi()
 
 void TTKMainWindow::setTitles()
 {
-    setTitleNames();
-    setTitleShortcuts();
-}
-
-void TTKMainWindow::setTitleNames()
-{
     setWindowTitle("TTK Input Editor");
     actionOpenPlayer->setText("Open Player");
     actionOpenGhost->setText("Open Ghost");
@@ -416,10 +410,7 @@ void TTKMainWindow::setTitleNames()
     playerLabel->setText("Player");
     ghostLabel->setText("Ghost");
     menuFile->setTitle("File");
-}
 
-void TTKMainWindow::setTitleShortcuts()
-{
 #if QT_CONFIG(shortcut)
     actionOpenPlayer->setShortcut(QString("Ctrl+O"));
     actionOpenGhost->setShortcut(QString("Ctrl+Shift+O"));

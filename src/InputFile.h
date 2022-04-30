@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QStack>
-#include <QTableView>
 
 #include "InputFileMenu.h"
 #include "InputTableView.h"
@@ -17,6 +16,7 @@ class QFileSystemWatcher;
 class QLabel;
 class QMenu;
 class QModelIndex;
+class QTableView;
 class QVariant;
 class QWidget;
 
