@@ -1,10 +1,10 @@
-#include "TASToolKitEditor.h"
+#include "TTKMainWindow.h"
 #include <QtWidgets/QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    TASToolKitEditor TTKMainWindow;
+    TTKMainWindow w;
     w.show();
     return a.exec();
 }

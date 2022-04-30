@@ -9,6 +9,8 @@ class InputFileModel : public QAbstractTableModel
     Q_OBJECT
 public:
     InputFileModel(InputFile* pFile, QObject* parent = nullptr);
+
+
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -18,6 +20,8 @@ public:
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
     static void writeFileOnDisk(InputFile* pInputFile);
+
+
     void inline setCellClicked(bool bClicked) { m_bCellClicked = bClicked; }
 
     inline void beginReset() { beginResetModel(); }

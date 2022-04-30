@@ -10,6 +10,140 @@
 #include <QTableView>
 #include <QTextStream>
 
+
+InputFileHandler::InputFileHandler()
+    : m_filePath("")
+    , m_pFsWatcher(Q_NULLPTR)
+    , m_frameParseError(0)
+    , m_ParseErrorDesc("")
+{
+}
+
+
+FileStatus InputFileHandler::loadFile(const QString path, TtkFileData& o_emptyTTK, Centering o_centering)
+{
+    QFile fp(path);
+    if (!fp.open(QIODevice::ReadWrite))
+        return FileStatus::WritePermission;
+
+    QTextStream ts(&fp);
+
+    o_centering = Centering::Unknown;
+
+    while (!ts.atEnd())
+    {
+        QString line = ts.readLine();
+        QStringList frameData = line.split(',');
+
+        if (!checkFormatting(frameData, o_centering))
+        {
+            m_frameParseError = static_cast<uint32_t>(o_emptyTTK.count());
+
+            m_filePath = "";
+            o_emptyTTK.clear();
+
+            return FileStatus::Parse;
+        }
+        if (o_centering == Centering::Unknown)
+        {
+            o_centering = getCentering(frameData);
+        }
+        o_emptyTTK.append(frameData.toVector());
+    }
+
+    m_pFsWatcher = new QFileSystemWatcher(QStringList(path));
+    m_filePath = path;
+
+    return FileStatus::Success;
+}
+
+
+bool InputFileHandler::checkFormatting(const QStringList& data, const Centering centering)
+{
+    // There should be 6 comma-separated values per line
+    if (data.count() != NUM_INPUT_COLUMNS)
+    {
+        m_ParseErrorDesc = QString("Expected 6 comma-separated values, found %1.").arg(QString::number(data.count()));
+        return false;
+    }
+
+    for (int i = 0; i < data.count(); i++)
+    {
+        // -0 actually succeeds in the toInt() conversion
+        // so we need to manually catch it, since this value
+        // won't work when used in Dolphin
+        if (data[i] == "-0")
+        {
+            m_ParseErrorDesc = QString("-0 is not a valid input.");
+            return false;
+        }
+
+        bool ret;
+        int value = data[i].toInt(&ret);
+
+        if (!ret)
+        {
+            m_ParseErrorDesc = QString("Could not convert %1 to an integer.").arg(data[i]);
+            return false;
+        }
+    }
+
+    if (!checkCentering(centering, data[3].toInt()))
+    {
+        m_ParseErrorDesc = QString("Value is not within the centering range.");
+        return false;
+    }
+    if (!checkCentering(centering, data[4].toInt()))
+    {
+        m_ParseErrorDesc = QString("Value is not within the centering range.");
+        return false;
+    }
+
+
+    // Place other error checks here
+
+    return true;
+}
+
+
+Centering InputFileHandler::getCentering(const QStringList& data) const
+{
+    for (int i = 3; i < 4; i++)
+    {
+        int value = data[i].toInt();
+
+        if (value < 0) return Centering::Zero;
+        if (value > 7) return Centering::Seven;
+    }
+
+    return Centering::Unknown;
+}
+
+
+bool InputFileHandler::checkCentering(const Centering centering, const int32_t value) const
+{
+    switch(centering)
+    {
+        case Centering::Seven: return value > 14 ? false : (value >= 0);
+        case Centering::Zero: return value > 7 ? false : (value >= -7);
+        case Centering::Unknown: return value > 14 ? false : (value >= -7);
+    }
+
+    return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 InputFile::CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
     : m_rowIdx(row)
     , m_colIdx(col)
@@ -22,40 +156,6 @@ bool InputFile::CellEditAction::operator==(const CellEditAction& rhs)
 {
     return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
 }
-
-InputTableView::InputTableView(QWidget* parent)
-{
-}
-
-void InputTableView::keyPressEvent(QKeyEvent* event)
-{
-    // Allow user to scroll up or down with the use of the arrow keys
-    int key = event->key();
-    QModelIndex index = currentIndex();
-
-    if (key == Qt::Key_Up)
-    {
-        if (index.row() == 0)
-            return;
-
-        selectRow(index.row() - 1);
-        return;
-    }
-    else if (key == Qt::Key_Down)
-    {
-        if (index.row() >= model()->rowCount() - 1) {
-            InputFileModel* pModel = (InputFileModel*)model();
-            pModel->setTemplateRow(index.row());
-            pModel->insertRows(index.row() + 1, 1);
-        }
-
-        selectRow(index.row() + 1);
-        return;
-    }
-
-    QTableView::keyPressEvent(event);
-}
-
 
 
 //########### Start of Input File
