@@ -72,6 +72,30 @@ void TTKMainWindow::connectActions()
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
 }
 
+
+void TTKMainWindow::openFile(FileType type)
+{
+
+}
+
+void TTKMainWindow::closeFile(FileType type)
+{
+
+}
+
+void TTKMainWindow::toggleCentering()
+{
+
+}
+
+void TTKMainWindow::onScroll()
+{
+
+}
+
+
+
+
 void TTKMainWindow::onReCenter(InputFile* pInputFile, Centering centering)
 {
     Centering curCentering = pInputFile->getCentering();

@@ -24,6 +24,12 @@ enum class EOperationType
     Redo,
 };
 
+enum class FileType
+{
+    Player = 0,
+    Ghost,
+};
+
 typedef QVector<QString> FrameData;
 typedef QVector<FrameData> TTKFileData;
 

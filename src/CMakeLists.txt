@@ -4,7 +4,6 @@ set(TTKE_Headers
     InputFileModel.h
     InputTableView.h
     TTKMainWindow.h
-    InputTableViewNew.h
     Definitions.h
     )
 
@@ -14,7 +13,6 @@ set(TTKE_CPP
     InputFileModel.cpp
     InputTableView.cpp
     TTKMainWindow.cpp
-    InputTableViewNew.cpp
     main.cpp
 )
 

@@ -21,8 +21,12 @@
 
 #include <QtWidgets/QMainWindow>
 
+#include "Definitions.h"
+
 class InputFile;
 class InputTableView;
+class InputFileHandler;
+
 enum class EOperationType;
 enum class Centering;
 
@@ -53,10 +57,8 @@ private:
     QHBoxLayout* mainHorizLayout;
     QVBoxLayout* playerVLayout;
     QLabel* playerLabel;
-    InputTableView* playerTableView;
     QVBoxLayout* ghostVLayout;
     QLabel* ghostLabel;
-    InputTableView* ghostTableView;
     QMenuBar* menuBar;
     QMenu* menuFile;
     QMenu* menuCenterPlayer;
@@ -67,8 +69,6 @@ private:
     InputFile* playerFile;
     InputFile* ghostFile;
 
-    int m_filesLoaded;
-    bool m_bScrollTogether;
 
     void setupUi();
     void setTitles();
@@ -96,4 +96,24 @@ private:
     void onToggleScrollTogether(bool bTogether);
     void onReCenter(InputFile* pInputFile, Centering centering);
     void scrollToFirstTable(QTableView* dst, QTableView* src);
+
+private:
+    void openFile(FileType type);
+    void closeFile(FileType type);
+
+    void toggleCentering();
+
+    void onScroll();
+
+
+
+private:
+    InputTableView* playerTableView;
+    InputTableView* ghostTableView;
+
+    InputFileHandler* playerFileHandler;
+    InputFileHandler* ghostFileHandler;
+
+    bool m_bScrollTogether;
+    int m_filesLoaded;
 };
