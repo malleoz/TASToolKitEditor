@@ -26,12 +26,6 @@
     <QtRcc Include="TASToolKitEditor.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtMoc Include="TASToolKitEditor.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
-    <ClCompile Include="TASToolKitEditor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -43,15 +37,33 @@
     <ClCompile Include="InputFileModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InputFileMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InputTableView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TTKMainWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="TTKMainWindow.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="InputFileModel.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="InputTableView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="InputFileMenu.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InputFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <QtMoc Include="InputFileModel.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
   </ItemGroup>
 </Project>
