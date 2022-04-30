@@ -20,7 +20,7 @@ InputFileHandler::InputFileHandler()
 }
 
 
-FileStatus InputFileHandler::loadFile(const QString path, TtkFileData& o_emptyTTK, Centering o_centering)
+FileStatus InputFileHandler::loadFile(const QString path, TTKFileData& o_emptyTTK, Centering o_centering)
 {
     QFile fp(path);
     if (!fp.open(QIODevice::ReadWrite))
@@ -88,12 +88,12 @@ bool InputFileHandler::checkFormatting(const QStringList& data, const Centering 
         }
     }
 
-    if (!checkCentering(centering, data[3].toInt()))
+    if (!DefinitionUtils::CheckCentering(centering, data[3].toInt()))
     {
         m_ParseErrorDesc = QString("Value is not within the centering range.");
         return false;
     }
-    if (!checkCentering(centering, data[4].toInt()))
+    if (!DefinitionUtils::CheckCentering(centering, data[4].toInt()))
     {
         m_ParseErrorDesc = QString("Value is not within the centering range.");
         return false;
@@ -120,17 +120,6 @@ Centering InputFileHandler::getCentering(const QStringList& data) const
 }
 
 
-bool InputFileHandler::checkCentering(const Centering centering, const int32_t value) const
-{
-    switch(centering)
-    {
-        case Centering::Seven: return value > 14 ? false : (value >= 0);
-        case Centering::Zero: return value > 7 ? false : (value >= -7);
-        case Centering::Unknown: return value > 14 ? false : (value >= -7);
-    }
-
-    return false;
-}
 
 
 
@@ -224,7 +213,7 @@ void InputFile::onClickButtonColumn(const QModelIndex& index)
     QVariant prevVal = pTableView->model()->data(index, Qt::CheckStateRole);
     QVariant newVal = (prevVal == Qt::Checked) ? Qt::Unchecked : Qt::Checked;
     
-    ((InputFileModel*) pTableView->model())->setCellClicked(true);
+//    ((InputFileModel*) pTableView->model())->setCellClicked(true);
     pTableView->model()->setData(index, newVal, Qt::EditRole);
 }
 
@@ -244,12 +233,12 @@ void InputFile::fileChanged()
     }
 
     InputFileModel* pModel = (InputFileModel*)pTableView->model();
-    pModel->beginReset();
+//    pModel->beginReset();
 
-    m_fileData.clear();
-    loadFile(m_filePath);
+//    m_fileData.clear();
+//    loadFile(m_filePath);
 
-    pModel->endReset();
+//    pModel->endReset();
 }
 
 void InputFile::clearData()
@@ -408,8 +397,8 @@ void InputFile::swap(InputFile* rhs)
     std::swap(pTableView, rhs->pTableView);
     std::swap(m_pFsWatcher, rhs->m_pFsWatcher);
 
-    InputFileModel::writeFileOnDisk(this);
-    InputFileModel::writeFileOnDisk(rhs);
+//    InputFileModel::writeFileOnDisk(this);
+//    InputFileModel::writeFileOnDisk(rhs);
 
     this->getTableView()->viewport()->update();
     rhs->getTableView()->viewport()->update();

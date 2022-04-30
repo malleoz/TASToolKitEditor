@@ -4,36 +4,12 @@
 #include <QTableView>
 
 #include "InputTableView.h"
+#include "Definitions.h"
 
 #define NUM_INPUT_COLUMNS 6
 #define FRAMECOUNT_COLUMN 1
 #define DPAD_COL_IDX 5
 
-
-
-enum class FileStatus
-{
-    Success = 0,
-    WritePermission,
-    Parse,
-};
-
-enum class Centering
-{
-    Unknown = 0,
-    Seven,
-    Zero,
-};
-
-enum class EOperationType
-{
-    Normal = 0,
-    Undo,
-    Redo,
-};
-
-typedef QVector<QString> FrameData;
-typedef QVector<FrameData> TtkFileData;
 
 class QAction;
 class QFileSystemWatcher;
@@ -71,22 +47,20 @@ class InputFileHandler
 public:
     InputFileHandler();
 
-    FileStatus loadFile(const QString path, TtkFileData& o_emptyTTK, Centering o_centering);
+    FileStatus loadFile(const QString path, TTKFileData& o_emptyTTK, Centering o_centering);
     void closeFile();
     void fileChanged();
 
 
-    inline QString getPath() { return m_filePath; }
-    inline QFileSystemWatcher* getFsWatcher() { return m_pFsWatcher; }
+    inline QString getPath() const { return m_filePath; }
+    inline QFileSystemWatcher* getFsWatcher() const { return m_pFsWatcher; }
 
-    inline uint32_t getParseError() { return m_frameParseError; }
-    inline QString getParseMsg() { return m_ParseErrorDesc; }
+    inline uint32_t getParseError() const { return m_frameParseError; }
+    inline QString getParseMsg() const { return m_ParseErrorDesc; }
 
 private:
     bool checkFormatting(const QStringList& data, const Centering centering);
     Centering getCentering(const QStringList& data) const;
-
-    bool checkCentering(const Centering centering, const int32_t value) const;
 
 private:
     QString m_filePath;
@@ -133,7 +107,7 @@ public:
     InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView);
 
     inline QString getPath() { return m_filePath; }
-    const inline TtkFileData& getData() { return m_fileData; }
+    const inline TTKFileData& getData() { return m_fileData; }
     inline QString getCellValue(int rowIdx, int colIdx) { return m_fileData[rowIdx][colIdx]; }
     inline void setCellValue(int rowIdx, int colIdx, QString value) { m_fileData[rowIdx][colIdx] = value; }
 
@@ -167,7 +141,7 @@ public:
 private:
 
     QString m_filePath;
-    TtkFileData m_fileData;
+    TTKFileData m_fileData;
 
     Centering m_fileCentering;
     bool m_tableViewLoaded;

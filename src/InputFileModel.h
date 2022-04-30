@@ -1,41 +1,71 @@
 #pragma once
 
 #include "InputFile.h"
+#include "Definitions.h"
 
 #include <QAbstractTableModel>
+
 
 class InputFileModel : public QAbstractTableModel
 {
     Q_OBJECT
-public:
-    InputFileModel(InputFile* pFile, QObject* parent = nullptr);
-
-
-    Qt::ItemFlags flags(const QModelIndex& index) const override;
-    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
-    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
-
-    static void writeFileOnDisk(InputFile* pInputFile);
-
-
-    void inline setCellClicked(bool bClicked) { m_bCellClicked = bClicked; }
-
-    inline void beginReset() { beginResetModel(); }
-    inline void endReset() { endResetModel(); }
-
-    inline void setTemplateRow(int row) { m_iTemplateRow = row; }
 
 private:
-    void inline setCachedFileData(int rowIdx, int colIdx, QString val);
-    void addToStack(InputFile::CellEditAction action);
-    void addToStackWithNonEmptyRedo(InputFile::CellEditAction action);
-    void updateActionMenus();
+    /// Class for storing latest table edits
+    struct CellEditAction
+    {
+        CellEditAction(int row = 0, int col = 0, QString prev = "", QString cur = "");
 
-    InputFile* m_pFile;
-    bool m_bCellClicked;
-    int m_iTemplateRow;
+        bool operator==(const CellEditAction& rhs);
+
+        inline void flipValues()
+        {
+            QString temp = m_cur;
+            m_cur = m_prev;
+            m_prev = temp;
+        }
+
+        int m_rowIdx;
+        int m_colIdx;
+
+        QString m_prev;
+        QString m_cur;
+    };
+
+    typedef QStack<CellEditAction> TTKStack;
+
+
+public:
+    InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
+
+    Qt::ItemFlags flags(const QModelIndex& index) const override;
+
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+
+    //TODO
+    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
+
+    inline TTKFileData& getData() {return m_fileData;}
+
+protected:
+    virtual ~InputFileModel() override;
+
+
+private:
+    bool inputValid(const QModelIndex& index, const QVariant& value) const;
+
+private:
+    TTKFileData m_fileData;
+    Centering m_fileCentering;
+
+    TTKStack undoStack;
+    TTKStack redoStack;
+
+    const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
 };

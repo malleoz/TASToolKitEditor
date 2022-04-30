@@ -89,7 +89,7 @@ void TTKMainWindow::onReCenter(InputFile* pInputFile, Centering centering)
     pInputFile->getRedoStack()->clear();
 
     // Finally, save to the file
-    InputFileModel::writeFileOnDisk(pInputFile);
+//    InputFileModel::writeFileOnDisk(pInputFile);
 }
 
 void TTKMainWindow::onScroll(InputFile* pInputFile)
@@ -169,7 +169,7 @@ void TTKMainWindow::onUndoRedo(InputFile* pInputFile, EOperationType opType)
     if (action.row() < rowUpper || action.row() > rowLower)
         pInputFile->getTableView()->scrollTo(pInputFile->getTableView()->model()->index(action.row(), 0));
 
-    InputFileModel::writeFileOnDisk(pInputFile);
+//    InputFileModel::writeFileOnDisk(pInputFile);
 }
 
 void TTKMainWindow::closeFile(InputFile* pInputFile)
@@ -249,7 +249,11 @@ void TTKMainWindow::adjustUiOnFileLoad(InputFile* pInputFile)
     pInputFile->getLabel()->setVisible(true);
 
     QTableView* pTable = pInputFile->getTableView();
-    pTable->setModel(new InputFileModel(pInputFile));
+
+    // TODO: fix
+    TTKFileData x;
+
+    pTable->setModel(new InputFileModel(x,Centering::Unknown,this));
     pTable->setVisible(true);
 
     /* This stuff really should be constant, but I can't do any of this until
