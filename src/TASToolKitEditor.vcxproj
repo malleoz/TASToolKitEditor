@@ -86,15 +86,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <QtRcc Include="TASToolKitEditor.qrc" />
-    <QtMoc Include="TASToolKitEditor.h" />
+    <QtMoc Include="TTKMainWindow.h" />
     <ClCompile Include="InputFile.cpp" />
+	<ClCompile Include="InputFileMenu.cpp" />
     <ClCompile Include="InputFileModel.cpp" />
+	<ClCompile Include="InputTableView.cpp" />
     <ClCompile Include="TASToolKitEditor.cpp" />
     <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="InputFile.h" />
-    <QtMoc Include="InputFileModel.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
