@@ -4,8 +4,9 @@
 
 #include "InputFileModel.h"
 
-InputTableView::InputTableView(QWidget* parent) :
-    QTableView(parent)
+InputTableView::InputTableView(QLabel* friendLabel, QWidget* parent)
+    : QTableView(parent)
+    , m_pFriendLabel(friendLabel)
 {
 }
 
