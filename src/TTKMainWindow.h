@@ -40,26 +40,40 @@ public:
 
 private:
 
+    // reimplement?
+    void adjustInputCenteringMenu(InputFile* inputFile);
+
+    void adjustUiOnFileLoad(InputFile* pInputFile);
+    void adjustUiOnFileClose(InputFile* pInputFile);
+
+    void adjustMenuOnClose(InputFile* inputFile);
+
+    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
+    void onScroll(InputFile* pInputFile);
+
+
+    // delete
+    void createInputFiles();
+    void showError(const QString& errTitle, const QString& errMsg);
+
+
+
     InputFile* playerFile;
     InputFile* ghostFile;
 
-
-    void createInputFiles();
-    void showError(const QString& errTitle, const QString& errMsg);
+    // done reimplementing ?
     bool userClosedPreviousFile(InputFile* inputFile);
-    void adjustInputCenteringMenu(InputFile* inputFile);
-    void setTableViewSettings(QTableView* pTable);
-    void adjustUiOnFileLoad(InputFile* pInputFile);
-    void adjustUiOnFileClose(InputFile* pInputFile);
-    void adjustMenuOnClose(InputFile* inputFile);
 
     void openFile(InputFile* inputFile);
     void openFile(InputFile* inputFile, QString filePath);
     void closeFile(InputFile* pInputFile);
-    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
-    void onScroll(InputFile* pInputFile);
+
     void onReCenter(InputFile* pInputFile);
+
+    // keep ?
+    void setTableViewSettings(QTableView* pTable);
     void scrollToFirstTable(QTableView* dst, QTableView* src);
+
 
 private: // Qt UI Elements
     QWidget* centralWidget;
@@ -92,20 +106,30 @@ private: // connect
 
     void onUndoRedo(InputTableView* table, const EOperationType opType);
 
+    void swapModels();
+
 
 private: // Refactored Functions
+    // checkup
+    void connectActions();
+
+    void adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering);
+    void adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu);
+
+
+    // done
     void setupUi();
 
     void addMenuItems();
     void addFileMenuItems();
 
     void setTitles();
-    void connectActions();
+
+
 
     bool userClosedPreviousFile(InputFileHandler** o_fileHandler);
 
-    void adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu);
-    void adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu);
+    uint8_t amountLoadedFiles();
 
 private: // variables
     InputTableView* m_pPlayerTableView;
@@ -118,5 +142,7 @@ private: // variables
     InputFileMenu* m_pGhostMenu;
 
     bool m_bScrollTogether;
+
+
     int m_filesLoaded;
 };

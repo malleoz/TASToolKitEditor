@@ -33,6 +33,7 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
     , m_pGhostFileHandler(nullptr)
     , m_pPlayerMenu(nullptr)
     , m_pGhostMenu(nullptr)
+    , m_bScrollTogether(false)
 {
     setupUi();
     createInputFiles();
@@ -72,9 +73,13 @@ void TTKMainWindow::openFile(InputFileHandler** o_fileHandler, InputTableView* t
     table->setModel(model);
     delete model;
 
-    adjustUiOnFileLoad(table, menu);
+    adjustUiOnFileLoad(table, menu, centering);
 
     // ToDo: connect ?
+//    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
+//    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
+
+
 
 }
 
@@ -116,8 +121,18 @@ void TTKMainWindow::onToggleScrollTogether(bool bTogether)
     scrollToFirstTable(m_pPlayerTableView, m_pGhostTableView);
 }
 
+void TTKMainWindow::swapModels()
+{
+    InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_pPlayerTableView->model());
+    InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_pGhostTableView->model());
 
+    m_pPlayerTableView->setModel(ghostModel);
+    m_pGhostTableView->setModel(playerModel);
 
+    delete playerModel;
+    delete ghostModel;
+
+}
 
 
 bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
@@ -143,15 +158,60 @@ bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
     return true;
 }
 
-void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu)
+void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering)
 {
+//    if (centering == Centering::Unknown)
+//        return;
 
+    menu->menuAction()->setVisible(true);
+    table->getLabel()->setVisible(true);
+
+    table->setVisible(true);
+
+    /* This stuff really should be constant, but I can't do any of this until
+    // the model is set, but I can't set the model until I instantiate the model
+    // instance, but I can't instantiate the instance until I have the InputFile
+    // instance, at which point I have to have the table instance already, which
+    // means I can't yet give the table a model instance...
+    // THIS IS SO CONFUSING!*/
+    table->setColumnWidth(0, FRAMECOUNT_COLUMN_WIDTH);
+
+    for (int i = 0; i < 3; i++)
+        table->setColumnWidth(i + FRAMECOUNT_COLUMN, BUTTON_COLUMN_WIDTH);
+
+    for (int i = 3; i < NUM_INPUT_COLUMNS - 1; i++)
+        table->setColumnWidth(i + FRAMECOUNT_COLUMN, STICK_COLUMN_WIDTH);
+
+    table->setColumnWidth(NUM_INPUT_COLUMNS - 1 + FRAMECOUNT_COLUMN, PAD_COLUMN_WIDTH);
+
+    if (amountLoadedFiles() == 2)
+    {
+        actionSwapFiles->setEnabled(true);
+        actionScrollTogether->setEnabled(true);
+        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+    }
 }
 
 
 void TTKMainWindow::adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu)
 {
 
+
+
+
+}
+
+uint8_t TTKMainWindow::amountLoadedFiles()
+{
+    uint8_t amountLoaded = 0;
+
+    if (m_pPlayerFileHandler)
+        amountLoaded++;
+    if (m_pGhostFileHandler)
+        amountLoaded++;
+
+    return amountLoaded;
 }
 
 
@@ -171,20 +231,30 @@ void TTKMainWindow::createInputFiles()
 
 void TTKMainWindow::connectActions()
 {
-    connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(playerFile); });
-    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(ghostFile); });
-    connect(m_pPlayerMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(playerFile); });
-    connect(m_pGhostMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(ghostFile); });
-    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
-    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
-    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
-    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
+    connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(&m_pPlayerFileHandler, m_pPlayerTableView, m_pPlayerMenu);} );
+    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(&m_pGhostFileHandler, m_pGhostTableView, m_pGhostMenu);} );
+
+    connect(m_pPlayerMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pPlayerFileHandler, m_pPlayerTableView, m_pPlayerMenu); });
+    connect(m_pGhostMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pGhostFileHandler, m_pGhostTableView, m_pGhostMenu); });
+
+//    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
+//    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
+//    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
+//    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
+
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
-    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
-    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
-    connect(m_pPlayerMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(playerFile); });
-    connect(m_pGhostMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(ghostFile); });
-    connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
+
+
+    // TODO: check connecting and disconnecting siagnals for scrolling
+    // both scrollbars at the same time
+
+//    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
+//    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
+
+    connect(m_pPlayerMenu->getCenter7(), &QAction::triggered, this, [this]() { toggleCentering(m_pPlayerTableView); });
+    connect(m_pGhostMenu->getCenter7(), &QAction::triggered, this, [this]() { toggleCentering(m_pGhostTableView); });
+
+    connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
 }
 
 
@@ -437,7 +507,7 @@ void TTKMainWindow::addMenuItems()
     addFileMenuItems();
 
     m_pPlayerMenu = new InputFileMenu("Player", "Ctrl+");
-    m_pGhostMenu = new InputFileMenu("Ghost", "Ctrl+");
+    m_pGhostMenu = new InputFileMenu("Ghost", "Ctrl+Shift+");
 
     menuBar->addAction(m_pPlayerMenu->menuAction());
     menuBar->addAction(m_pGhostMenu->menuAction());
@@ -446,20 +516,20 @@ void TTKMainWindow::addMenuItems()
 void TTKMainWindow::addFileMenuItems()
 {
     menuFile = new QMenu(menuBar);
+
     actionOpenPlayer = new QAction(this);
     actionOpenGhost = new QAction(this);
     actionSwapFiles = new QAction(this);
     actionSwapFiles->setEnabled(false);
+
     actionScrollTogether = new QAction(this);
     actionScrollTogether->setEnabled(false);
     actionScrollTogether->setCheckable(true);
     actionScrollTogether->setChecked(false);
+
     menuFile->addAction(actionOpenPlayer);
 
-    menuFile->addSeparator();
-
     menuFile->addAction(actionOpenGhost);
-
     menuFile->addSeparator();
 
     menuFile->addAction(actionSwapFiles);
@@ -469,12 +539,15 @@ void TTKMainWindow::addFileMenuItems()
 
 void TTKMainWindow::setupUi()
 {
+    // setup main window
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
     setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     
     addMenuItems();
 
+
+    // creating main widgets
     centralWidget = new QWidget(this);
     
     horizontalLayoutWidget = new QWidget(centralWidget);
@@ -484,36 +557,39 @@ void TTKMainWindow::setupUi()
    
     centralWidget->setLayout(mainHorizLayout);
 
+    // creating player layout
     playerVLayout = new QVBoxLayout();
     playerVLayout->setSpacing(6);
     playerLabel = new QLabel(horizontalLayoutWidget);
     playerLabel->setVisible(false);
     playerVLayout->addWidget(playerLabel);
 
-    m_pPlayerTableView = new InputTableView(horizontalLayoutWidget);
+    m_pPlayerTableView = new InputTableView(playerLabel, horizontalLayoutWidget);
     setTableViewSettings(m_pPlayerTableView);
 
     playerVLayout->addWidget(m_pPlayerTableView);
 
     mainHorizLayout->addLayout(playerVLayout);
 
+
+    //creating ghost layout
     ghostVLayout = new QVBoxLayout();
     ghostVLayout->setSpacing(6);
     ghostLabel = new QLabel(horizontalLayoutWidget);
     ghostLabel->setVisible(false);
     ghostVLayout->addWidget(ghostLabel);
 
-    m_pGhostTableView = new InputTableView(horizontalLayoutWidget);
+    m_pGhostTableView = new InputTableView(ghostLabel, horizontalLayoutWidget);
     setTableViewSettings(m_pGhostTableView);
 
     ghostVLayout->addWidget(m_pGhostTableView);
 
     mainHorizLayout->addLayout(ghostVLayout);
 
-    setCentralWidget(centralWidget);
 
-    m_filesLoaded = 0;
-    m_bScrollTogether = false;
+
+    // misc.
+    setCentralWidget(centralWidget);
 
     setTitles();
 }
@@ -521,13 +597,16 @@ void TTKMainWindow::setupUi()
 void TTKMainWindow::setTitles()
 {
     setWindowTitle("TTK Input Editor");
+
+    menuFile->setTitle("File");
+
     actionOpenPlayer->setText("Open Player");
     actionOpenGhost->setText("Open Ghost");
     actionSwapFiles->setText("Swap Player and Ghost");
     actionScrollTogether->setText("Scroll Together");
+
     playerLabel->setText("Player");
     ghostLabel->setText("Ghost");
-    menuFile->setTitle("File");
 
 #if QT_CONFIG(shortcut)
     actionOpenPlayer->setShortcut(QString("Ctrl+O"));
