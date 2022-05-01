@@ -24,7 +24,7 @@ class QWidget;
 class InputFileHandler
 {
 public:
-    InputFileHandler(QString path = "");
+    InputFileHandler(QString path);
 
     FileStatus loadFile(TTKFileData& o_emptyTTK, Centering& o_centering);
 

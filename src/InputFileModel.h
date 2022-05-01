@@ -37,6 +37,7 @@ private:
 
 public:
     InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
+    virtual ~InputFileModel() override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
@@ -52,9 +53,11 @@ public:
 
 
     inline TTKFileData& getData() {return m_fileData;}
+    inline Centering getCentering() const {return m_fileCentering;}
+
+    void swapCentering();
 
 protected:
-    virtual ~InputFileModel() override;
 
 
 private:

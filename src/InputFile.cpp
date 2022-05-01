@@ -25,13 +25,13 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
 
     if (!fp.open(QIODevice::ReadWrite))
     {
-        QString errorTitle = "Error Opening File";
-        QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \
+        const QString errorTitle = "Error Opening File";
+        const QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \
             "Try running this program in administrator mode and make sure the file is not open in another program.";
         QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
 
         fp.close();
-        return FileStatus::InsufficientWritePermission;;
+        return FileStatus::InsufficientWritePermission;
     }
 
     QTextStream ts(&fp);
@@ -40,17 +40,17 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
 
     while (!ts.atEnd())
     {
-        QString line = ts.readLine();
-        QStringList frameData = line.split(',');
+        const QString line = ts.readLine();
+        const QStringList frameData = line.split(',');
 
-        ParseStatus formatStatus = checkFormatting(frameData, o_centering);
+        const ParseStatus formatStatus = checkFormatting(frameData, o_centering);
 
 
         if (formatStatus != ParseStatus::Success)
         {
-            uint32_t errorFrame = static_cast<uint32_t>(o_emptyTTK.count());
-            QString errorTitle = "Error Parsing File";
-            QString errorMsg = DefinitionUtils::TranslateParseStatusToErrorString(formatStatus, errorFrame);
+            const uint32_t errorFrame = static_cast<uint32_t>(o_emptyTTK.count());
+            const QString errorTitle = "Error Parsing File";
+            const QString errorMsg = DefinitionUtils::TranslateParseStatusToErrorString(formatStatus, errorFrame);
             QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
 
             m_filePath = "";

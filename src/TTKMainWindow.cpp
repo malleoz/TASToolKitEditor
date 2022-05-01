@@ -27,16 +27,146 @@
 
 TTKMainWindow::TTKMainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_pPlayerTableView(nullptr)
+    , m_pGhostTableView(nullptr)
+    , m_pPlayerFileHandler(nullptr)
+    , m_pGhostFileHandler(nullptr)
+    , m_pPlayerMenu(nullptr)
+    , m_pGhostMenu(nullptr)
 {
     setupUi();
     createInputFiles();
     connectActions();
 }
 
+void TTKMainWindow::openFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu)
+{
+    if (o_fileHandler == nullptr)
+        return;
+
+    const QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
+
+    if (filePath == "")
+        return;
+
+    if (*o_fileHandler != nullptr && !userClosedPreviousFile(o_fileHandler))
+        return;
+
+
+    *o_fileHandler = new InputFileHandler(filePath);
+    TTKFileData data;
+    Centering centering;
+
+    const FileStatus status = (*o_fileHandler)->loadFile(data, centering);
+    if (status != FileStatus::Success)
+    {
+        delete (*o_fileHandler);
+        *o_fileHandler = nullptr;
+
+        // Error Handling
+
+        return;
+    }
+
+    InputFileModel* model = new InputFileModel(data, centering);
+    table->setModel(model);
+    delete model;
+
+    adjustUiOnFileLoad(table, menu);
+
+    // ToDo: connect ?
+
+}
+
+void TTKMainWindow::closeFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu)
+{
+    delete (*o_fileHandler);
+    *o_fileHandler = nullptr;
+
+    auto model = table->model();
+    table->setModel(nullptr);
+    delete model;
+
+    adjustUiOnFileClose(table, menu);
+}
+
+void TTKMainWindow::toggleCentering(InputTableView* table)
+{
+    InputFileModel* model = reinterpret_cast<InputFileModel*>(table->model());
+    model->swapCentering();
+
+
+}
+
+void TTKMainWindow::onScroll()
+{
+
+}
+
+void TTKMainWindow::onToggleScrollTogether(bool bTogether)
+{
+    m_bScrollTogether = bTogether;
+
+    actionScrollTogether->setChecked(m_bScrollTogether);
+
+    if (!m_bScrollTogether)
+        return;
+
+    // Jump ghost view to same row as player view
+    scrollToFirstTable(m_pPlayerTableView, m_pGhostTableView);
+}
+
+
+
+
+
+bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
+{
+    if (o_fileHandler == nullptr)
+        return false;
+
+    // This shouldn't be needed but is a safety meassure
+    if (*o_fileHandler == nullptr)
+        return true;
+
+    // Have user confirm they want to close file
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?",
+        QMessageBox::No | QMessageBox::Yes);
+
+    if (reply != QMessageBox::Yes)
+        return false;
+
+    delete (*o_fileHandler);
+    *o_fileHandler = nullptr;
+
+    return true;
+}
+
+void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu)
+{
+
+}
+
+
+void TTKMainWindow::adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu)
+{
+
+}
+
+
+
+
+
+
+
+
+
+
 void TTKMainWindow::createInputFiles()
 {
-    playerFile = new InputFile(m_pPlayerMenu, playerLabel, playerTableView);
-    ghostFile = new InputFile(m_pGhostMenu, ghostLabel, ghostTableView);
+    playerFile = new InputFile(m_pPlayerMenu, playerLabel, m_pPlayerTableView);
+    ghostFile = new InputFile(m_pGhostMenu, ghostLabel, m_pGhostTableView);
 }
 
 void TTKMainWindow::connectActions()
@@ -50,8 +180,8 @@ void TTKMainWindow::connectActions()
     connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
     connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
-    connect(playerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
-    connect(ghostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
+    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
+    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
     connect(m_pPlayerMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(playerFile); });
     connect(m_pGhostMenu->getCenter7(), &QAction::triggered, this, [this]() { onReCenter(ghostFile); });
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { playerFile->swap(ghostFile); });
@@ -98,19 +228,6 @@ void TTKMainWindow::onScroll(InputFile* pInputFile)
 
     // Scroll other table to that row
     scrollToFirstTable(pInputFile->getTableView(), otherFile->getTableView());
-}
-
-void TTKMainWindow::onToggleScrollTogether(bool bTogether)
-{
-    m_bScrollTogether = bTogether;
-
-    actionScrollTogether->setChecked(m_bScrollTogether);
-
-    if (!m_bScrollTogether)
-        return;
-
-    // Jump ghost view to same row as player view
-    scrollToFirstTable(playerTableView, ghostTableView);
 }
 
 void TTKMainWindow::scrollToFirstTable(QTableView* dst, QTableView* src)
@@ -373,10 +490,10 @@ void TTKMainWindow::setupUi()
     playerLabel->setVisible(false);
     playerVLayout->addWidget(playerLabel);
 
-    playerTableView = new InputTableView(horizontalLayoutWidget);
-    setTableViewSettings(playerTableView);
+    m_pPlayerTableView = new InputTableView(horizontalLayoutWidget);
+    setTableViewSettings(m_pPlayerTableView);
 
-    playerVLayout->addWidget(playerTableView);
+    playerVLayout->addWidget(m_pPlayerTableView);
 
     mainHorizLayout->addLayout(playerVLayout);
 
@@ -386,10 +503,10 @@ void TTKMainWindow::setupUi()
     ghostLabel->setVisible(false);
     ghostVLayout->addWidget(ghostLabel);
 
-    ghostTableView = new InputTableView(horizontalLayoutWidget);
-    setTableViewSettings(ghostTableView);
+    m_pGhostTableView = new InputTableView(horizontalLayoutWidget);
+    setTableViewSettings(m_pGhostTableView);
 
-    ghostVLayout->addWidget(ghostTableView);
+    ghostVLayout->addWidget(m_pGhostTableView);
 
     mainHorizLayout->addLayout(ghostVLayout);
 

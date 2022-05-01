@@ -4,10 +4,9 @@
 
 #include "InputFileModel.h"
 
-InputTableView::InputTableView(InputFileModel* model, QWidget* parent) :
+InputTableView::InputTableView(QWidget* parent) :
     QTableView(parent)
 {
-    setModel(model);
 }
 
 void InputTableView::keyPressEvent(QKeyEvent* event)
@@ -39,12 +38,4 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     }
 
     QTableView::keyPressEvent(event);
-}
-
-
-
-//Deprecated
-InputTableView::InputTableView(QWidget* parent) :
-    QTableView(parent)
-{
 }
