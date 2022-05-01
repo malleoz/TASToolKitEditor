@@ -6,8 +6,17 @@
 enum class FileStatus
 {
     Success = 0,
-    WritePermission,
+    InsufficientWritePermission,
     Parse,
+};
+
+enum class ParseStatus
+{
+    Success = 0,
+    NumColumnsError,
+    NegativeZeroError,
+    ConvertError,
+    CenteringError,
 };
 
 enum class Centering
@@ -50,6 +59,23 @@ public:
         }
 
         return false;
+    }
+
+    inline static QString TranslateParseStatusToErrorString(ParseStatus status, uint32_t frame)
+    {
+        switch (status)
+        {
+        case ParseStatus::CenteringError:
+            return QString("Value is not within the centering range on frame %1.").arg(frame);
+        case ParseStatus::ConvertError:
+            return QString("Could not convert value on frame %1 to an integer.").arg(frame);
+        case ParseStatus::NegativeZeroError:
+            return QString("Invalid value '-0' on frame %1.").arg(frame);
+        case ParseStatus::NumColumnsError:
+            return QString("Expected 6 comma-separated values on frame %1.").arg(frame);
+        default:
+            return QString("Unhandled error on frame %1.").arg(frame);
+        }
     }
 };
 

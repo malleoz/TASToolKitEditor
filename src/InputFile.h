@@ -1,8 +1,8 @@
 #pragma once
 
 #include <QStack>
-#include <QTableView>
 
+#include "InputFileMenu.h"
 #include "InputTableView.h"
 #include "Definitions.h"
 
@@ -16,61 +16,30 @@ class QFileSystemWatcher;
 class QLabel;
 class QMenu;
 class QModelIndex;
+class QTableView;
 class QVariant;
 class QWidget;
-
-struct InputFileMenus
-{
-    InputFileMenus(QMenu* root, QAction* undo, QAction* redo, QAction* close, QAction* center0, QAction* center7)
-        : root(root)
-        , undo(undo)
-        , redo(redo)
-        , close(close)
-        , center0(center0)
-        , center7(center7)
-    {
-    }
-
-    QMenu* root;
-    QAction* undo;
-    QAction* redo;
-    QAction* close;
-    QAction* center0;
-    QAction* center7;
-};
-
 
 
 class InputFileHandler
 {
-
 public:
-    InputFileHandler();
+    InputFileHandler(QString path = "");
 
-    FileStatus loadFile(const QString path, TTKFileData& o_emptyTTK, Centering o_centering);
-    void closeFile();
-    void fileChanged();
+    FileStatus loadFile(TTKFileData& o_emptyTTK, Centering& o_centering);
 
 
     inline QString getPath() const { return m_filePath; }
     inline QFileSystemWatcher* getFsWatcher() const { return m_pFsWatcher; }
 
-    inline uint32_t getParseError() const { return m_frameParseError; }
-    inline QString getParseMsg() const { return m_ParseErrorDesc; }
-
 private:
-    bool checkFormatting(const QStringList& data, const Centering centering);
+    static ParseStatus checkFormatting(const QStringList& data, const Centering centering);
     Centering getCentering(const QStringList& data) const;
 
 private:
     QString m_filePath;
     QFileSystemWatcher* m_pFsWatcher;
-
-
-    uint32_t m_frameParseError;
-    QString m_ParseErrorDesc;
 };
-
 
 
 /// Data manager and controller for the \ref<InputTableView>
@@ -104,7 +73,7 @@ public:
     typedef QStack<CellEditAction> TtkStack;
 
 public:
-    InputFile(const InputFileMenus& menus, QLabel* label, InputTableView* tableView);
+    InputFile(InputFileMenu* mens, QLabel* label, InputTableView* tableView);
 
     inline QString getPath() { return m_filePath; }
     const inline TTKFileData& getData() { return m_fileData; }
@@ -119,7 +88,7 @@ public:
     void setCentering(Centering center);
     inline void setTableView(InputTableView* tableView) { pTableView = tableView; }
     inline InputTableView* getTableView() { return pTableView; }
-    const inline InputFileMenus& getMenus() { return m_menus; }
+    inline InputFileMenu* getMenus() { return m_menus; }
     inline QLabel* getLabel() { return pLabel; }
 
     bool inputValid(const QModelIndex& index, const QVariant& value);
@@ -150,7 +119,7 @@ private:
     QStack<CellEditAction> m_redoStack;
 
     InputTableView* pTableView;
-    InputFileMenus m_menus;
+    InputFileMenu* m_menus;
     QLabel* pLabel;
 
     int m_frameParseError;

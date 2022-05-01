@@ -19,9 +19,11 @@ InputFileMenu::InputFileMenu(QString title,
     m_pCenter7->setText("7 Centered");
 
     // Set shortcuts
+#if QT_CONFIG(shortcut)
     m_pClose->setShortcut(shortcutPrefix + QString("Esc"));
     m_pUndo->setShortcut(shortcutPrefix + QString("Z"));
     m_pRedo->setShortcut(shortcutPrefix + QString("Y"));
+#endif
 
     // Create hierarchy
     addAction(m_pClose);
