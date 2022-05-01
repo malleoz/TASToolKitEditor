@@ -2,6 +2,8 @@
 
 #include <QTableView>
 
+class InputFileModel;
+
 class InputTableView : public QTableView
 {
     Q_OBJECT

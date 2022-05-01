@@ -172,6 +172,29 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
 //    return false;
 }
 
+void InputFileModel::swapCentering()
+{
+    if(m_fileCentering == Centering::Unknown)
+        return;
+
+    m_fileCentering = (m_fileCentering == Centering::Seven) ? Centering::Zero : Centering::Seven;
+    const int stickOffset = (m_fileCentering == Centering::Seven) ? 7 : -7;
+
+    beginResetModel();
+    for (int i = 0; i < m_fileData.count(); i++)
+    {
+        for (int j = 3; j < 5; j++)
+        {
+            QString strVal = m_fileData[i][j];
+            m_fileData[i][j] = QString::number(strVal.toInt() + stickOffset);
+        }
+    }
+    endResetModel();
+}
+
+
+
+
 bool InputFileModel::inputValid(const QModelIndex& index, const QVariant& value) const
 {
     if (value == "")
