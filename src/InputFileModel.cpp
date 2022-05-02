@@ -214,3 +214,21 @@ bool InputFileModel::inputValid(const QModelIndex& index, const QVariant& value)
 
     return DefinitionUtils::CheckCentering(m_fileCentering, iValue);
 }
+
+void InputFileModel::undo()
+{
+    CellEditAction action = undoStack.pop();
+    QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
+    setData(editIndex, action.m_cur, Qt::EditRole);
+    action.flipValues();
+    redoStack.push(action);
+}
+
+void InputFileModel::redo()
+{
+    CellEditAction action = redoStack.pop();
+    QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
+    setData(editIndex, action.m_cur, Qt::EditRole);
+    action.flipValues();
+    undoStack.push(action);
+}

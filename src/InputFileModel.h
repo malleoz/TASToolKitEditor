@@ -57,6 +57,9 @@ public:
 
     void swapCentering();
 
+    void undo();
+    void redo();
+
 protected:
 
 
