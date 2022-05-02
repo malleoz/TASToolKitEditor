@@ -160,9 +160,6 @@ bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
 
 void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering)
 {
-//    if (centering == Centering::Unknown)
-//        return;
-
     menu->menuAction()->setVisible(true);
     table->getLabel()->setVisible(true);
 
@@ -196,10 +193,19 @@ void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* men
 
 void TTKMainWindow::adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu)
 {
+    menu->menuAction()->setVisible(false);
+    table->getLabel()->setVisible(false);
 
+    table->setVisible(false);
 
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
 
+    actionSwapFiles->setEnabled(false);
 
+    actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setChecked(false);
+    m_bScrollTogether = false;
 }
 
 uint8_t TTKMainWindow::amountLoadedFiles()
