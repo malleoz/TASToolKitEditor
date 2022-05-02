@@ -33,9 +33,6 @@ public:
     inline QFileSystemWatcher* getFsWatcher() const { return m_pFsWatcher; }
 
 private:
-    InputFileHandler() {}
-
-private:
     static ParseStatus checkFormatting(const QStringList& data, const Centering centering);
     Centering getCentering(const QStringList& data) const;
 
