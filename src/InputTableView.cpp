@@ -40,3 +40,17 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
 
     QTableView::keyPressEvent(event);
 }
+
+/*
+void InputTableView::mouseMoveEvent(QMouseEvent* event)
+{
+}
+
+void InputTableView::mousePressEvent(QMouseEvent* event)
+{
+}
+
+void InputTableView::mouseReleaseEvent(QMouseEvent* event)
+{
+}
+*/
