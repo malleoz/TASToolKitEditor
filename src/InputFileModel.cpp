@@ -125,16 +125,6 @@ QVariant InputFileModel::headerData(int section, Qt::Orientation orientation, in
     return QVariant();
 }
 
-bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
-{
-    beginInsertRows(parent, row, row + count - 1);
-    FrameData data = m_fileData[row];
-    m_fileData.insert(row, count, data);
-    endInsertRows();
-
-    return true;
-}
-
 bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
     if (!checkIndex(index))
@@ -276,4 +266,30 @@ void InputFileModel::redo()
 
     action.flipValues();
     undoStack.push(action);
+}
+
+bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
+{
+    beginResetModel();
+
+    FrameData srcData = m_fileData[parent.row()];
+    int frameCount = m_fileData[row][0].toInt();
+
+    for (int i = 0; i < count; i++)
+    {
+        // Compute framecount
+        srcData[0] = ++frameCount;
+
+        m_fileData.insert(row, srcData);
+
+        // Determine how to store in undo/redo stack later
+    }
+
+    QModelIndex topLeftIndex = index(row, 0);
+    QModelIndex bottomRightIndex = index(row + count, NUM_INPUT_COLUMNS + FRAMECOUNT_COLUMN);
+    
+    endResetModel();
+    
+
+    return true;
 }

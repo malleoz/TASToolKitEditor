@@ -46,10 +46,9 @@ public:
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-
-    //TODO
-    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+
+    bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 
     inline TTKFileData& getData() {return m_fileData;}

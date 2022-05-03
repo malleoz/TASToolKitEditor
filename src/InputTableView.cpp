@@ -27,11 +27,8 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     else if (key == Qt::Key_Down)
     {
         if (index.row() == model()->rowCount() - 1) {
-            model()->insertRows(index.row(), 1);
-
-//            InputFileModel* pModel = reinterpret_cast<InputFileModel*>(model());
-//            pModel->setTemplateRow(index.row());
-//            pModel->insertRows(index.row() + 1, 1);
+            InputFileModel* pModel = reinterpret_cast<InputFileModel*>(model());
+            pModel->insertRows(index.row(), 1, index);
         }
 
         selectRow(index.row() + 1);
