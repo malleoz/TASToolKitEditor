@@ -71,7 +71,6 @@ void TTKMainWindow::openFile(InputFileHandler** o_fileHandler, InputTableView* t
 
     InputFileModel* model = new InputFileModel(data, centering);
     table->setModel(model);
-    delete model;
 
     adjustUiOnFileLoad(table, menu, centering);
 
@@ -128,10 +127,6 @@ void TTKMainWindow::swapModels()
 
     m_pPlayerTableView->setModel(ghostModel);
     m_pGhostTableView->setModel(playerModel);
-
-    delete playerModel;
-    delete ghostModel;
-
 }
 
 
@@ -160,9 +155,6 @@ bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
 
 void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering)
 {
-//    if (centering == Centering::Unknown)
-//        return;
-
     menu->menuAction()->setVisible(true);
     table->getLabel()->setVisible(true);
 
@@ -196,10 +188,19 @@ void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* men
 
 void TTKMainWindow::adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu)
 {
+    menu->menuAction()->setVisible(false);
+    table->getLabel()->setVisible(false);
 
+    table->setVisible(false);
 
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
 
+    actionSwapFiles->setEnabled(false);
 
+    actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setChecked(false);
+    m_bScrollTogether = false;
 }
 
 uint8_t TTKMainWindow::amountLoadedFiles()
@@ -236,6 +237,15 @@ void TTKMainWindow::connectActions()
 
     connect(m_pPlayerMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pPlayerFileHandler, m_pPlayerTableView, m_pPlayerMenu); });
     connect(m_pGhostMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pGhostFileHandler, m_pGhostTableView, m_pGhostMenu); });
+
+    InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_pPlayerTableView->model());
+    InputFileModel* pGhostModel = reinterpret_cast<InputFileModel*>(m_pGhostTableView->model());
+
+    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [&]() { pPlayerModel->undo(); });
+    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [&]() { pGhostModel->undo(); });
+
+    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [&]() { pPlayerModel->redo(); });
+    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [&]() { pGhostModel->redo(); });
 
 //    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
 //    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
@@ -300,51 +310,12 @@ void TTKMainWindow::onScroll(InputFile* pInputFile)
     scrollToFirstTable(pInputFile->getTableView(), otherFile->getTableView());
 }
 
-void TTKMainWindow::scrollToFirstTable(QTableView* dst, QTableView* src)
+void TTKMainWindow::scrollToFirstTable(InputTableView* dst, InputTableView* src)
 {
     int dstTopRow = dst->rowAt(0);
     QModelIndex index = src->model()->index(dstTopRow, 0);
     src->setCurrentIndex(index);
     src->scrollTo(index, QAbstractItemView::PositionAtTop);
-}
-
-void TTKMainWindow::onUndoRedo(InputFile* pInputFile, EOperationType opType)
-{
-    bool bUndo = opType == EOperationType::Undo;
-
-    InputFile::TtkStack* undoStack = pInputFile->getUndoStack();
-    InputFile::TtkStack* redoStack = pInputFile->getRedoStack();
-
-    // Refuse operation if the associated stack is empty
-    if (bUndo && undoStack->count() == 0)
-        return;
-    if (!bUndo && redoStack->count() == 0)
-        return;
-
-    InputFile::CellEditAction action = bUndo ? undoStack->pop() : redoStack->pop();
-    action.flipValues();
-
-    if (bUndo)
-        redoStack->push(action);
-    else
-        undoStack->push(action);
-
-    pInputFile->setCellValue(action.row(), action.col(), action.curVal());
-    emit pInputFile->getTableView()->model()->layoutChanged();
-
-    // Adjust menu items
-    pInputFile->getMenus()->getRedo()->setEnabled(redoStack->count() > 0);
-    pInputFile->getMenus()->getUndo()->setEnabled(undoStack->count() > 0);
-
-    // Move tableview to the row that was just modified
-    // Determine if the row is visible on-screen right now
-    int rowUpper = pInputFile->getTableView()->rowAt(0);
-    int rowLower = pInputFile->getTableView()->rowAt(pInputFile->getTableView()->height());
-
-    if (action.row() < rowUpper || action.row() > rowLower)
-        pInputFile->getTableView()->scrollTo(pInputFile->getTableView()->model()->index(action.row(), 0));
-
-//    InputFileModel::writeFileOnDisk(pInputFile);
 }
 
 void TTKMainWindow::closeFile(InputFile* pInputFile)
@@ -488,7 +459,7 @@ void TTKMainWindow::adjustMenuOnClose(InputFile* inputFile)
     actionScrollTogether->setChecked(false);
 }
 
-void TTKMainWindow::setTableViewSettings(QTableView* pTable)
+void TTKMainWindow::setTableViewSettings(InputTableView* pTable)
 {
     pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     pTable->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement

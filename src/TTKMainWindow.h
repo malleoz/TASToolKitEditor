@@ -48,8 +48,9 @@ private:
 
     void adjustMenuOnClose(InputFile* inputFile);
 
-    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onScroll(InputFile* pInputFile);
+
+    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
 
 
     // delete
@@ -71,8 +72,8 @@ private:
     void onReCenter(InputFile* pInputFile);
 
     // keep ?
-    void setTableViewSettings(QTableView* pTable);
-    void scrollToFirstTable(QTableView* dst, QTableView* src);
+    void setTableViewSettings(InputTableView* pTable);
+    void scrollToFirstTable(InputTableView* dst, InputTableView* src);
 
 
 private: // Qt UI Elements
@@ -104,9 +105,10 @@ private: // connect
     void onScroll();
     void onToggleScrollTogether(const bool bTogether);
 
-    void onUndoRedo(InputTableView* table, const EOperationType opType);
 
     void swapModels();
+
+    void onUndoRedo(InputTableView* table, const EOperationType opType);
 
 
 private: // Refactored Functions
