@@ -141,35 +141,42 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
         return false;
 
     QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
+
+    if (role != Qt::CheckStateRole && role != Qt::EditRole)
+        return false;
+
     QString curValue = "";
 
-    if (role != Qt::EditRole)
-        return false;
-
-    if (!inputValid(index, value))
-        return false;
-
-    if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+    if (role == Qt::CheckStateRole)
     {
+        if (!BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+            return false;
+
         curValue = value.toInt() == Qt::Checked ? "1" : "0";
     }
-    else
+    else if (role == Qt::EditRole)
     {
-        curValue = QString::number(static_cast<int>(value.toFloat()));
+        QString curValue = "";
+        if (!inputValid(index, value))
+            return false;
+
+        if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+            curValue = value.toInt() == Qt::Checked ? "1" : "0";
+        else
+            curValue = QString::number(static_cast<int>(value.toFloat()));
     }
 
     m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN] = curValue;
 
+    addActionToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+
     return true;
 
+    //    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
+    //    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+    //    writeFileOnDisk(m_pFile);
 
-//    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
-//    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
-//    writeFileOnDisk(m_pFile);
-
-//    m_pFile->getTableView()->viewport()->update();
-
-//    return false;
+    //    m_pFile->getTableView()->viewport()->update();
 }
 
 void InputFileModel::swapCentering()
@@ -215,20 +222,58 @@ bool InputFileModel::inputValid(const QModelIndex& index, const QVariant& value)
     return DefinitionUtils::CheckCentering(m_fileCentering, iValue);
 }
 
+void InputFileModel::addActionToStack(CellEditAction action)
+{
+    if (redoStack.count() > 0)
+    {
+        CellEditAction redoTop = redoStack.top();
+        redoTop.flipValues();
+
+        // If user performs same action as in top of redo stack, act as if it's a redo
+        // Otherwise, just clear the redo stack since we've changed timelines
+        if (action == redoTop)
+            redoStack.pop();
+        else
+            redoStack.clear();
+
+        undoStack.push(action);
+    }
+    else
+    {
+        undoStack.push(action);
+
+        // Limit stack size
+        if (undoStack.count() > UNDO_STACK_LIMIT)
+            undoStack.pop_front();
+    }
+
+    // Update UI somehow. Emit signal?
+}
+
 void InputFileModel::undo()
 {
+    // Nothing to undo if stack is empty
+    if (undoStack.count() == 0)
+        return;
+
     CellEditAction action = undoStack.pop();
     QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
     setData(editIndex, action.m_cur, Qt::EditRole);
+
     action.flipValues();
     redoStack.push(action);
 }
 
 void InputFileModel::redo()
 {
+    // Nothing to redo if stack is empty
+    if (redoStack.count() == 0)
+        return;
+
     CellEditAction action = redoStack.pop();
     QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
     setData(editIndex, action.m_cur, Qt::EditRole);
+
     action.flipValues();
     undoStack.push(action);
 }

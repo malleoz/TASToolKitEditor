@@ -48,7 +48,6 @@ private:
 
     void adjustMenuOnClose(InputFile* inputFile);
 
-    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
     void onScroll(InputFile* pInputFile);
 
 
@@ -71,8 +70,8 @@ private:
     void onReCenter(InputFile* pInputFile);
 
     // keep ?
-    void setTableViewSettings(QTableView* pTable);
-    void scrollToFirstTable(QTableView* dst, QTableView* src);
+    void setTableViewSettings(InputTableView* pTable);
+    void scrollToFirstTable(InputTableView* dst, InputTableView* src);
 
 
 private: // Qt UI Elements

@@ -57,6 +57,7 @@ public:
 
     void swapCentering();
 
+    void addActionToStack(CellEditAction action);
     void undo();
     void redo();
 
