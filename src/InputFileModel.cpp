@@ -146,7 +146,6 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     }
     else if (role == Qt::EditRole)
     {
-        QString curValue = "";
         if (!inputValid(index, value))
             return false;
 

@@ -25,8 +25,10 @@ class InputFileHandler
 {
 public:
     InputFileHandler(QString path);
+    virtual ~InputFileHandler();
 
     FileStatus loadFile(TTKFileData& o_emptyTTK, Centering& o_centering);
+    void saveFile(const TTKFileData& fileData);
 
 
     inline QString getPath() const { return m_filePath; }
