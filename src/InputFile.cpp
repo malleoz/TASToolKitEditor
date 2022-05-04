@@ -12,8 +12,9 @@
 #include <QTextStream>
 
 
-InputFileHandler::InputFileHandler(QString path)
-    : m_filePath(path)
+InputFileHandler::InputFileHandler(QString path, QObject* parent)
+    : QObject(parent)
+    , m_filePath(path)
     , m_pFsWatcher(Q_NULLPTR)
 {
 }

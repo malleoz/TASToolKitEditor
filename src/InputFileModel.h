@@ -36,7 +36,7 @@ private:
 
 
 public:
-    InputFileModel(InputFileHandler* fileHandler, const TTKFileData data, const Centering centering, QObject* parent = nullptr);
+    InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
     virtual ~InputFileModel() override;
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -60,12 +60,13 @@ public:
     void undo();
     void redo();
 
+signals:
+    void dataChanged(const TTKFileData& data);
+
 private:
     bool inputValid(const QModelIndex& index, const QVariant& value) const;
 
 private:
-    InputFileHandler* m_pFileHandler;
-
     TTKFileData m_fileData;
     Centering m_fileCentering;
 

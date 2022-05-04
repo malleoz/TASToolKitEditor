@@ -17,10 +17,11 @@ enum class PlayerType
     Ghost
 };
 
-class PlayerTypeInstance
+class PlayerTypeInstance : public QObject
 {
+    Q_OBJECT
 public:
-    PlayerTypeInstance(const PlayerType type);
+    PlayerTypeInstance(const PlayerType type, QObject* parent = nullptr);
 
     void setupUI(QWidget* parent = nullptr);
 

@@ -16,8 +16,9 @@
 #define PAD_COLUMN_WIDTH 35
 
 
-PlayerTypeInstance::PlayerTypeInstance(const PlayerType type)
-    : m_pTableView(nullptr)
+PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
+    : QObject(parent)
+    , m_pTableView(nullptr)
     , m_pMenu(nullptr)
     , m_pFileHandler(nullptr)
     , m_type(type)
@@ -72,7 +73,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
         return;
     }
 
-    InputFileModel* model = new InputFileModel(m_pFileHandler, data, centering);
+    InputFileModel* model = new InputFileModel(data, centering);
     m_pTableView->setModel(model);
 
     m_loaded = true;
@@ -83,10 +84,17 @@ void PlayerTypeInstance::openFile(QWidget* main)
 //    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
 //    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 
+     connect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
 }
 
 void PlayerTypeInstance::closeFile()
 {
+    // disconnect
+
+    disconnect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
+
+    // delete
+
     delete m_pFileHandler;
     m_pFileHandler = nullptr;
 
