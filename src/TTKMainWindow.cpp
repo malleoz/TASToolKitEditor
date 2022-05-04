@@ -181,13 +181,6 @@ void TTKMainWindow::connectActions()
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
 
 
-//    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
-//    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
-//    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
-//    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
-
-
-
     // TODO: check connecting and disconnecting siagnals for scrolling
     // both scrollbars at the same time
 
