@@ -1,5 +1,4 @@
-#include "InputFile.h"
-#include "InputFileModel.h"
+#include "InputFileHandler.h"
 
 #include <QFile>
 #include <QFileSystemWatcher>

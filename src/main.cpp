@@ -1,4 +1,4 @@
-#include "TTKMainWindow.h"
+#include "ui/TTKMainWindow.h"
 #include <QtWidgets/QApplication>
 
 int main(int argc, char *argv[])

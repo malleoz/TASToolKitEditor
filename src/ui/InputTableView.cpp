@@ -2,7 +2,6 @@
 
 #include <QKeyEvent>
 
-#include "InputFileModel.h"
 
 InputTableView::InputTableView(QWidget* parent)
     : QTableView(parent)
@@ -26,8 +25,7 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     else if (key == Qt::Key_Down)
     {
         if (index.row() == model()->rowCount() - 1) {
-            InputFileModel* pModel = reinterpret_cast<InputFileModel*>(model());
-            pModel->insertRows(index.row(), 1, index);
+            model()->insertRows(index.row(), 1, index);
         }
 
         selectRow(index.row() + 1);
