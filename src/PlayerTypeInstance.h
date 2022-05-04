@@ -21,7 +21,6 @@ enum class PlayerType
 
 class PlayerTypeInstance : public QObject
 {
-    Q_OBJECT
 public:
     PlayerTypeInstance(const PlayerType type, QObject* parent = nullptr);
 

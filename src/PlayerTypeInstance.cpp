@@ -84,25 +84,36 @@ void PlayerTypeInstance::openFile(QWidget* main)
 //    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
 //    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 
-     connect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
-     connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+
+    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
+    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+    
+    connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
+    connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
+
+    connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
+    connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
 }
 
 void PlayerTypeInstance::closeFile()
 {
     // disconnect
+    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
-    disconnect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
+    disconnect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
     disconnect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+
+    disconnect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
+    disconnect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
 
     // delete
 
     delete m_pFileHandler;
     m_pFileHandler = nullptr;
 
-    auto model = m_pTableView->model();
     m_pTableView->setModel(nullptr);
-    delete model;
+    delete pModel;
 
     m_loaded = false;
     adjustUiOnFileClose();

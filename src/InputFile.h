@@ -23,7 +23,6 @@ class QWidget;
 
 class InputFileHandler : public QObject
 {
-    Q_OBJECT
 public:
     InputFileHandler(QString path, QObject* parent = nullptr);
     virtual ~InputFileHandler() override;

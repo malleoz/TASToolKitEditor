@@ -65,13 +65,13 @@
     </QtMoc>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputFile.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlayerTypeInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
