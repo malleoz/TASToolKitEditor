@@ -1,20 +1,14 @@
 #include "PlayerTypeInstance.h"
 
-#include "InputFileMenu.h"
-#include "InputTableView.h"
 #include "InputFile.h"
+#include "InputFileMenu.h"
 #include "InputFileModel.h"
+#include "InputTableView.h"
 
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
-
-
-#define FRAMECOUNT_COLUMN_WIDTH 40
-#define BUTTON_COLUMN_WIDTH 20
-#define STICK_COLUMN_WIDTH 25
-#define PAD_COLUMN_WIDTH 35
 
 
 PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
@@ -38,7 +32,7 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
     qLabel->setVisible(false);
     qVLayout->addWidget(qLabel);
 
-    m_pTableView = new InputTableView(qLabel);
+    m_pTableView = new InputTableView();
 
     m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     m_pTableView->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement

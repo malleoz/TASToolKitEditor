@@ -1,22 +1,13 @@
 #pragma once
 
-#include <Qstack>
-#include <QStyledItemDelegate>
+#include <QStack>
 #include <QVector>
 
-#include <QtCore/QVariant>
 #include <QtWidgets/QAction>
-#include <QtWidgets/QApplication>
 #include <QtWidgets/QHBoxLayout>
-#include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLabel>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
-#include <QtWidgets/QStatusBar>
-#include <QtWidgets/QTableView>
-#include <QtWidgets/QToolBar>
-#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 #include <QtWidgets/QMainWindow>
@@ -24,14 +15,10 @@
 #include "Definitions.h"
 #include "PlayerTypeInstance.h"
 
-class InputFile;
 class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
 
-
-enum class EOperationType;
-enum class Centering;
 
 class TTKMainWindow : public QMainWindow
 {
@@ -39,19 +26,6 @@ class TTKMainWindow : public QMainWindow
 
 public:
     TTKMainWindow(QWidget *parent = Q_NULLPTR);
-
-private:
-
-    // reimplement?
-    void adjustInputCenteringMenu(InputFile* inputFile);
-
-    void onScroll(InputFile* pInputFile);
-
-    InputFile* playerFile;
-    InputFile* ghostFile;
-
-    // keep ?
-    void scrollToFirstTable(InputTableView* dst, InputTableView* src);
 
 
 private: // Qt UI Elements
@@ -73,9 +47,7 @@ private: // connect
     void openFile(PlayerTypeInstance& typeInstance);
     void closeFile(PlayerTypeInstance& typeInstance);
 
-    void onScroll();
     void onToggleScrollTogether(const bool bTogether);
-
 
     void swapModels();
 
@@ -92,7 +64,7 @@ private: // Refactored Functions
 
     void setTitles();
 
-    uint8_t amountLoadedFiles();
+    bool bothFilesLoaded();
 
 private: // variables
     PlayerTypeInstance m_player;
