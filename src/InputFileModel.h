@@ -60,9 +60,6 @@ public:
     void undo();
     void redo();
 
-protected:
-
-
 private:
     bool inputValid(const QModelIndex& index, const QVariant& value) const;
 

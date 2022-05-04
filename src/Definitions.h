@@ -33,6 +33,8 @@ enum class EOperationType
     Redo,
 };
 
+// ToDo rename/replace
+// "FileTypes" would be *.csv *.rkg etc
 enum class FileType
 {
     Player = 0,

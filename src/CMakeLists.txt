@@ -5,6 +5,7 @@ set(TTKE_Headers
     InputTableView.h
     TTKMainWindow.h
     Definitions.h
+    PlayerTypeInstance.h
     )
 
 set(TTKE_CPP
@@ -14,6 +15,7 @@ set(TTKE_CPP
     InputTableView.cpp
     TTKMainWindow.cpp
     main.cpp
+    PlayerTypeInstance.cpp
 )
 
 add_executable(TTKEditor

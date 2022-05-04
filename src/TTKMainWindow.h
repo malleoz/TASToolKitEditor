@@ -22,11 +22,13 @@
 #include <QtWidgets/QMainWindow>
 
 #include "Definitions.h"
+#include "PlayerTypeInstance.h"
 
 class InputFile;
 class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
+
 
 enum class EOperationType;
 enum class Centering;
@@ -50,6 +52,8 @@ private:
 
     void onScroll(InputFile* pInputFile);
 
+    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
+
 
     // delete
     void createInputFiles();
@@ -61,11 +65,6 @@ private:
     InputFile* ghostFile;
 
     // done reimplementing ?
-    bool userClosedPreviousFile(InputFile* inputFile);
-
-    void openFile(InputFile* inputFile);
-    void openFile(InputFile* inputFile, QString filePath);
-    void closeFile(InputFile* pInputFile);
 
     void onReCenter(InputFile* pInputFile);
 
@@ -98,23 +97,23 @@ private: // connect
     void openFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu);
     void closeFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu);
 
+    void openFile(PlayerTypeInstance& typeInstance);
+    void closeFile(PlayerTypeInstance& typeInstance);
+
     void toggleCentering(InputTableView* table);
 
     void onScroll();
     void onToggleScrollTogether(const bool bTogether);
 
-    void onUndoRedo(InputTableView* table, const EOperationType opType);
 
     void swapModels();
+
+    void onUndoRedo(InputTableView* table, const EOperationType opType);
 
 
 private: // Refactored Functions
     // checkup
     void connectActions();
-
-    void adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering);
-    void adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu);
-
 
     // done
     void setupUi();
@@ -131,17 +130,9 @@ private: // Refactored Functions
     uint8_t amountLoadedFiles();
 
 private: // variables
-    InputTableView* m_pPlayerTableView;
-    InputTableView* m_pGhostTableView;
-
-    InputFileHandler* m_pPlayerFileHandler;
-    InputFileHandler* m_pGhostFileHandler;
-
-    InputFileMenu* m_pPlayerMenu;
-    InputFileMenu* m_pGhostMenu;
+    PlayerTypeInstance m_player;
+    PlayerTypeInstance m_ghost;
 
     bool m_bScrollTogether;
 
-
-    int m_filesLoaded;
 };

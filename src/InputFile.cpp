@@ -18,6 +18,10 @@ InputFileHandler::InputFileHandler(QString path)
 {
 }
 
+InputFileHandler::~InputFileHandler()
+{
+    delete m_pFsWatcher;
+}
 
 FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_centering)
 {
@@ -72,6 +76,11 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
     fp.close();
 
     return FileStatus::Success;
+}
+
+void InputFileHandler::saveFile(const TTKFileData& fileData)
+{
+
 }
 
 

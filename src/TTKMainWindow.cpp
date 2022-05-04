@@ -27,12 +27,8 @@
 
 TTKMainWindow::TTKMainWindow(QWidget *parent)
     : QMainWindow(parent)
-    , m_pPlayerTableView(nullptr)
-    , m_pGhostTableView(nullptr)
-    , m_pPlayerFileHandler(nullptr)
-    , m_pGhostFileHandler(nullptr)
-    , m_pPlayerMenu(nullptr)
-    , m_pGhostMenu(nullptr)
+    , m_player(PlayerType::Player)
+    , m_ghost(PlayerType::Ghost)
     , m_bScrollTogether(false)
 {
     setupUi();
@@ -40,58 +36,37 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
     connectActions();
 }
 
-void TTKMainWindow::openFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu)
+
+void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 {
-    if (o_fileHandler == nullptr)
-        return;
+    typeInstance.openFile(this);
 
-    const QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
-
-    if (filePath == "")
-        return;
-
-    if (*o_fileHandler != nullptr && !userClosedPreviousFile(o_fileHandler))
-        return;
-
-
-    *o_fileHandler = new InputFileHandler(filePath);
-    TTKFileData data;
-    Centering centering;
-
-    const FileStatus status = (*o_fileHandler)->loadFile(data, centering);
-    if (status != FileStatus::Success)
+    if (amountLoadedFiles() == 2)
     {
-        delete (*o_fileHandler);
-        *o_fileHandler = nullptr;
-
-        // Error Handling
-
-        return;
+        actionSwapFiles->setEnabled(true);
+        actionScrollTogether->setEnabled(true);
+        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
     }
-
-    InputFileModel* model = new InputFileModel(data, centering);
-    table->setModel(model);
-
-    adjustUiOnFileLoad(table, menu, centering);
 
     // ToDo: connect ?
 //    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
 //    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 
-
-
 }
 
-void TTKMainWindow::closeFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu)
+void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
 {
-    delete (*o_fileHandler);
-    *o_fileHandler = nullptr;
+    typeInstance.closeFile();
 
-    auto model = table->model();
-    table->setModel(nullptr);
-    delete model;
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
 
-    adjustUiOnFileClose(table, menu);
+    actionSwapFiles->setEnabled(false);
+
+    actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setChecked(false);
+    m_bScrollTogether = false;
 }
 
 void TTKMainWindow::toggleCentering(InputTableView* table)
@@ -117,16 +92,16 @@ void TTKMainWindow::onToggleScrollTogether(bool bTogether)
         return;
 
     // Jump ghost view to same row as player view
-    scrollToFirstTable(m_pPlayerTableView, m_pGhostTableView);
+    scrollToFirstTable(m_player.getTableView(), m_ghost.getTableView());
 }
 
 void TTKMainWindow::swapModels()
 {
-    InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_pPlayerTableView->model());
-    InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_pGhostTableView->model());
+    InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
+    InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
-    m_pPlayerTableView->setModel(ghostModel);
-    m_pGhostTableView->setModel(playerModel);
+    m_player.getTableView()->setModel(ghostModel);
+    m_ghost.getTableView()->setModel(playerModel);
 }
 
 
@@ -153,63 +128,13 @@ bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
     return true;
 }
 
-void TTKMainWindow::adjustUiOnFileLoad(InputTableView* table, InputFileMenu* menu, const Centering centering)
-{
-    menu->menuAction()->setVisible(true);
-    table->getLabel()->setVisible(true);
-
-    table->setVisible(true);
-
-    /* This stuff really should be constant, but I can't do any of this until
-    // the model is set, but I can't set the model until I instantiate the model
-    // instance, but I can't instantiate the instance until I have the InputFile
-    // instance, at which point I have to have the table instance already, which
-    // means I can't yet give the table a model instance...
-    // THIS IS SO CONFUSING!*/
-    table->setColumnWidth(0, FRAMECOUNT_COLUMN_WIDTH);
-
-    for (int i = 0; i < 3; i++)
-        table->setColumnWidth(i + FRAMECOUNT_COLUMN, BUTTON_COLUMN_WIDTH);
-
-    for (int i = 3; i < NUM_INPUT_COLUMNS - 1; i++)
-        table->setColumnWidth(i + FRAMECOUNT_COLUMN, STICK_COLUMN_WIDTH);
-
-    table->setColumnWidth(NUM_INPUT_COLUMNS - 1 + FRAMECOUNT_COLUMN, PAD_COLUMN_WIDTH);
-
-    if (amountLoadedFiles() == 2)
-    {
-        actionSwapFiles->setEnabled(true);
-        actionScrollTogether->setEnabled(true);
-        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-    }
-}
-
-
-void TTKMainWindow::adjustUiOnFileClose(InputTableView* table, InputFileMenu* menu)
-{
-    menu->menuAction()->setVisible(false);
-    table->getLabel()->setVisible(false);
-
-    table->setVisible(false);
-
-    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
-
-    actionSwapFiles->setEnabled(false);
-
-    actionScrollTogether->setEnabled(false);
-    actionScrollTogether->setChecked(false);
-    m_bScrollTogether = false;
-}
-
 uint8_t TTKMainWindow::amountLoadedFiles()
 {
     uint8_t amountLoaded = 0;
 
-    if (m_pPlayerFileHandler)
+    if (m_player.isLoaded())
         amountLoaded++;
-    if (m_pGhostFileHandler)
+    if (m_ghost.isLoaded())
         amountLoaded++;
 
     return amountLoaded;
@@ -226,33 +151,41 @@ uint8_t TTKMainWindow::amountLoadedFiles()
 
 void TTKMainWindow::createInputFiles()
 {
-    playerFile = new InputFile(m_pPlayerMenu, playerLabel, m_pPlayerTableView);
-    ghostFile = new InputFile(m_pGhostMenu, ghostLabel, m_pGhostTableView);
 }
 
 void TTKMainWindow::connectActions()
 {
-    connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(&m_pPlayerFileHandler, m_pPlayerTableView, m_pPlayerMenu);} );
-    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(&m_pGhostFileHandler, m_pGhostTableView, m_pGhostMenu);} );
+    connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(m_player);} );
+    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(m_ghost);} );
 
-    connect(m_pPlayerMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pPlayerFileHandler, m_pPlayerTableView, m_pPlayerMenu); });
-    connect(m_pGhostMenu->getClose(), &QAction::triggered, this, [this]() { closeFile(&m_pGhostFileHandler, m_pGhostTableView, m_pGhostMenu); });
+    connect(m_player.getMenu()->getClose(), &QAction::triggered, this, [this]() { closeFile(m_player); });
+    connect(m_ghost.getMenu()->getClose(), &QAction::triggered, this, [this]() { closeFile(m_ghost); });
 
-    InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_pPlayerTableView->model());
-    InputFileModel* pGhostModel = reinterpret_cast<InputFileModel*>(m_pGhostTableView->model());
 
-    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [&]() { pPlayerModel->undo(); });
-    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [&]() { pGhostModel->undo(); });
+    InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
+    InputFileModel* pGhostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
-    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [&]() { pPlayerModel->redo(); });
-    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [&]() { pGhostModel->redo(); });
+    connect(m_player.getMenu()->getUndo(), &QAction::triggered, this, [&]() { pPlayerModel->undo(); });
+    connect(m_ghost.getMenu()->getUndo(), &QAction::triggered, this, [&]() { pGhostModel->undo(); });
+
+    connect(m_player.getMenu()->getRedo(), &QAction::triggered, this, [&]() { pPlayerModel->redo(); });
+    connect(m_ghost.getMenu()->getRedo(), &QAction::triggered, this, [&]() { pGhostModel->redo(); });
+
+
+    connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
+
+
+    connect(m_player.getMenu()->getCenter7(), &QAction::triggered, this, [this]() { m_player.toggleCentering(); });
+    connect(m_ghost.getMenu()->getCenter7(), &QAction::triggered, this, [this]() { m_ghost.toggleCentering(); });
+
+    connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
+
 
 //    connect(m_pPlayerMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Undo); });
 //    connect(m_pGhostMenu->getUndo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Undo); });
 //    connect(m_pPlayerMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(playerFile, EOperationType::Redo); });
 //    connect(m_pGhostMenu->getRedo(), &QAction::triggered, this, [this]() { onUndoRedo(ghostFile, EOperationType::Redo); });
 
-    connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
 
     // TODO: check connecting and disconnecting siagnals for scrolling
@@ -260,11 +193,6 @@ void TTKMainWindow::connectActions()
 
 //    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
 //    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
-
-    connect(m_pPlayerMenu->getCenter7(), &QAction::triggered, this, [this]() { toggleCentering(m_pPlayerTableView); });
-    connect(m_pGhostMenu->getCenter7(), &QAction::triggered, this, [this]() { toggleCentering(m_pGhostTableView); });
-
-    connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
 }
 
 
@@ -318,122 +246,6 @@ void TTKMainWindow::scrollToFirstTable(InputTableView* dst, InputTableView* src)
     src->scrollTo(index, QAbstractItemView::PositionAtTop);
 }
 
-void TTKMainWindow::closeFile(InputFile* pInputFile)
-{
-    pInputFile->closeFile();
-    m_filesLoaded--;
-    adjustUiOnFileClose(pInputFile);
-}
-
-bool TTKMainWindow::userClosedPreviousFile(InputFile* inputFile)
-{
-    // Have user confirm they want to close file
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?",
-        QMessageBox::No | QMessageBox::Yes);
-
-    if (reply != QMessageBox::Yes)
-        return false;
-
-    inputFile->closeFile();
-    return true;
-}
-
-void TTKMainWindow::openFile(InputFile* inputFile)
-{
-    QString filePath = QFileDialog::getOpenFileName(this, "Open File", "", "Input Files (*.csv)");
-
-    if (filePath == "")
-        return;
-
-    if (inputFile->getPath() != "" && !userClosedPreviousFile(inputFile))
-        return;
-
-    openFile(inputFile, filePath);
-}
-
-void TTKMainWindow::openFile(InputFile* inputFile, QString filePath)
-{
-    if (filePath == playerFile->getPath() || filePath == ghostFile->getPath())
-    {
-        showError("Error Opening File", "This file is already open in the program!");
-        return;
-    }
-
-    FileStatus status = inputFile->loadFile(filePath);
-
-    if (status == FileStatus::InsufficientWritePermission)
-    {
-        showError("Error Opening File", "This program does not have sufficient permissions to modify the file.\n\n" \
-            "Try running this program in administrator mode and make sure the file is not open in another program.");
-        return;
-    }
-    if (status == FileStatus::Parse)
-    {
-        QString errMsg = QString("There is an issue with the file on line %1.\n").arg(inputFile->getParseError());
-        errMsg += inputFile->getParseMsg();
-        showError("Error Parsing File", errMsg);
-        return;
-    }
-
-    if (status != FileStatus::Success)
-        return;
-
-    m_filesLoaded++;
-
-    adjustUiOnFileLoad(inputFile);
-
-    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
-    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
-}
-
-void TTKMainWindow::adjustUiOnFileLoad(InputFile* pInputFile)
-{
-    adjustInputCenteringMenu(pInputFile);
-    pInputFile->getMenus()->menuAction()->setVisible(true);
-    pInputFile->getLabel()->setVisible(true);
-
-    QTableView* pTable = pInputFile->getTableView();
-
-    // TODO: fix
-    TTKFileData x;
-
-    pTable->setModel(new InputFileModel(x,Centering::Unknown,this));
-    pTable->setVisible(true);
-
-    /* This stuff really should be constant, but I can't do any of this until
-    // the model is set, but I can't set the model until I instantiate the model
-    // instance, but I can't instantiate the instance until I have the InputFile
-    // instance, at which point I have to have the table instance already, which
-    // means I can't yet give the table a model instance...
-    // THIS IS SO CONFUSING!*/
-    pTable->setColumnWidth(0, FRAMECOUNT_COLUMN_WIDTH);
-
-    for (int i = 0; i < 3; i++)
-        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, BUTTON_COLUMN_WIDTH);
-
-    for (int i = 3; i < NUM_INPUT_COLUMNS - 1; i++)
-        pTable->setColumnWidth(i + FRAMECOUNT_COLUMN, STICK_COLUMN_WIDTH);
-
-    pTable->setColumnWidth(NUM_INPUT_COLUMNS - 1 + FRAMECOUNT_COLUMN, PAD_COLUMN_WIDTH);
-
-    if (m_filesLoaded == 2)
-    {
-        actionSwapFiles->setEnabled(true);
-        actionScrollTogether->setEnabled(true);
-        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-    }
-}
-
-void TTKMainWindow::adjustUiOnFileClose(InputFile* pInputFile)
-{
-    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
-
-    adjustMenuOnClose(pInputFile);
-}
-
 void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
 {
     Centering fileCentering = inputFile->getCentering();
@@ -447,16 +259,6 @@ void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
 
     inputFile->getMenus()->getCenter7()->setEnabled(true);
     inputFile->getMenus()->getCenter7()->setChecked(fileCentering == Centering::Seven);
-}
-
-void TTKMainWindow::adjustMenuOnClose(InputFile* inputFile)
-{
-    if (m_filesLoaded == 0)
-        actionSwapFiles->setEnabled(false);
-    
-    m_bScrollTogether = false;
-    actionScrollTogether->setEnabled(false);
-    actionScrollTogether->setChecked(false);
 }
 
 void TTKMainWindow::setTableViewSettings(InputTableView* pTable)
@@ -477,11 +279,14 @@ void TTKMainWindow::addMenuItems()
 
     addFileMenuItems();
 
-    m_pPlayerMenu = new InputFileMenu("Player", "Ctrl+");
-    m_pGhostMenu = new InputFileMenu("Ghost", "Ctrl+Shift+");
+    InputFileMenu* playerMenu = new InputFileMenu("Player", "Ctrl+", menuBar);
+    InputFileMenu* ghostMenu = new InputFileMenu("Ghost", "Ctrl+Shift+", menuBar);
 
-    menuBar->addAction(m_pPlayerMenu->menuAction());
-    menuBar->addAction(m_pGhostMenu->menuAction());
+    m_player.setMenu(playerMenu);
+    m_ghost.setMenu(ghostMenu);
+
+    menuBar->addAction(playerMenu->menuAction());
+    menuBar->addAction(ghostMenu->menuAction());
 }
 
 void TTKMainWindow::addFileMenuItems()
@@ -528,35 +333,12 @@ void TTKMainWindow::setupUi()
    
     centralWidget->setLayout(mainHorizLayout);
 
-    // creating player layout
-    playerVLayout = new QVBoxLayout();
-    playerVLayout->setSpacing(6);
-    playerLabel = new QLabel(horizontalLayoutWidget);
-    playerLabel->setVisible(false);
-    playerVLayout->addWidget(playerLabel);
+    // creating player/ghost layouts
+    m_player.setupUI();
+    mainHorizLayout->addLayout(m_player.getLayout());
 
-    m_pPlayerTableView = new InputTableView(playerLabel, horizontalLayoutWidget);
-    setTableViewSettings(m_pPlayerTableView);
-
-    playerVLayout->addWidget(m_pPlayerTableView);
-
-    mainHorizLayout->addLayout(playerVLayout);
-
-
-    //creating ghost layout
-    ghostVLayout = new QVBoxLayout();
-    ghostVLayout->setSpacing(6);
-    ghostLabel = new QLabel(horizontalLayoutWidget);
-    ghostLabel->setVisible(false);
-    ghostVLayout->addWidget(ghostLabel);
-
-    m_pGhostTableView = new InputTableView(ghostLabel, horizontalLayoutWidget);
-    setTableViewSettings(m_pGhostTableView);
-
-    ghostVLayout->addWidget(m_pGhostTableView);
-
-    mainHorizLayout->addLayout(ghostVLayout);
-
+    m_ghost.setupUI();
+    mainHorizLayout->addLayout(m_ghost.getLayout());
 
 
     // misc.
@@ -576,8 +358,8 @@ void TTKMainWindow::setTitles()
     actionSwapFiles->setText("Swap Player and Ghost");
     actionScrollTogether->setText("Scroll Together");
 
-    playerLabel->setText("Player");
-    ghostLabel->setText("Ghost");
+    m_player.getLabel()->setText("Player");
+    m_ghost.getLabel()->setText("Ghost");
 
 #if QT_CONFIG(shortcut)
     actionOpenPlayer->setShortcut(QString("Ctrl+O"));
