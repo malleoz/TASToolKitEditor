@@ -125,10 +125,6 @@ void TTKMainWindow::connectActions()
 
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
-
-    connect(m_player.getMenu()->getCenter7(), &QAction::triggered, this, [this]() { m_player.toggleCentering(); });
-    connect(m_ghost.getMenu()->getCenter7(), &QAction::triggered, this, [this]() { m_ghost.toggleCentering(); });
-
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
 
 

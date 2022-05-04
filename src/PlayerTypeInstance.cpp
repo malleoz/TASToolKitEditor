@@ -85,6 +85,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
 //    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
 
      connect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
+     connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
 }
 
 void PlayerTypeInstance::closeFile()
@@ -92,6 +93,7 @@ void PlayerTypeInstance::closeFile()
     // disconnect
 
     disconnect(reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::dataChanged, m_pFileHandler, &InputFileHandler::saveFile);
+    disconnect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
 
     // delete
 
@@ -104,12 +106,6 @@ void PlayerTypeInstance::closeFile()
 
     m_loaded = false;
     adjustUiOnFileClose();
-}
-
-void PlayerTypeInstance::toggleCentering()
-{
-    InputFileModel* model = reinterpret_cast<InputFileModel*>(m_pTableView->model());
-    model->swapCentering();
 }
 
 
