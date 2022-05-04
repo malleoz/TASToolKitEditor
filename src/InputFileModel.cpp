@@ -10,26 +10,34 @@
 #define UNDO_STACK_LIMIT 100
 
 
-
-InputFileModel::CellEditAction::CellEditAction(int row, int col, QString prev, QString cur)
-    : m_rowIdx(row)
-    , m_colIdx(col)
-    , m_prev(prev)
-    , m_cur(cur)
+CellEditCommand::CellEditCommand(InputFileModel* pModel, const QModelIndex& index, const QString oldVal, const QString newVal)
+    : m_pModel(pModel)
+    , m_index(index)
+    , m_oldVal(oldVal)
+    , m_newVal(newVal)
 {
 }
 
-bool InputFileModel::CellEditAction::operator==(const CellEditAction& rhs)
+void CellEditCommand::undo()
 {
-    return m_rowIdx == rhs.m_rowIdx && m_colIdx == rhs.m_colIdx && m_cur == rhs.m_cur;
+    m_pModel->m_fileData[m_index.row()][m_index.column() - FRAMECOUNT_COLUMN] = m_oldVal;
+
+    m_pModel->emitDataChanged(m_index, m_index);
 }
 
+void CellEditCommand::redo()
+{
+    m_pModel->m_fileData[m_index.row()][m_index.column() - FRAMECOUNT_COLUMN] = m_newVal;
+
+    m_pModel->emitDataChanged(m_index, m_index);
+}
 
 InputFileModel::InputFileModel(const TTKFileData data, const Centering centering, QObject* parent)
     : QAbstractTableModel(parent)
     , m_fileData(data)
     , m_fileCentering(centering)
 {
+    m_undoStack.setUndoLimit(100);
 }
 
 InputFileModel::~InputFileModel()
@@ -157,10 +165,10 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
 
     m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN] = curValue;
 
-    addActionToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
+    CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
+    m_undoStack.push(cmd);
 
-//    m_pFileHandler->saveFile(m_fileData);
-    emit dataChanged(m_fileData);
+    emit fileToBeWritten(m_fileData);
 
     return true;
 }
@@ -184,7 +192,7 @@ void InputFileModel::swapCentering()
     }
     endResetModel();
 
-    emit dataChanged(m_fileData);
+    emit fileToBeWritten(m_fileData);
 }
 
 
@@ -210,62 +218,6 @@ bool InputFileModel::inputValid(const QModelIndex& index, const QVariant& value)
     return DefinitionUtils::CheckCentering(m_fileCentering, iValue);
 }
 
-void InputFileModel::addActionToStack(CellEditAction action)
-{
-    if (redoStack.count() > 0)
-    {
-        CellEditAction redoTop = redoStack.top();
-        redoTop.flipValues();
-
-        // If user performs same action as in top of redo stack, act as if it's a redo
-        // Otherwise, just clear the redo stack since we've changed timelines
-        if (action == redoTop)
-            redoStack.pop();
-        else
-            redoStack.clear();
-
-        undoStack.push(action);
-    }
-    else
-    {
-        undoStack.push(action);
-
-        // Limit stack size
-        if (undoStack.count() > UNDO_STACK_LIMIT)
-            undoStack.pop_front();
-    }
-
-    // Update UI somehow. Emit signal?
-}
-
-void InputFileModel::undo()
-{
-    // Nothing to undo if stack is empty
-    if (undoStack.count() == 0)
-        return;
-
-    CellEditAction action = undoStack.pop();
-    QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
-    setData(editIndex, action.m_cur, Qt::EditRole);
-
-    action.flipValues();
-    redoStack.push(action);
-}
-
-void InputFileModel::redo()
-{
-    // Nothing to redo if stack is empty
-    if (redoStack.count() == 0)
-        return;
-
-    CellEditAction action = redoStack.pop();
-    QModelIndex editIndex = index(action.m_rowIdx, action.m_colIdx);
-    setData(editIndex, action.m_cur, Qt::EditRole);
-
-    action.flipValues();
-    undoStack.push(action);
-}
-
 void InputFileModel::swap(InputFileModel* rhs)
 {
     beginResetModel();
@@ -277,8 +229,8 @@ void InputFileModel::swap(InputFileModel* rhs)
     endResetModel();
     rhs->endResetModel();
 
-    emit dataChanged(m_fileData);
-    emit rhs->dataChanged(rhs->m_fileData);
+    emit fileToBeWritten(m_fileData);
+    emit rhs->fileToBeWritten(rhs->m_fileData);
 }
 
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
@@ -303,7 +255,14 @@ bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
     
     endResetModel();
     
-    emit dataChanged(m_fileData);
+    emit fileToBeWritten(m_fileData);
 
     return true;
+}
+
+void InputFileModel::emitDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+{
+    emit QAbstractTableModel::dataChanged(topLeft, bottomRight);
+
+    emit fileToBeWritten(m_fileData);
 }

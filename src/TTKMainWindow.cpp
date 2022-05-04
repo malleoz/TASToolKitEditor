@@ -116,12 +116,6 @@ void TTKMainWindow::connectActions()
     InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
     InputFileModel* pGhostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
-    connect(m_player.getMenu()->getUndo(), &QAction::triggered, this, [&]() { pPlayerModel->undo(); });
-    connect(m_ghost.getMenu()->getUndo(), &QAction::triggered, this, [&]() { pGhostModel->undo(); });
-
-    connect(m_player.getMenu()->getRedo(), &QAction::triggered, this, [&]() { pPlayerModel->redo(); });
-    connect(m_ghost.getMenu()->getRedo(), &QAction::triggered, this, [&]() { pGhostModel->redo(); });
-
 
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
