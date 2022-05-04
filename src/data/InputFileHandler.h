@@ -3,7 +3,7 @@
 #include <QStack>
 #include <QObject>
 
-#include "Definitions.h"
+#include "include/Definitions.h"
 
 
 class QFileSystemWatcher;

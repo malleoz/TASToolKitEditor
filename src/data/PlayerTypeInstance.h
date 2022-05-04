@@ -4,7 +4,7 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
-#include "Definitions.h"
+#include "include/Definitions.h"
 
 class InputFileMenu;
 class InputTableView;

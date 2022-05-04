@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Definitions.h"
+#include "include/Definitions.h"
 
 #include <QAbstractTableModel>
 #include <QUndoStack>

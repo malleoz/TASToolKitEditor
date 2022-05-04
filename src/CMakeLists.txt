@@ -1,21 +1,21 @@
 set(TTKE_Headers
-    InputFile.h
-    InputFileMenu.h
-    InputFileModel.h
-    InputTableView.h
-    TTKMainWindow.h
-    Definitions.h
-    PlayerTypeInstance.h
+    data/InputFileHandler.h
+    data/InputFileModel.h
+    data/PlayerTypeInstance.h
+    ui/InputFileMenu.h
+    ui/InputTableView.h
+    ui/TTKMainWindow.h
+    include/Definitions.h
     )
 
 set(TTKE_CPP
-    InputFile.cpp
-    InputFileMenu.cpp
-    InputFileModel.cpp
-    InputTableView.cpp
-    TTKMainWindow.cpp
+    data/InputFileHandler.cpp
+    data/InputFileModel.cpp
+    data/PlayerTypeInstance.cpp
+    ui/InputFileMenu.cpp
+    ui/InputTableView.cpp
+    ui/TTKMainWindow.cpp
     main.cpp
-    PlayerTypeInstance.cpp
 )
 
 add_executable(TTKEditor
@@ -27,6 +27,7 @@ target_include_directories(TTKEditor PUBLIC
     "${Qt5_INCLUDE_DIRS}"
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
 if(WIN32)

@@ -1,9 +1,9 @@
 #include "PlayerTypeInstance.h"
 
-#include "InputFile.h"
-#include "InputFileMenu.h"
-#include "InputFileModel.h"
-#include "InputTableView.h"
+#include "data/InputFileHandler.h"
+#include "data/InputFileModel.h"
+#include "ui/InputFileMenu.h"
+#include "ui/InputTableView.h"
 
 #include <QHeaderView>
 #include <QMessageBox>

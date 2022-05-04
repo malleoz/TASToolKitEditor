@@ -12,8 +12,8 @@
 
 #include <QtWidgets/QMainWindow>
 
-#include "Definitions.h"
-#include "PlayerTypeInstance.h"
+#include "include/Definitions.h"
+#include "data/PlayerTypeInstance.h"
 
 class InputFileMenu;
 class InputTableView;
