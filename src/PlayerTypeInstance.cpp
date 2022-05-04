@@ -72,7 +72,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
         return;
     }
 
-    InputFileModel* model = new InputFileModel(data, centering);
+    InputFileModel* model = new InputFileModel(m_pFileHandler, data, centering);
     m_pTableView->setModel(model);
 
     m_loaded = true;

@@ -25,10 +25,11 @@ bool InputFileModel::CellEditAction::operator==(const CellEditAction& rhs)
 }
 
 
-InputFileModel::InputFileModel(const TTKFileData data, const Centering centering, QObject* parent)
+InputFileModel::InputFileModel(InputFileHandler* fileHandler, const TTKFileData data, const Centering centering, QObject* parent)
     : QAbstractTableModel(parent)
     , m_fileData(data)
     , m_fileCentering(centering)
+    , m_pFileHandler(fileHandler)
 {
 }
 
@@ -159,13 +160,9 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
 
     addActionToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
 
+    m_pFileHandler->saveFile(m_fileData);
+
     return true;
-
-    //    setCachedFileData(index.row(), index.column() - FRAMECOUNT_COLUMN, curValue);
-    //    addToStack(InputFile::CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
-    //    writeFileOnDisk(m_pFile);
-
-    //    m_pFile->getTableView()->viewport()->update();
 }
 
 void InputFileModel::swapCentering()

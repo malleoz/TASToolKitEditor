@@ -80,7 +80,34 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
 
 void InputFileHandler::saveFile(const TTKFileData& fileData)
 {
+    QFile fp(m_filePath);
 
+    if (!fp.open(QFile::ReadWrite))
+    {
+        const QString errorTitle = "Error Saving File";
+        const QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \
+            "Your change has not been saved to the file.";
+        QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
+        return;
+    }
+
+    for (int i = 0; i < fileData.count(); i++)
+    {
+        QByteArray frameData;
+
+        for (int j = 0; j < NUM_INPUT_COLUMNS; j++)
+        {
+            frameData += fileData[i][j].toUtf8();
+            frameData += ",";
+        }
+
+        frameData.remove(frameData.size() - 1, 1);
+        frameData += "\n";
+
+        fp.write(frameData);
+    }
+
+    fp.close();
 }
 
 
