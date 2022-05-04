@@ -39,6 +39,7 @@ public:
     InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
     virtual ~InputFileModel() override;
 
+public: // inherit
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -50,7 +51,7 @@ public:
 
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
-
+public:
     inline TTKFileData& getData() {return m_fileData;}
     inline Centering getCentering() const {return m_fileCentering;}
 
@@ -59,6 +60,8 @@ public:
     void addActionToStack(CellEditAction action);
     void undo();
     void redo();
+
+    void swap(InputFileModel* rhs);
 
 signals:
     void dataChanged(const TTKFileData& data);

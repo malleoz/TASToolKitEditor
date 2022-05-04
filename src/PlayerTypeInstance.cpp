@@ -18,13 +18,13 @@
 
 PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
     : QObject(parent)
+    , qVLayout(Q_NULLPTR)
+    , qLabel(Q_NULLPTR)
     , m_pTableView(nullptr)
     , m_pMenu(nullptr)
     , m_pFileHandler(nullptr)
     , m_type(type)
     , m_loaded(false)
-    , qVLayout(Q_NULLPTR)
-    , qLabel(Q_NULLPTR)
 {
 }
 
@@ -77,7 +77,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
     m_pTableView->setModel(model);
 
     m_loaded = true;
-    adjustUiOnFileLoad();
+    adjustUiOnFileLoad(centering);
 
 
     // ToDo: connect ?
@@ -132,12 +132,17 @@ bool PlayerTypeInstance::userClosedPreviousFile(QWidget* main)
     return true;
 }
 
-void PlayerTypeInstance::adjustUiOnFileLoad()
+void PlayerTypeInstance::adjustUiOnFileLoad(const Centering centering)
 {
     m_pMenu->menuAction()->setVisible(true);
     qLabel->setVisible(true);
 
     m_pTableView->setVisible(true);
+
+    if (centering == Centering::Zero)
+        m_pMenu->setCenter7(false);
+    if (centering == Centering::Seven)
+        m_pMenu->setCenter7(true);
 
     /* This stuff really should be constant, but I can't do any of this until
     // the model is set, but I can't set the model until I instantiate the model

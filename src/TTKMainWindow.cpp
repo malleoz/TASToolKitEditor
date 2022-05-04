@@ -88,8 +88,7 @@ void TTKMainWindow::swapModels()
     InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
     InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
-    m_player.getTableView()->setModel(ghostModel);
-    m_ghost.getTableView()->setModel(playerModel);
+    playerModel->swap(ghostModel);
 }
 
 uint8_t TTKMainWindow::amountLoadedFiles()

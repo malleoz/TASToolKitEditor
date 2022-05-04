@@ -99,11 +99,11 @@ void InputFileHandler::saveFile(const TTKFileData& fileData)
         for (int j = 0; j < NUM_INPUT_COLUMNS; j++)
         {
             frameData += fileData[i][j].toUtf8();
-            frameData += ",";
+            frameData += ',';
         }
 
         frameData.remove(frameData.size() - 1, 1);
-        frameData += "\n";
+        frameData += '\n';
 
         fp.write(frameData);
     }

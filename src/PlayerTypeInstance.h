@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include "Definitions.h"
+
 class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
@@ -34,7 +36,7 @@ public: // connect
 private:
     bool userClosedPreviousFile(QWidget* main);
 
-    void adjustUiOnFileLoad();
+    void adjustUiOnFileLoad(const Centering centering);
     void adjustUiOnFileClose();
 
 

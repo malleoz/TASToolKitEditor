@@ -183,6 +183,8 @@ void InputFileModel::swapCentering()
         }
     }
     endResetModel();
+
+    emit dataChanged(m_fileData);
 }
 
 
@@ -264,6 +266,21 @@ void InputFileModel::redo()
     undoStack.push(action);
 }
 
+void InputFileModel::swap(InputFileModel* rhs)
+{
+    beginResetModel();
+    rhs->beginResetModel();
+
+    std::swap(m_fileData, rhs->m_fileData);
+    std::swap(m_fileCentering, rhs->m_fileCentering);
+
+    endResetModel();
+    rhs->endResetModel();
+
+    emit dataChanged(m_fileData);
+    emit rhs->dataChanged(rhs->m_fileData);
+}
+
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
 {
     beginResetModel();
@@ -286,6 +303,7 @@ bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
     
     endResetModel();
     
+    emit dataChanged(m_fileData);
 
     return true;
 }
