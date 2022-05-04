@@ -83,7 +83,7 @@ void InputFileHandler::saveFile(const TTKFileData& fileData)
 {
     QFile fp(m_filePath);
 
-    if (!fp.open(QFile::ReadWrite))
+    if (!fp.open(QFile::WriteOnly))
     {
         const QString errorTitle = "Error Saving File";
         const QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \

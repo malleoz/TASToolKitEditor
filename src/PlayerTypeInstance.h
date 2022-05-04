@@ -31,8 +31,6 @@ public: // connect
     void openFile(QWidget* main);
     void closeFile();
 
-    void toggleCentering();
-
 private:
     bool userClosedPreviousFile(QWidget* main);
 
