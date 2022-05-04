@@ -69,7 +69,6 @@ private:
     void onReCenter(InputFile* pInputFile);
 
     // keep ?
-    void setTableViewSettings(InputTableView* pTable);
     void scrollToFirstTable(InputTableView* dst, InputTableView* src);
 
 

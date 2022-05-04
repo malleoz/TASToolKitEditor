@@ -261,13 +261,6 @@ void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
     inputFile->getMenus()->getCenter7()->setChecked(fileCentering == Centering::Seven);
 }
 
-void TTKMainWindow::setTableViewSettings(InputTableView* pTable)
-{
-    pTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    pTable->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement
-    pTable->setVisible(false);
-}
-
 void TTKMainWindow::showError(const QString& errTitle, const QString& errMsg)
 {
     QMessageBox::warning(this, errTitle, errMsg, QMessageBox::Ok);
