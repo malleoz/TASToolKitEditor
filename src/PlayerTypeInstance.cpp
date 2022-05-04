@@ -22,6 +22,8 @@ PlayerTypeInstance::PlayerTypeInstance(const PlayerType type)
     , m_pFileHandler(nullptr)
     , m_type(type)
     , m_loaded(false)
+    , qVLayout(Q_NULLPTR)
+    , qLabel(Q_NULLPTR)
 {
 }
 
