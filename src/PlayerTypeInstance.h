@@ -29,6 +29,8 @@ public:
 public: // connect
     void openFile(QWidget* main);
     void closeFile();
+    void saveFile(const TTKFileData& data);
+    void reloadFile();
 
 private:
     bool userClosedPreviousFile(QWidget* main);

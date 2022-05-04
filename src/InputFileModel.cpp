@@ -163,12 +163,8 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
             curValue = QString::number(static_cast<int>(value.toFloat()));
     }
 
-    m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN] = curValue;
-
     CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
     m_undoStack.push(cmd);
-
-    emit fileToBeWritten(m_fileData);
 
     return true;
 }
@@ -265,4 +261,16 @@ void InputFileModel::emitDataChanged(const QModelIndex& topLeft, const QModelInd
     emit QAbstractTableModel::dataChanged(topLeft, bottomRight);
 
     emit fileToBeWritten(m_fileData);
+}
+
+void InputFileModel::replaceData(const TTKFileData data, const Centering centering)
+{
+    beginResetModel();
+
+    m_fileData = data;
+    m_fileCentering = centering;
+
+    endResetModel();
+
+    m_undoStack.clear();
 }
