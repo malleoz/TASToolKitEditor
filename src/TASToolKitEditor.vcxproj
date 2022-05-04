@@ -85,6 +85,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="PlayerTypeInstance.cpp" />
     <ClCompile Include="TTKMainWindow.cpp" />
     <QtRcc Include="TASToolKitEditor.qrc" />
     <QtMoc Include="TTKMainWindow.h" />
@@ -103,6 +104,7 @@
   <ItemGroup>
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="InputFile.h" />
+    <ClInclude Include="PlayerTypeInstance.h" />
     <QtMoc Include="InputFileMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
