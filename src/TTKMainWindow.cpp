@@ -32,7 +32,6 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
     , m_bScrollTogether(false)
 {
     setupUi();
-    createInputFiles();
     connectActions();
 }
 
@@ -141,18 +140,6 @@ uint8_t TTKMainWindow::amountLoadedFiles()
 }
 
 
-
-
-
-
-
-
-
-
-void TTKMainWindow::createInputFiles()
-{
-}
-
 void TTKMainWindow::connectActions()
 {
     connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(m_player);} );
@@ -252,11 +239,6 @@ void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
 
     inputFile->getMenus()->getCenter7()->setEnabled(true);
     inputFile->getMenus()->getCenter7()->setChecked(fileCentering == Centering::Seven);
-}
-
-void TTKMainWindow::showError(const QString& errTitle, const QString& errMsg)
-{
-    QMessageBox::warning(this, errTitle, errMsg, QMessageBox::Ok);
 }
 
 void TTKMainWindow::addMenuItems()

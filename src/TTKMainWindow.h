@@ -54,13 +54,6 @@ private:
 
     void onUndoRedo(InputFile* pInputFile, EOperationType opType);
 
-
-    // delete
-    void createInputFiles();
-    void showError(const QString& errTitle, const QString& errMsg);
-
-
-
     InputFile* playerFile;
     InputFile* ghostFile;
 
