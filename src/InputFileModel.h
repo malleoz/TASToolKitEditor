@@ -36,9 +36,10 @@ private:
 
 
 public:
-    InputFileModel(InputFileHandler* fileHandler, const TTKFileData data, const Centering centering, QObject* parent = nullptr);
+    InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
     virtual ~InputFileModel() override;
 
+public: // inherit
     Qt::ItemFlags flags(const QModelIndex& index) const override;
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -50,7 +51,7 @@ public:
 
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
-
+public:
     inline TTKFileData& getData() {return m_fileData;}
     inline Centering getCentering() const {return m_fileCentering;}
 
@@ -60,12 +61,15 @@ public:
     void undo();
     void redo();
 
+    void swap(InputFileModel* rhs);
+
+signals:
+    void dataChanged(const TTKFileData& data);
+
 private:
     bool inputValid(const QModelIndex& index, const QVariant& value) const;
 
 private:
-    InputFileHandler* m_pFileHandler;
-
     TTKFileData m_fileData;
     Centering m_fileCentering;
 

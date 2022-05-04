@@ -21,10 +21,11 @@ class QVariant;
 class QWidget;
 
 
-class InputFileHandler
+class InputFileHandler : public QObject
 {
+    Q_OBJECT
 public:
-    InputFileHandler(QString path);
+    InputFileHandler(QString path, QObject* parent = nullptr);
     virtual ~InputFileHandler();
 
     FileStatus loadFile(TTKFileData& o_emptyTTK, Centering& o_centering);

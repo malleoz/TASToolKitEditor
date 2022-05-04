@@ -25,11 +25,10 @@ bool InputFileModel::CellEditAction::operator==(const CellEditAction& rhs)
 }
 
 
-InputFileModel::InputFileModel(InputFileHandler* fileHandler, const TTKFileData data, const Centering centering, QObject* parent)
+InputFileModel::InputFileModel(const TTKFileData data, const Centering centering, QObject* parent)
     : QAbstractTableModel(parent)
     , m_fileData(data)
     , m_fileCentering(centering)
-    , m_pFileHandler(fileHandler)
 {
 }
 
@@ -160,7 +159,8 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
 
     addActionToStack(CellEditAction(index.row(), index.column() - FRAMECOUNT_COLUMN, prevValue, curValue));
 
-    m_pFileHandler->saveFile(m_fileData);
+//    m_pFileHandler->saveFile(m_fileData);
+    emit dataChanged(m_fileData);
 
     return true;
 }
@@ -183,6 +183,8 @@ void InputFileModel::swapCentering()
         }
     }
     endResetModel();
+
+    emit dataChanged(m_fileData);
 }
 
 
@@ -264,6 +266,21 @@ void InputFileModel::redo()
     undoStack.push(action);
 }
 
+void InputFileModel::swap(InputFileModel* rhs)
+{
+    beginResetModel();
+    rhs->beginResetModel();
+
+    std::swap(m_fileData, rhs->m_fileData);
+    std::swap(m_fileCentering, rhs->m_fileCentering);
+
+    endResetModel();
+    rhs->endResetModel();
+
+    emit dataChanged(m_fileData);
+    emit rhs->dataChanged(rhs->m_fileData);
+}
+
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
 {
     beginResetModel();
@@ -286,6 +303,7 @@ bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
     
     endResetModel();
     
+    emit dataChanged(m_fileData);
 
     return true;
 }

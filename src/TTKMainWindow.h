@@ -45,21 +45,10 @@ private:
     // reimplement?
     void adjustInputCenteringMenu(InputFile* inputFile);
 
-    void adjustUiOnFileLoad(InputFile* pInputFile);
-    void adjustUiOnFileClose(InputFile* pInputFile);
-
-    void adjustMenuOnClose(InputFile* inputFile);
-
     void onScroll(InputFile* pInputFile);
-
-    void onUndoRedo(InputFile* pInputFile, EOperationType opType);
 
     InputFile* playerFile;
     InputFile* ghostFile;
-
-    // done reimplementing ?
-
-    void onReCenter(InputFile* pInputFile);
 
     // keep ?
     void scrollToFirstTable(InputTableView* dst, InputTableView* src);
@@ -79,28 +68,16 @@ private: // Qt UI Elements
 
     QHBoxLayout* mainHorizLayout;
 
-    QVBoxLayout* playerVLayout;
-    QLabel* playerLabel;
-    QVBoxLayout* ghostVLayout;
-    QLabel* ghostLabel;
-
 
 private: // connect
-    void openFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu);
-    void closeFile(InputFileHandler** o_fileHandler, InputTableView* table, InputFileMenu* menu);
-
     void openFile(PlayerTypeInstance& typeInstance);
     void closeFile(PlayerTypeInstance& typeInstance);
-
-    void toggleCentering(InputTableView* table);
 
     void onScroll();
     void onToggleScrollTogether(const bool bTogether);
 
 
     void swapModels();
-
-    void onUndoRedo(InputTableView* table, const EOperationType opType);
 
 
 private: // Refactored Functions
@@ -114,10 +91,6 @@ private: // Refactored Functions
     void addFileMenuItems();
 
     void setTitles();
-
-
-
-    bool userClosedPreviousFile(InputFileHandler** o_fileHandler);
 
     uint8_t amountLoadedFiles();
 

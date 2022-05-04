@@ -65,14 +65,6 @@ void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
     m_bScrollTogether = false;
 }
 
-void TTKMainWindow::toggleCentering(InputTableView* table)
-{
-    InputFileModel* model = reinterpret_cast<InputFileModel*>(table->model());
-    model->swapCentering();
-
-
-}
-
 void TTKMainWindow::onScroll()
 {
 
@@ -96,32 +88,7 @@ void TTKMainWindow::swapModels()
     InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
     InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
-    m_player.getTableView()->setModel(ghostModel);
-    m_ghost.getTableView()->setModel(playerModel);
-}
-
-
-bool TTKMainWindow::userClosedPreviousFile(InputFileHandler** o_fileHandler)
-{
-    if (o_fileHandler == nullptr)
-        return false;
-
-    // This shouldn't be needed but is a safety meassure
-    if (*o_fileHandler == nullptr)
-        return true;
-
-    // Have user confirm they want to close file
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Close Current File", "Are you sure you want to close the current file and open a new one?",
-        QMessageBox::No | QMessageBox::Yes);
-
-    if (reply != QMessageBox::Yes)
-        return false;
-
-    delete (*o_fileHandler);
-    *o_fileHandler = nullptr;
-
-    return true;
+    playerModel->swap(ghostModel);
 }
 
 uint8_t TTKMainWindow::amountLoadedFiles()
@@ -172,28 +139,6 @@ void TTKMainWindow::connectActions()
 //    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
 }
 
-
-void TTKMainWindow::onReCenter(InputFile* pInputFile)
-{
-    Centering curCentering = pInputFile->getCentering();
-    if (curCentering == Centering::Unknown)
-        return;
-
-    Centering newCentering = (curCentering == Centering::Seven) ? Centering::Zero : Centering::Seven;
-    
-    pInputFile->setCentering(newCentering);
-
-    int stickOffset = (newCentering == Centering::Seven) ? 7 : -7;
-    pInputFile->applyStickOffset(stickOffset);
-
-    // So rather than have thousands of undo operations appear because of this operation,
-    // just clear the stacks...
-    pInputFile->getUndoStack()->clear();
-    pInputFile->getRedoStack()->clear();
-
-    // Finally, save to the file
-//    InputFileModel::writeFileOnDisk(pInputFile);
-}
 
 void TTKMainWindow::onScroll(InputFile* pInputFile)
 {

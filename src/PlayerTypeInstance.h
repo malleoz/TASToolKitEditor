@@ -6,6 +6,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 
+#include "Definitions.h"
+
 class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
@@ -17,10 +19,11 @@ enum class PlayerType
     Ghost
 };
 
-class PlayerTypeInstance
+class PlayerTypeInstance : public QObject
 {
+    Q_OBJECT
 public:
-    PlayerTypeInstance(const PlayerType type);
+    PlayerTypeInstance(const PlayerType type, QObject* parent = nullptr);
 
     void setupUI(QWidget* parent = nullptr);
 
@@ -33,7 +36,7 @@ public: // connect
 private:
     bool userClosedPreviousFile(QWidget* main);
 
-    void adjustUiOnFileLoad();
+    void adjustUiOnFileLoad(const Centering centering);
     void adjustUiOnFileClose();
 
 
