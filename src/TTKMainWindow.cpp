@@ -9,9 +9,6 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QScrollBar>
-#include <QTextStream>
-
-#include <iostream>
 
 #define FRAMECOUNT_COLUMN_WIDTH 40
 #define BUTTON_COLUMN_WIDTH 20
