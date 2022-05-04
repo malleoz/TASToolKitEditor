@@ -53,6 +53,8 @@ public:
 
     void swap(InputFileModel* rhs);
 
+    void replaceData(const TTKFileData data, const Centering centering);
+
 signals:
     void fileToBeWritten(const TTKFileData& data);
 

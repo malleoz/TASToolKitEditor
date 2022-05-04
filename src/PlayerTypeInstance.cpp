@@ -8,6 +8,7 @@
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
 
 
 #define FRAMECOUNT_COLUMN_WIDTH 40
@@ -86,7 +87,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
 
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
-    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
+    connect(pModel, &InputFileModel::fileToBeWritten, this, &PlayerTypeInstance::saveFile);
     connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
     
     connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
@@ -94,6 +95,35 @@ void PlayerTypeInstance::openFile(QWidget* main)
 
     connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
     connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
+
+    connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
+}
+
+void PlayerTypeInstance::saveFile(const TTKFileData& data)
+{
+    // Remove path from filesystem watcher so that fileChanged is not emitted when we save the file
+    QFileSystemWatcher* pFsWatcher = m_pFileHandler->getFsWatcher();
+    const QString path = m_pFileHandler->getPath();
+    
+    pFsWatcher->removePath(path);
+
+    m_pFileHandler->saveFile(data);
+
+    pFsWatcher->addPath(path);
+}
+
+void PlayerTypeInstance::reloadFile()
+{
+    TTKFileData data;
+    Centering centering;
+    m_pFileHandler->loadFile(data, centering);
+    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+    pModel->replaceData(data, centering);
+
+    if (centering == Centering::Seven)
+        m_pMenu->setCenter7(true);
+    else
+        m_pMenu->setCenter7(false);
 }
 
 void PlayerTypeInstance::closeFile()
@@ -146,10 +176,10 @@ void PlayerTypeInstance::adjustUiOnFileLoad(const Centering centering)
 
     m_pTableView->setVisible(true);
 
-    if (centering == Centering::Zero)
-        m_pMenu->setCenter7(false);
     if (centering == Centering::Seven)
         m_pMenu->setCenter7(true);
+    else
+        m_pMenu->setCenter7(false);
 
     /* This stuff really should be constant, but I can't do any of this until
     // the model is set, but I can't set the model until I instantiate the model
