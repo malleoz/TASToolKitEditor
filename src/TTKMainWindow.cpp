@@ -44,11 +44,6 @@ void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
         setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
         setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
     }
-
-    // ToDo: connect ?
-//    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
-//    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
-
 }
 
 void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
@@ -72,15 +67,22 @@ void TTKMainWindow::onScroll()
 
 void TTKMainWindow::onToggleScrollTogether(bool bTogether)
 {
-    m_bScrollTogether = bTogether;
+    QScrollBar* pPlayerScrollBar = m_player.getTableView()->verticalScrollBar();
+    QScrollBar* pGhostScrollBar = m_ghost.getTableView()->verticalScrollBar();
 
-    actionScrollTogether->setChecked(m_bScrollTogether);
 
-    if (!m_bScrollTogether)
-        return;
+    if (bTogether)
+    {
+        pGhostScrollBar->setValue(pPlayerScrollBar->value());
 
-    // Jump ghost view to same row as player view
-    scrollToFirstTable(m_player.getTableView(), m_ghost.getTableView());
+        connect(pPlayerScrollBar, &QAbstractSlider::valueChanged, pGhostScrollBar, &QAbstractSlider::setValue);
+        connect(pGhostScrollBar, &QAbstractSlider::valueChanged, pPlayerScrollBar, &QAbstractSlider::setValue);
+    }
+    else
+    {
+        disconnect(pPlayerScrollBar, &QAbstractSlider::valueChanged, pGhostScrollBar, &QAbstractSlider::setValue);
+        disconnect(pGhostScrollBar, &QAbstractSlider::valueChanged, pPlayerScrollBar, &QAbstractSlider::setValue);
+    }
 }
 
 void TTKMainWindow::swapModels()
@@ -120,13 +122,6 @@ void TTKMainWindow::connectActions()
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
-
-
-    // TODO: check connecting and disconnecting siagnals for scrolling
-    // both scrollbars at the same time
-
-//    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
-//    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
 }
 
 
