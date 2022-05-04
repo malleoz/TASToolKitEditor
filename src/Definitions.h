@@ -3,6 +3,10 @@
 
 #include <QVector>
 
+#define NUM_INPUT_COLUMNS 6
+#define FRAMECOUNT_COLUMN 1
+#define DPAD_COL_IDX 5
+
 enum class FileStatus
 {
     Success = 0,

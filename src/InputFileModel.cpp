@@ -1,13 +1,6 @@
 #include "InputFileModel.h"
 
-#include <iostream>
-#include <fstream>
-
-#include <QAction>
 #include <QBrush>
-#include <QTableView>
-
-#define UNDO_STACK_LIMIT 100
 
 
 CellEditCommand::CellEditCommand(InputFileModel* pModel, const QModelIndex& index, const QString oldVal, const QString newVal)
@@ -37,7 +30,7 @@ InputFileModel::InputFileModel(const TTKFileData data, const Centering centering
     , m_fileData(data)
     , m_fileCentering(centering)
 {
-    m_undoStack.setUndoLimit(100);
+    m_undoStack.setUndoLimit(UNDO_STACK_LIMIT);
 }
 
 InputFileModel::~InputFileModel()

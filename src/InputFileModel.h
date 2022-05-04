@@ -1,6 +1,5 @@
 #pragma once
 
-#include "InputFile.h"
 #include "Definitions.h"
 
 #include <QAbstractTableModel>
@@ -72,4 +71,7 @@ private:
     QUndoStack m_undoStack;
 
     const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
+
+private:
+    static const int UNDO_STACK_LIMIT = 100;
 };

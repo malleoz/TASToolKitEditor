@@ -1,6 +1,4 @@
-#ifndef PLAYERTYPEINSTANCE_H
-#define PLAYERTYPEINSTANCE_H
-
+#pragma once
 
 #include <QWidget>
 #include <QLabel>
@@ -65,6 +63,10 @@ private:
 
     const PlayerType m_type;
     bool m_loaded;
-};
 
-#endif // PLAYERTYPEINSTANCE_H
+private:
+    static const int FRAMECOUNT_COLUMN_WIDTH = 40;
+    static const int BUTTON_COLUMN_WIDTH = 20;
+    static const int STICK_COLUMN_WIDTH = 25;
+    static const int PAD_COLUMN_WIDTH = 35;
+};

@@ -3,11 +3,8 @@
 #include "InputFile.h"
 #include "InputFileMenu.h"
 #include "InputFileModel.h"
+#include "InputTableView.h"
 
-#include <QFileDialog>
-#include <QFileSystemWatcher>
-#include <QMessageBox>
-#include <QPushButton>
 #include <QScrollBar>
 
 #define FRAMECOUNT_COLUMN_WIDTH 40
@@ -37,18 +34,13 @@ void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 {
     typeInstance.openFile(this);
 
-    if (amountLoadedFiles() == 2)
+    if (bothFilesLoaded())
     {
         actionSwapFiles->setEnabled(true);
         actionScrollTogether->setEnabled(true);
         setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
         setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
     }
-
-    // ToDo: connect ?
-//    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
-//    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
-
 }
 
 void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
@@ -65,22 +57,24 @@ void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
     m_bScrollTogether = false;
 }
 
-void TTKMainWindow::onScroll()
-{
-
-}
-
 void TTKMainWindow::onToggleScrollTogether(bool bTogether)
 {
-    m_bScrollTogether = bTogether;
+    QScrollBar* pPlayerScrollBar = m_player.getTableView()->verticalScrollBar();
+    QScrollBar* pGhostScrollBar = m_ghost.getTableView()->verticalScrollBar();
 
-    actionScrollTogether->setChecked(m_bScrollTogether);
 
-    if (!m_bScrollTogether)
-        return;
+    if (bTogether)
+    {
+        pGhostScrollBar->setValue(pPlayerScrollBar->value());
 
-    // Jump ghost view to same row as player view
-    scrollToFirstTable(m_player.getTableView(), m_ghost.getTableView());
+        connect(pPlayerScrollBar, &QAbstractSlider::valueChanged, pGhostScrollBar, &QAbstractSlider::setValue);
+        connect(pGhostScrollBar, &QAbstractSlider::valueChanged, pPlayerScrollBar, &QAbstractSlider::setValue);
+    }
+    else
+    {
+        disconnect(pPlayerScrollBar, &QAbstractSlider::valueChanged, pGhostScrollBar, &QAbstractSlider::setValue);
+        disconnect(pGhostScrollBar, &QAbstractSlider::valueChanged, pPlayerScrollBar, &QAbstractSlider::setValue);
+    }
 }
 
 void TTKMainWindow::swapModels()
@@ -91,16 +85,9 @@ void TTKMainWindow::swapModels()
     playerModel->swap(ghostModel);
 }
 
-uint8_t TTKMainWindow::amountLoadedFiles()
+bool TTKMainWindow::bothFilesLoaded()
 {
-    uint8_t amountLoaded = 0;
-
-    if (m_player.isLoaded())
-        amountLoaded++;
-    if (m_ghost.isLoaded())
-        amountLoaded++;
-
-    return amountLoaded;
+    return m_player.isLoaded() && m_ghost.isLoaded();
 }
 
 
@@ -120,57 +107,6 @@ void TTKMainWindow::connectActions()
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
     connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
-
-
-    // TODO: check connecting and disconnecting siagnals for scrolling
-    // both scrollbars at the same time
-
-//    connect(m_pPlayerTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(playerFile); });
-//    connect(m_pGhostTableView->verticalScrollBar(), &QAbstractSlider::valueChanged, this, [this]() { onScroll(ghostFile); });
-}
-
-
-void TTKMainWindow::onScroll(InputFile* pInputFile)
-{
-    if (!m_bScrollTogether)
-        return;
-
-    // What row is the current table at?
-    int topRow = pInputFile->getTableView()->rowAt(0);
-
-    // Find other table
-    InputFile* otherFile;
-
-    if (pInputFile == playerFile)
-        otherFile = ghostFile;
-    else
-        otherFile = playerFile;
-
-    // Scroll other table to that row
-    scrollToFirstTable(pInputFile->getTableView(), otherFile->getTableView());
-}
-
-void TTKMainWindow::scrollToFirstTable(InputTableView* dst, InputTableView* src)
-{
-    int dstTopRow = dst->rowAt(0);
-    QModelIndex index = src->model()->index(dstTopRow, 0);
-    src->setCurrentIndex(index);
-    src->scrollTo(index, QAbstractItemView::PositionAtTop);
-}
-
-void TTKMainWindow::adjustInputCenteringMenu(InputFile* inputFile)
-{
-    Centering fileCentering = inputFile->getCentering();
-
-    if (fileCentering == Centering::Unknown)
-    {
-        inputFile->getMenus()->getCenter7()->setChecked(false);
-        inputFile->getMenus()->getCenter7()->setEnabled(false);
-        return;
-    }
-
-    inputFile->getMenus()->getCenter7()->setEnabled(true);
-    inputFile->getMenus()->getCenter7()->setChecked(fileCentering == Centering::Seven);
 }
 
 void TTKMainWindow::addMenuItems()
