@@ -45,11 +45,12 @@ private: // Qt UI Elements
 
 private: // connect
     void openFile(PlayerTypeInstance& typeInstance);
-    void closeFile(PlayerTypeInstance& typeInstance);
 
     void onToggleScrollTogether(const bool bTogether);
 
     void swapModels();
+
+    void adjustUiOnClose();
 
 
 private: // Refactored Functions
@@ -69,7 +70,5 @@ private: // Refactored Functions
 private: // variables
     PlayerTypeInstance m_player;
     PlayerTypeInstance m_ghost;
-
-    bool m_bScrollTogether;
 
 };

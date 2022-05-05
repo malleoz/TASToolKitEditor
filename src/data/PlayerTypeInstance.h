@@ -19,15 +19,17 @@ enum class PlayerType
 
 class PlayerTypeInstance : public QObject
 {
+    Q_OBJECT
 public:
     PlayerTypeInstance(const PlayerType type, QObject* parent = nullptr);
 
     void setupUI(QWidget* parent = nullptr);
 
 public: // connect
-    void openFile(QWidget* main);
+    /// @return Returns only false on parse error, return true on cancel or successful load
+    bool openFile(QWidget* main);
     void closeFile();
-    void saveFile(const TTKFileData& data);
+
     void reloadFile();
 
 private:
@@ -50,6 +52,9 @@ public: // Setters / Getters
     inline InputFileHandler* getFileHandler() {return m_pFileHandler;}
 
     inline bool isLoaded() {return m_loaded;}
+
+signals:
+    void fileClosed();
 
 private:
     QVBoxLayout* qVLayout;

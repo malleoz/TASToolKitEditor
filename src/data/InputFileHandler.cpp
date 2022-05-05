@@ -9,13 +9,14 @@
 InputFileHandler::InputFileHandler(QString path, QObject* parent)
     : QObject(parent)
     , m_filePath(path)
-    , m_pFsWatcher(Q_NULLPTR)
 {
+    m_pFsWatcher = new QFileSystemWatcher(QStringList(m_filePath));
 }
 
 InputFileHandler::~InputFileHandler()
 {
     delete m_pFsWatcher;
+    m_pFsWatcher = nullptr;
 }
 
 FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_centering)
@@ -66,8 +67,6 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
         o_emptyTTK.append(frameData.toVector());
     }
 
-    m_pFsWatcher = new QFileSystemWatcher(QStringList(m_filePath));
-
     fp.close();
 
     return FileStatus::Success;
@@ -75,6 +74,9 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
 
 void InputFileHandler::saveFile(const TTKFileData& fileData)
 {
+    // Disconnect FileSystemWatcher so it doesn't detect saved changes
+    m_pFsWatcher->removePath(m_filePath);
+
     QFile fp(m_filePath);
 
     if (!fp.open(QFile::WriteOnly))
@@ -103,6 +105,9 @@ void InputFileHandler::saveFile(const TTKFileData& fileData)
     os.flush();
 
     fp.close();
+
+    // Reconnect the FileSystemWatcher after saving and closing
+    m_pFsWatcher->addPath(m_filePath);
 }
 
 

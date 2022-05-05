@@ -41,15 +41,15 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
     qVLayout->addWidget(m_pTableView);
 }
 
-void PlayerTypeInstance::openFile(QWidget* main)
+bool PlayerTypeInstance::openFile(QWidget* main)
 {
     const QString filePath = QFileDialog::getOpenFileName(main, "Open File", "", "Input Files (*.csv)");
 
     if (filePath == "")
-        return;
+        return true;
 
     if (m_pFileHandler != nullptr && !userClosedPreviousFile(main))
-        return;
+        return true;
 
 
     m_pFileHandler = new InputFileHandler(filePath);
@@ -65,7 +65,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
         m_loaded = false;
         // Error Handling
 
-        return;
+        return false;
     }
 
     InputFileModel* model = new InputFileModel(data, centering);
@@ -81,7 +81,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
 
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
-    connect(pModel, &InputFileModel::fileToBeWritten, this, &PlayerTypeInstance::saveFile);
+    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
     connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
     
     connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
@@ -91,26 +91,21 @@ void PlayerTypeInstance::openFile(QWidget* main)
     connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
 
     connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
-}
 
-void PlayerTypeInstance::saveFile(const TTKFileData& data)
-{
-    // Remove path from filesystem watcher so that fileChanged is not emitted when we save the file
-    QFileSystemWatcher* pFsWatcher = m_pFileHandler->getFsWatcher();
-    const QString path = m_pFileHandler->getPath();
-    
-    pFsWatcher->removePath(path);
-
-    m_pFileHandler->saveFile(data);
-
-    pFsWatcher->addPath(path);
+    return true;
 }
 
 void PlayerTypeInstance::reloadFile()
 {
     TTKFileData data;
     Centering centering;
-    m_pFileHandler->loadFile(data, centering);
+    if (m_pFileHandler->loadFile(data, centering) != FileStatus::Success)
+    {
+        closeFile();
+
+        return;
+    }
+
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
     pModel->replaceData(data, centering);
 
@@ -131,6 +126,11 @@ void PlayerTypeInstance::closeFile()
     disconnect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
     disconnect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
 
+    disconnect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
+    disconnect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
+
+    disconnect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
+
     // delete
 
     delete m_pFileHandler;
@@ -141,6 +141,8 @@ void PlayerTypeInstance::closeFile()
 
     m_loaded = false;
     adjustUiOnFileClose();
+
+    emit fileClosed();
 }
 
 
@@ -157,8 +159,7 @@ bool PlayerTypeInstance::userClosedPreviousFile(QWidget* main)
     if (reply != QMessageBox::Yes)
         return false;
 
-    delete (m_pFileHandler);
-    m_pFileHandler = nullptr;
+    closeFile();
 
     return true;
 }

@@ -25,7 +25,7 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     else if (key == Qt::Key_Down)
     {
         if (index.row() == model()->rowCount() - 1) {
-            model()->insertRows(index.row(), 1, index);
+            model()->insertRow(index.row() + 1, index);
         }
 
         selectRow(index.row() + 1);
