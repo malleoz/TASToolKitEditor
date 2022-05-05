@@ -75,6 +75,9 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
 
 void InputFileHandler::saveFile(const TTKFileData& fileData)
 {
+    // Disconnect FileSystemWatcher so it doesn't detect saved changes
+    m_pFsWatcher->removePath(m_filePath);
+
     QFile fp(m_filePath);
 
     if (!fp.open(QFile::WriteOnly))
@@ -103,6 +106,9 @@ void InputFileHandler::saveFile(const TTKFileData& fileData)
     os.flush();
 
     fp.close();
+
+    // Reconnect the FileSystemWatcher after saving and closing
+    m_pFsWatcher->addPath(m_filePath);
 }
 
 

@@ -81,7 +81,7 @@ void PlayerTypeInstance::openFile(QWidget* main)
 
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
-    connect(pModel, &InputFileModel::fileToBeWritten, this, &PlayerTypeInstance::saveFile);
+    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
     connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
     
     connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
@@ -91,19 +91,6 @@ void PlayerTypeInstance::openFile(QWidget* main)
     connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
 
     connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
-}
-
-void PlayerTypeInstance::saveFile(const TTKFileData& data)
-{
-    // Remove path from filesystem watcher so that fileChanged is not emitted when we save the file
-    QFileSystemWatcher* pFsWatcher = m_pFileHandler->getFsWatcher();
-    const QString path = m_pFileHandler->getPath();
-    
-    pFsWatcher->removePath(path);
-
-    m_pFileHandler->saveFile(data);
-
-    pFsWatcher->addPath(path);
 }
 
 void PlayerTypeInstance::reloadFile()
