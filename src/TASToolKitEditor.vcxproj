@@ -58,6 +58,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
     <ClCompile>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -85,16 +90,27 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="data/PlayerTypeInstance.cpp" />
+    <ClCompile Include="ui/TTKMainWindow.cpp" />
     <QtRcc Include="TASToolKitEditor.qrc" />
-    <QtMoc Include="TASToolKitEditor.h" />
-    <ClCompile Include="InputFile.cpp" />
-    <ClCompile Include="InputFileModel.cpp" />
-    <ClCompile Include="TASToolKitEditor.cpp" />
+    <QtMoc Include="ui/TTKMainWindow.h" />
+    <ClCompile Include="data/InputFileHandler.cpp" />
+    <ClCompile Include="ui/InputFileMenu.cpp" />
+    <ClCompile Include="data/InputFileModel.cpp" />
+    <ClCompile Include="ui/InputTableView.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InputFile.h" />
-    <QtMoc Include="InputFileModel.h" />
+    <QtMoc Include="data/InputFileModel.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <QtMoc Include="ui/InputTableView.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include/Definitions.h" />
+    <ClInclude Include="data/InputFileHandler.h" />
+    <ClInclude Include="data/PlayerTypeInstance.h" />
+    <QtMoc Include="ui/InputFileMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
