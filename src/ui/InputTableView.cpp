@@ -31,6 +31,12 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
         selectRow(index.row() + 1);
         return;
     }
+    else if (key == Qt::Key_Delete)
+    {
+        model()->removeRow(index.row(), index);
+
+        selectRow(index.row());
+    }
 
     QTableView::keyPressEvent(event);
 }

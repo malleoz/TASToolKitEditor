@@ -21,11 +21,30 @@ private:
     QString m_newVal;
 };
 
+class RowEditCommand : public QUndoCommand
+{
+public:
+    RowEditCommand(InputFileModel* pModel, const QModelIndex& topLeft, const TTKFileData& frameDataVector, const bool actionDeleted);
+    void undo() override;
+    void redo() override;
+
+private:
+    void removeRows();
+    void addRows();
+
+private:
+    InputFileModel* m_pModel;
+    QModelIndex m_topLeft;
+    TTKFileData m_frameDataVector;
+    bool m_actionDeleted;
+};
+
 class InputFileModel : public QAbstractTableModel
 {
     Q_OBJECT
 
         friend class CellEditCommand;
+        friend class RowEditCommand;
 
 public:
     InputFileModel(const TTKFileData data, const Centering centering, QObject* parent = nullptr);
@@ -42,6 +61,7 @@ public: // inherit
     bool setData(const QModelIndex& index, const QVariant& value, int role) override;
 
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
+    bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 public:
     inline TTKFileData& getData() {return m_fileData;}
