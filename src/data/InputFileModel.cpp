@@ -224,17 +224,13 @@ void InputFileModel::swap(InputFileModel* rhs)
 
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
 {
-    beginResetModel();
+    beginInsertRows(QModelIndex(), row, row + count - 1);
 
     FrameData srcData = m_fileData[parent.row()];
-    int frameCount = m_fileData[row][0].toInt();
 
     for (int i = 0; i < count; i++)
     {
-        // Compute framecount
-        srcData[0] = ++frameCount;
-
-        m_fileData.insert(row, srcData);
+        m_fileData.insert(row + i, srcData);
 
         // Determine how to store in undo/redo stack later
     }
@@ -242,7 +238,7 @@ bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
     QModelIndex topLeftIndex = index(row, 0);
     QModelIndex bottomRightIndex = index(row + count, NUM_INPUT_COLUMNS + FRAMECOUNT_COLUMN);
     
-    endResetModel();
+    endInsertRows();
     
     emit fileToBeWritten(m_fileData);
 
