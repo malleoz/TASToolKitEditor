@@ -47,18 +47,33 @@ if(WIN32)
                 get_target_property(WIDGETDLL Qt5::QWindowsIntegrationPlugin IMPORTED_LOCATION_RELEASE)
         endif($<CONFIG:Debug>)
 
-        #TODO: use different copy solution for QWindows
+        set(TARGET_DEPENDENCY_FILES
+            $<TARGET_FILE:Qt5::Widgets>
+            $<TARGET_FILE:Qt5::Core>
+            $<TARGET_FILE:Qt5::Gui>
+        )
 
         add_custom_command(
                 TARGET TTKEditor POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Widgets> $<TARGET_FILE_DIR:TTKEditor>
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Core> $<TARGET_FILE_DIR:TTKEditor>
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Gui> $<TARGET_FILE_DIR:TTKEditor>
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin> "$<TARGET_FILE_DIR:TTKEditor>/platforms/qwindows.dll"
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin> "$<TARGET_FILE_DIR:TTKEditor>/styles/qwindowsvistastyle.dll"
+#                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Widgets> $<TARGET_FILE_DIR:TTKEditor>
+#                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Core> $<TARGET_FILE_DIR:TTKEditor>
+#                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::Gui> $<TARGET_FILE_DIR:TTKEditor>
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${TARGET_DEPENDENCY_FILES} $<TARGET_FILE_DIR:TTKEditor>
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin> "$<TARGET_FILE_DIR:TTKEditor>/platforms/$<TARGET_FILE_NAME:Qt5::QWindowsIntegrationPlugin>"
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin> "$<TARGET_FILE_DIR:TTKEditor>/styles/$<TARGET_FILE_NAME:Qt5::QWindowsVistaStylePlugin>"
         )
+
 endif(WIN32)
 
 target_link_libraries(TTKEditor Qt5::Widgets)
 target_link_libraries(TTKEditor Qt5::Core)
 target_link_libraries(TTKEditor Qt5::Gui)
+
+if (WIN32)
+    install(FILES "${TARGET_DEPENDENCY_FILES}"
+            DESTINATION bin)
+    install(FILES $<TARGET_FILE:Qt5::QWindowsIntegrationPlugin>
+        DESTINATION bin/platforms)
+    install(FILES $<TARGET_FILE:Qt5::QWindowsVistaStylePlugin>
+        DESTINATION bin/styles)
+endif(WIN32)
