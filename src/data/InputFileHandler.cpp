@@ -9,13 +9,14 @@
 InputFileHandler::InputFileHandler(QString path, QObject* parent)
     : QObject(parent)
     , m_filePath(path)
-    , m_pFsWatcher(Q_NULLPTR)
 {
+    m_pFsWatcher = new QFileSystemWatcher(QStringList(m_filePath));
 }
 
 InputFileHandler::~InputFileHandler()
 {
     delete m_pFsWatcher;
+    m_pFsWatcher = nullptr;
 }
 
 FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_centering)
@@ -65,8 +66,6 @@ FileStatus InputFileHandler::loadFile(TTKFileData& o_emptyTTK, Centering& o_cent
         }
         o_emptyTTK.append(frameData.toVector());
     }
-
-    m_pFsWatcher = new QFileSystemWatcher(QStringList(m_filePath));
 
     fp.close();
 

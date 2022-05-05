@@ -22,7 +22,6 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_player(PlayerType::Player)
     , m_ghost(PlayerType::Ghost)
-    , m_bScrollTogether(false)
 {
     setupUi();
     connectActions();
@@ -31,29 +30,15 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
 
 void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 {
-    typeInstance.openFile(this);
-
-    if (bothFilesLoaded())
+    if (!typeInstance.openFile(this))
+        adjustUiOnClose();
+    else if (bothFilesLoaded())
     {
         actionSwapFiles->setEnabled(true);
         actionScrollTogether->setEnabled(true);
         setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
         setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
     }
-}
-
-void TTKMainWindow::closeFile(PlayerTypeInstance& typeInstance)
-{
-    typeInstance.closeFile();
-
-    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
-
-    actionSwapFiles->setEnabled(false);
-
-    actionScrollTogether->setEnabled(false);
-    actionScrollTogether->setChecked(false);
-    m_bScrollTogether = false;
 }
 
 void TTKMainWindow::onToggleScrollTogether(bool bTogether)
@@ -84,6 +69,17 @@ void TTKMainWindow::swapModels()
     playerModel->swap(ghostModel);
 }
 
+void TTKMainWindow::adjustUiOnClose()
+{
+    setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
+    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
+
+    actionSwapFiles->setEnabled(false);
+
+    actionScrollTogether->setEnabled(false);
+    actionScrollTogether->setChecked(false);
+}
+
 bool TTKMainWindow::bothFilesLoaded()
 {
     return m_player.isLoaded() && m_ghost.isLoaded();
@@ -95,8 +91,11 @@ void TTKMainWindow::connectActions()
     connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(m_player);} );
     connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(m_ghost);} );
 
-    connect(m_player.getMenu()->getClose(), &QAction::triggered, this, [this]() { closeFile(m_player); });
-    connect(m_ghost.getMenu()->getClose(), &QAction::triggered, this, [this]() { closeFile(m_ghost); });
+    connect(m_player.getMenu()->getClose(), &QAction::triggered, &m_player, &PlayerTypeInstance::closeFile);
+    connect(m_ghost.getMenu()->getClose(), &QAction::triggered, &m_ghost, &PlayerTypeInstance::closeFile);
+
+    connect(&m_player, &PlayerTypeInstance::fileClosed, this, [this]() { adjustUiOnClose(); });
+    connect(&m_ghost, &PlayerTypeInstance::fileClosed, this, [this]() { adjustUiOnClose(); });
 
 
     InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
