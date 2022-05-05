@@ -54,12 +54,12 @@
     <QtMoc Include="ui/TTKMainWindow.h">
       <Filter>UI</Filter>
     </QtMoc>
+    <QtMoc Include="data/PlayerTypeInstance.h">
+      <Filter>Data</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data/InputFileHandler.h">
-      <Filter>Data</Filter>
-    </ClInclude>
-    <ClInclude Include="data/PlayerTypeInstance.h">
       <Filter>Data</Filter>
     </ClInclude>
     <ClInclude Include="include/Definitions.h">

@@ -109,7 +109,7 @@
   <ItemGroup>
     <ClInclude Include="include/Definitions.h" />
     <ClInclude Include="data/InputFileHandler.h" />
-    <ClInclude Include="data/PlayerTypeInstance.h" />
+    <QtMoc Include="data/PlayerTypeInstance.h" />
     <QtMoc Include="ui/InputFileMenu.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

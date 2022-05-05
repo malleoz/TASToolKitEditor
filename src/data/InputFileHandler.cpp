@@ -132,11 +132,17 @@ void InputFileHandler::saveFile(const TTKFileData& fileData)
             return ParseStatus::ConvertError;
     }
 
+    if (!DefinitionUtils::CheckButtons(data.mid(0, 3)))
+        return ParseStatus::ButtonValueError;
+
     if (!DefinitionUtils::CheckCentering(centering, data[3].toInt()))
         return ParseStatus::CenteringError;
 
     if (!DefinitionUtils::CheckCentering(centering, data[4].toInt()))
         return ParseStatus::CenteringError;
+
+    if (!DefinitionUtils::CheckDPad(data[5]))
+        return ParseStatus::DPadValueError;
 
 
     // Place other error checks here

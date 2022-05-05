@@ -1,6 +1,7 @@
 #ifndef DEFINITIONS_H
 #define DEFINITIONS_H
 
+#include <QStringList>
 #include <QVector>
 
 #define NUM_INPUT_COLUMNS 6
@@ -21,6 +22,8 @@ enum class ParseStatus
     NegativeZeroError,
     ConvertError,
     CenteringError,
+    ButtonValueError,
+    DPadValueError,
 };
 
 enum class Centering
@@ -55,6 +58,17 @@ private:
     inline DefinitionUtils() {}
 
 public:
+    inline static bool CheckButtons(const QStringList& data)
+    {
+        foreach(QString value, data)
+        {
+            if (value != "0" && value != "1")
+                return false;
+        }
+
+        return true;
+    }
+    
     inline static bool CheckCentering(const Centering centering, const int32_t value)
     {
         switch(centering)
@@ -67,18 +81,29 @@ public:
         return false;
     }
 
+    inline static bool CheckDPad(QString pad)
+    {
+        int iPad = pad.toInt();
+
+        return iPad >= 0 && iPad <= 4;
+    }
+
     inline static QString TranslateParseStatusToErrorString(ParseStatus status, uint32_t frame)
     {
         switch (status)
         {
-        case ParseStatus::CenteringError:
-            return QString("Value is not within the centering range on frame %1.").arg(frame);
         case ParseStatus::ConvertError:
             return QString("Could not convert value on frame %1 to an integer.").arg(frame);
         case ParseStatus::NegativeZeroError:
             return QString("Invalid value '-0' on frame %1.").arg(frame);
         case ParseStatus::NumColumnsError:
             return QString("Expected 6 comma-separated values on frame %1.").arg(frame);
+        case ParseStatus::ButtonValueError:
+            return QString("Invalid value for A, B, or L button on frame %1.").arg(frame);
+        case ParseStatus::CenteringError:
+            return QString("Value is not within the centering range on frame %1.").arg(frame);
+        case ParseStatus::DPadValueError:
+            return QString("Invalid value for DPad on frame %1.").arg(frame);
         default:
             return QString("Unhandled error on frame %1.").arg(frame);
         }
