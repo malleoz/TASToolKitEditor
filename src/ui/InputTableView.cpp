@@ -45,9 +45,8 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
             selectRow(index.row());
             return;
         }
-        
-        InputFileModel* pModel = reinterpret_cast<InputFileModel*>(model());
-        pModel->setDefaultValue(index);
+
+        model()->setData(index, RESET_MACRO);
     }
 
     QTableView::keyPressEvent(event);

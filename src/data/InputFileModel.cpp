@@ -196,30 +196,43 @@ bool InputFileModel::setData(const QModelIndex& index, const QVariant& value, in
     if (!checkIndex(index))
         return false;
 
+    QString curValue = "";
     QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
 
-    if (role != Qt::CheckStateRole && role != Qt::EditRole)
-        return false;
-
-    QString curValue = "";
-
-    if (role == Qt::CheckStateRole)
+    if (value.toInt() == RESET_MACRO)
     {
-        if (!BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
-            return false;
-
-        curValue = value.toInt() == Qt::Checked ? "1" : "0";
+        curValue = DefinitionUtils::GetDefaultFrameData(m_fileCentering)[index.column() - FRAMECOUNT_COLUMN];
     }
-    else if (role == Qt::EditRole)
+    else
     {
-        if (!inputValid(index, value))
-            return false;
+        switch(role)
+        {
+            case Qt::CheckStateRole:
+            {
+                if (!BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+                    return false;
 
-        if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
-            curValue = value.toInt() == Qt::Checked ? "1" : "0";
-        else
-            curValue = QString::number(static_cast<int>(value.toFloat()));
+                curValue = value.toInt() == Qt::Checked ? "1" : "0";
+
+                break;
+            }
+            case Qt::EditRole:
+            {
+                if (!inputValid(index, value))
+                    return false;
+
+                if (BUTTON_COL_IDXS.contains(index.column() - FRAMECOUNT_COLUMN))
+                    curValue = value.toInt() == Qt::Checked ? "1" : "0";
+                else
+                    curValue = QString::number(static_cast<int>(value.toFloat()));
+
+                break;
+            }
+            default:
+                return false;
+        }
     }
+
 
     CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
     m_undoStack.push(cmd);
@@ -328,16 +341,4 @@ void InputFileModel::replaceData(const TTKFileData data, const Centering centeri
     endResetModel();
 
     m_undoStack.clear();
-}
-
-void InputFileModel::setDefaultValue(const QModelIndex& index)
-{
-    uint8_t dataColumn = index.column() - FRAMECOUNT_COLUMN;
-
-    QVariant value = DefinitionUtils::GetDefaultValue(dataColumn, m_fileCentering);
-
-    if (BUTTON_COL_IDXS.contains(dataColumn))
-        setData(index, value, Qt::CheckStateRole);
-    else
-        setData(index, value, Qt::EditRole);
 }
