@@ -25,6 +25,71 @@ void CellEditCommand::redo()
     m_pModel->emitDataChanged(m_index, m_index);
 }
 
+
+RowEditCommand::RowEditCommand(InputFileModel* pModel, const QModelIndex& topLeft, const TTKFileData& frameDataVector, const bool actionDeleted)
+    : m_pModel(pModel)
+    , m_topLeft(topLeft)
+    , m_frameDataVector(frameDataVector)
+    , m_actionDeleted(actionDeleted)
+{
+}
+
+void RowEditCommand::undo()
+{
+    if (m_actionDeleted)
+    {
+        addRows();
+    }
+    else
+    {
+        removeRows();
+    }
+
+    emit m_pModel->fileToBeWritten(m_pModel->m_fileData);
+}
+
+void RowEditCommand::redo()
+{
+    if (m_actionDeleted)
+    {
+        removeRows();
+    }
+    else
+    {
+        addRows();
+    }
+
+    emit m_pModel->fileToBeWritten(m_pModel->m_fileData);
+}
+
+void RowEditCommand::addRows()
+{
+    const int row = m_topLeft.row();
+    int i = 0;
+
+    m_pModel->beginInsertRows(QModelIndex(), row, row + m_frameDataVector.count() - 1);
+    for (FrameData t : m_frameDataVector)
+    {
+        m_pModel->m_fileData.insert(row + i++, t);
+    }
+    m_pModel->endInsertRows();
+}
+
+void RowEditCommand::removeRows()
+{
+    const int row = m_topLeft.row();
+
+    m_pModel->beginRemoveRows(QModelIndex(), row, row + m_frameDataVector.count() - 1);
+    m_pModel->m_fileData.remove(row, m_frameDataVector.count());
+    m_pModel->endRemoveRows();
+}
+
+
+
+
+
+// ###### START OF INPUTFILEMODEL ######
+
 InputFileModel::InputFileModel(const TTKFileData data, const Centering centering, QObject* parent)
     : QAbstractTableModel(parent)
     , m_fileData(data)
@@ -224,23 +289,24 @@ void InputFileModel::swap(InputFileModel* rhs)
 
 bool InputFileModel::insertRows(int row, int count, const QModelIndex& parent)
 {
-    beginInsertRows(QModelIndex(), row, row + count - 1);
-
     FrameData srcData = m_fileData[parent.row()];
+    TTKFileData data;
+    data.fill(srcData, count);
 
-    for (int i = 0; i < count; i++)
-    {
-        m_fileData.insert(row + i, srcData);
+    RowEditCommand* cmd = new RowEditCommand(this, createIndex(row, 0), data, false);
+    m_undoStack.push(cmd);
 
-        // Determine how to store in undo/redo stack later
-    }
 
-    QModelIndex topLeftIndex = index(row, 0);
-    QModelIndex bottomRightIndex = index(row + count, NUM_INPUT_COLUMNS + FRAMECOUNT_COLUMN);
-    
-    endInsertRows();
-    
-    emit fileToBeWritten(m_fileData);
+    return true;
+}
+
+bool InputFileModel::removeRows(int row, int count, const QModelIndex& parent)
+{
+    TTKFileData toDelete = m_fileData.mid(row, count);
+
+    RowEditCommand* cmd = new RowEditCommand(this, createIndex(row, 0), toDelete, true);
+    m_undoStack.push(cmd);
+
 
     return true;
 }
