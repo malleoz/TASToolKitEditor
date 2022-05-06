@@ -74,6 +74,8 @@ public:
 
     void replaceData(const TTKFileData data, const Centering centering);
 
+    void setDefaultValue(const QModelIndex& index);
+
 signals:
     void fileToBeWritten(const TTKFileData& data);
 

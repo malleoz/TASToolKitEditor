@@ -2,6 +2,7 @@
 #define DEFINITIONS_H
 
 #include <QStringList>
+#include <QVariant>
 #include <QVector>
 
 #define NUM_INPUT_COLUMNS 6
@@ -107,6 +108,21 @@ public:
         default:
             return QString("Unhandled error on frame %1.").arg(frame);
         }
+    }
+
+    inline static QVariant GetDefaultValue(int column, Centering centering)
+    {
+        if (column < 3)
+            return Qt::Unchecked;
+        
+        if (column == DPAD_COL_IDX)
+            return "0";
+
+        if (centering == Centering::Seven)
+            return "7";
+
+        if (centering == Centering::Zero)
+            return "0";
     }
 };
 

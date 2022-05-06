@@ -329,3 +329,15 @@ void InputFileModel::replaceData(const TTKFileData data, const Centering centeri
 
     m_undoStack.clear();
 }
+
+void InputFileModel::setDefaultValue(const QModelIndex& index)
+{
+    uint8_t dataColumn = index.column() - FRAMECOUNT_COLUMN;
+
+    QVariant value = DefinitionUtils::GetDefaultValue(dataColumn, m_fileCentering);
+
+    if (BUTTON_COL_IDXS.contains(dataColumn))
+        setData(index, value, Qt::CheckStateRole);
+    else
+        setData(index, value, Qt::EditRole);
+}

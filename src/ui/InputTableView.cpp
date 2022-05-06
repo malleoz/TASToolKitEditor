@@ -1,5 +1,8 @@
 #include "InputTableView.h"
 
+#include "include/Definitions.h"
+#include "data/InputFileModel.h"
+
 #include <QKeyEvent>
 
 
@@ -33,9 +36,18 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     }
     else if (key == Qt::Key_Delete)
     {
-        model()->removeRow(index.row(), index);
+        // If user presses Delete on row selection, delete row.
+        // Otherwise, reset cell to default value.
 
-        selectRow(index.row());
+        if (index.column() == 0)
+        {
+            model()->removeRow(index.row(), index);
+            selectRow(index.row());
+            return;
+        }
+        
+        InputFileModel* pModel = reinterpret_cast<InputFileModel*>(model());
+        pModel->setDefaultValue(index);
     }
 
     QTableView::keyPressEvent(event);
