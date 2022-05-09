@@ -9,6 +9,8 @@
 #define FRAMECOUNT_COLUMN 1
 #define DPAD_COL_IDX 5
 
+#define RESET_MACRO 0x514D
+
 enum class FileStatus
 {
     Success = 0,
@@ -61,7 +63,7 @@ private:
 public:
     inline static bool CheckButtons(const QStringList& data)
     {
-        foreach(QString value, data)
+        for(QString value : data)
         {
             if (value != "0" && value != "1")
                 return false;
@@ -110,19 +112,21 @@ public:
         }
     }
 
-    inline static QVariant GetDefaultValue(int column, Centering centering)
+    inline static FrameData GetDefaultFrameData(const Centering centering)
     {
-        if (column < 3)
-            return Qt::Unchecked;
-        
-        if (column == DPAD_COL_IDX)
-            return "0";
+        QString c = centering == Centering::Seven ? "7" : "0";
 
-        if (centering == Centering::Seven)
-            return "7";
+        FrameData frameData =
+        {
+            "0",
+            "0",
+            "0",
+            c,
+            c,
+            "0"
+        };
 
-        if (centering == Centering::Zero)
-            return "0";
+        return frameData;
     }
 };
 

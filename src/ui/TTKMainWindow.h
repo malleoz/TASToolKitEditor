@@ -43,7 +43,7 @@ private: // Qt UI Elements
     QHBoxLayout* mainHorizLayout;
 
 
-private: // connect
+protected: // connect
     void openFile(PlayerTypeInstance& typeInstance);
 
     void onToggleScrollTogether(const bool bTogether);

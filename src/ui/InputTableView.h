@@ -11,7 +11,7 @@ class InputTableView : public QTableView
 public:
     InputTableView(QWidget* parent = nullptr);
 
-public: // events
+protected: // events
     void keyPressEvent(QKeyEvent* event) override;
     //void mouseMoveEvent(QMouseEvent* event) override;
     //void mousePressEvent(QMouseEvent* event) override;

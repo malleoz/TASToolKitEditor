@@ -94,17 +94,12 @@ void TTKMainWindow::connectActions()
     connect(m_player.getMenu()->getClose(), &QAction::triggered, &m_player, &PlayerTypeInstance::closeFile);
     connect(m_ghost.getMenu()->getClose(), &QAction::triggered, &m_ghost, &PlayerTypeInstance::closeFile);
 
-    connect(&m_player, &PlayerTypeInstance::fileClosed, this, [this]() { adjustUiOnClose(); });
-    connect(&m_ghost, &PlayerTypeInstance::fileClosed, this, [this]() { adjustUiOnClose(); });
-
-
-    InputFileModel* pPlayerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
-    InputFileModel* pGhostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
-
+    connect(&m_player, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);
+    connect(&m_ghost, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);
 
     connect(actionScrollTogether, &QAction::toggled, this, &TTKMainWindow::onToggleScrollTogether);
 
-    connect(actionSwapFiles, &QAction::triggered, this, [this]() { swapModels(); });
+    connect(actionSwapFiles, &QAction::triggered, this, &TTKMainWindow::swapModels);
 }
 
 void TTKMainWindow::addMenuItems()
