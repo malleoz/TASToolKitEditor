@@ -16,7 +16,15 @@ protected: // events
     void mouseMoveEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
 
+protected:
+    void copySelection();
+    void pasteSelection();
+
+    void deleteSelection();
+
 private:
+    bool abstractSelection(QModelIndexList& o_selection);
+
     void selectAllRowsOnFrameColumn(QMouseEvent* event);
 
 private: // context menu
@@ -27,6 +35,6 @@ private: // context menu
     QAction* deleteAction;
 
 private:
-    bool holdFrameColumn;
+    bool m_holdFrameColumn;
 };
 

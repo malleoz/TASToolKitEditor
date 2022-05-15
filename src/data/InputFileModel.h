@@ -64,6 +64,9 @@ public: // inherit
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 public:
+    void copyIndices(const QModelIndexList& list);
+    bool pasteIndices(const QModelIndexList& list);
+
     void resetData(const QModelIndexList& list);
 
 public:

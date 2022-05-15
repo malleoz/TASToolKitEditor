@@ -324,6 +324,17 @@ bool InputFileModel::removeRows(int row, int count, const QModelIndex& parent)
     return true;
 }
 
+void InputFileModel::copyIndices(const QModelIndexList& list)
+{
+
+}
+
+bool InputFileModel::pasteIndices(const QModelIndexList& list)
+{
+
+    return false;
+}
+
 void InputFileModel::resetData(const QModelIndexList& list)
 {
     FrameData defaultData = DefinitionUtils::GetDefaultFrameData(m_fileCentering);
