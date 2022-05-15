@@ -8,8 +8,26 @@
 
 InputTableView::InputTableView(QWidget* parent)
     : QTableView(parent)
+    , contextMenu("Context Menu", this)
     , holdFrameColumn(false)
 {
+    copyAction = new QAction("Copy");
+    pasteAction = new QAction("Paste");
+    deleteAction = new QAction("Delete");
+
+    copyAction->setShortcut(QString("Ctrl+C"));
+    pasteAction->setShortcut(QString("Ctrl+V"));
+    deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
+
+    contextMenu.addAction(copyAction);
+    contextMenu.addAction(pasteAction);
+
+    contextMenu.addSeparator();
+
+    contextMenu.addAction(deleteAction);
+
+    this->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QTableView::customContextMenuRequested, this, [&](const QPoint& pos){contextMenu.exec(mapToGlobal(pos));});
 }
 
 void InputTableView::keyPressEvent(QKeyEvent* event)
@@ -58,6 +76,7 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
         QModelIndexList selectedRowList = selectionModel->selectedRows();
 
         // lambda because QModelIndex doesn't override operator>()
+        // so std::greater doesn't work
         std::sort(selectedRowList.begin(), selectedRowList.end(), [](QModelIndex a, QModelIndex b) {return b < a;});
 
         for (QModelIndex mIndex : selectedRowList)

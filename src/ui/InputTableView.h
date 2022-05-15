@@ -1,9 +1,7 @@
 #pragma once
 
 #include <QTableView>
-
-class InputFileModel;
-class QLabel;
+#include <QMenu>
 
 class InputTableView : public QTableView
 {
@@ -20,6 +18,13 @@ protected: // events
 
 private:
     void selectAllRowsOnFrameColumn(QMouseEvent* event);
+
+private: // context menu
+    QMenu contextMenu;
+
+    QAction* copyAction;
+    QAction* pasteAction;
+    QAction* deleteAction;
 
 private:
     bool holdFrameColumn;
