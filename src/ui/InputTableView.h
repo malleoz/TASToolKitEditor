@@ -13,9 +13,16 @@ public:
 
 protected: // events
     void keyPressEvent(QKeyEvent* event) override;
-    //void mouseMoveEvent(QMouseEvent* event) override;
-    //void mousePressEvent(QMouseEvent* event) override;
-    //void mouseReleaseEvent(QMouseEvent* event) override;
 
+    void mousePressEvent(QMouseEvent* event) override;
+    void mouseMoveEvent(QMouseEvent* event) override;
+    void mouseReleaseEvent(QMouseEvent* event) override;
+
+private:
+    void selectAllRowsOnFrameColumn(const QModelIndex& index);
+
+private:
+    QModelIndex startSelectionIndex;
+    bool holdFrameColumn;
 };
 

@@ -64,6 +64,9 @@ public: // inherit
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
 public:
+    void resetData(const QModelIndexList& list);
+
+public:
     inline TTKFileData& getData() {return m_fileData;}
     inline Centering getCentering() const {return m_fileCentering;}
     inline QUndoStack* getUndoStack() { return &m_undoStack; }

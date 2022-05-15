@@ -324,6 +324,20 @@ bool InputFileModel::removeRows(int row, int count, const QModelIndex& parent)
     return true;
 }
 
+void InputFileModel::resetData(const QModelIndexList& list)
+{
+    FrameData defaultData = DefinitionUtils::GetDefaultFrameData(m_fileCentering);
+
+    for (QModelIndex index : list)
+    {
+        QString curValue = defaultData[index.column() - FRAMECOUNT_COLUMN];
+        QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
+
+        CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
+        m_undoStack.push(cmd);
+    }
+}
+
 void InputFileModel::emitDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
 {
     emit QAbstractTableModel::dataChanged(topLeft, bottomRight);
