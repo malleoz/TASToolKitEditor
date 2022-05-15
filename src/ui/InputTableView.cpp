@@ -55,20 +55,17 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
     }
     else if (key == Qt::Key_Delete)
     {
-//        QModelIndexList indexList = selectedIndexes();
+        QItemSelectionModel* selectionModel = this->selectionModel();
+        QModelIndexList selectedRowList = selectionModel->selectedRows();
 
-
-        // If user presses Delete on row selection, delete row.
-        // Otherwise, reset cell to default value.
-
-        if (index.column() == 0)
+        for (int i = selectedRowList.count() - 1; i >= 0; i--)
         {
-            model()->removeRow(index.row(), index);
-            selectRow(index.row());
-            return;
+            QModelIndex mIndex = selectedRowList[i];
+            model()->removeRow(mIndex.row(), mIndex);
         }
 
-//        model()->setData(index, RESET_MACRO);
+        InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
+        model->resetData(selectedIndexes());
     }
 
     QTableView::keyPressEvent(event);

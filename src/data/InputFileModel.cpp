@@ -328,14 +328,21 @@ void InputFileModel::resetData(const QModelIndexList& list)
 {
     FrameData defaultData = DefinitionUtils::GetDefaultFrameData(m_fileCentering);
 
+    beginResetModel();
+
     for (QModelIndex index : list)
     {
+        if (index.column() == 0)
+            continue;
+
         QString curValue = defaultData[index.column() - FRAMECOUNT_COLUMN];
         QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
 
         CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
         m_undoStack.push(cmd);
     }
+
+    endResetModel();
 }
 
 void InputFileModel::emitDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
