@@ -57,9 +57,11 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
         QItemSelectionModel* selectionModel = this->selectionModel();
         QModelIndexList selectedRowList = selectionModel->selectedRows();
 
-        for (int i = selectedRowList.count() - 1; i >= 0; i--)
+        // lambda because QModelIndex doesn't override operator>()
+        std::sort(selectedRowList.begin(), selectedRowList.end(), [](QModelIndex a, QModelIndex b) {return b < a;});
+
+        for (QModelIndex mIndex : selectedRowList)
         {
-            QModelIndex mIndex = selectedRowList[i];
             model()->removeRow(mIndex.row(), mIndex);
         }
 
