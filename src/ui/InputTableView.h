@@ -19,10 +19,9 @@ protected: // events
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    void selectAllRowsOnFrameColumn(const QModelIndex& index);
+    void selectAllRowsOnFrameColumn(QMouseEvent* event);
 
 private:
-    QModelIndex startSelectionIndex;
     bool holdFrameColumn;
 };
 

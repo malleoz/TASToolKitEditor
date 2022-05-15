@@ -8,7 +8,6 @@
 
 InputTableView::InputTableView(QWidget* parent)
     : QTableView(parent)
-    , startSelectionIndex()
     , holdFrameColumn(false)
 {
 }
@@ -74,52 +73,46 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
 
 void InputTableView::mousePressEvent(QMouseEvent* event)
 {
-    QTableView::mousePressEvent(event);
-
-    startSelectionIndex = indexAt(event->pos());
-
-    if (startSelectionIndex.column() == 0)
+    const QModelIndex index = indexAt(event->pos());
+    if (index.column() == 0)
     {
-        selectRow(startSelectionIndex.row());
+        setSelectionBehavior(SelectionBehavior::SelectRows);
         holdFrameColumn = true;
     }
+
+    QTableView::mousePressEvent(event);
 }
 
 void InputTableView::mouseMoveEvent(QMouseEvent* event)
 {
+    selectAllRowsOnFrameColumn(event);
+
     QTableView::mouseMoveEvent(event);
-
-    if (holdFrameColumn)
-    {
-        QModelIndex index = indexAt(event->pos());
-        if (startSelectionIndex != index)
-        {
-            selectAllRowsOnFrameColumn(index);
-        }
-    }
-
 }
 
 void InputTableView::mouseReleaseEvent(QMouseEvent* event)
 {
-    QTableView::mouseReleaseEvent(event);
-
-    if (holdFrameColumn)
-    {
-        selectAllRowsOnFrameColumn(indexAt(event->pos()));
-    }
+    selectAllRowsOnFrameColumn(event);
 
     holdFrameColumn = false;
+
+    QTableView::mouseReleaseEvent(event);
+
+    setSelectionBehavior(SelectionBehavior::SelectItems);
 }
 
-void InputTableView::selectAllRowsOnFrameColumn(const QModelIndex& index)
+void InputTableView::selectAllRowsOnFrameColumn(QMouseEvent* event)
 {
-    if (index.column() == 0)
+    if (holdFrameColumn)
     {
-        QItemSelectionModel* selectionModel = this->selectionModel();
-        QItemSelection selection = selectionModel->selection();
-
-        selectionModel->clearSelection();
-        selectionModel->select(QItemSelection(startSelectionIndex, index), QItemSelectionModel::Select | QItemSelectionModel::Rows);
+        const QModelIndex index = indexAt(event->pos());
+        if (index.column() == 0)
+        {
+            setSelectionBehavior(SelectionBehavior::SelectRows);
+        }
+        else
+        {
+            setSelectionBehavior(SelectionBehavior::SelectItems);
+        }
     }
 }
