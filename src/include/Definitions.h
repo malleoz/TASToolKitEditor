@@ -54,6 +54,9 @@ enum class FileType
 typedef QVector<QString> FrameData;
 typedef QVector<FrameData> TTKFileData;
 
+// Clarification typedef
+typedef TTKFileData CSVData;
+
 
 class DefinitionUtils
 {

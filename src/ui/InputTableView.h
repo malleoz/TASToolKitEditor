@@ -23,7 +23,7 @@ protected:
     void deleteSelection();
 
 private:
-    bool abstractSelection(QModelIndexList& o_selection);
+    int abstractSelection(QModelIndexList& o_selection);
 
     void selectAllRowsOnFrameColumn(QMouseEvent* event);
 

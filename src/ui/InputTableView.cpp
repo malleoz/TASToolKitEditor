@@ -92,23 +92,25 @@ void InputTableView::keyPressEvent(QKeyEvent* event)
 void InputTableView::copySelection()
 {
     QModelIndexList processingList;
+    int columnCount = abstractSelection(processingList);
 
-    if (abstractSelection(processingList))
+    if (columnCount > 0)
     {
         InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
-        model->copyIndices(processingList);
+        model->copyIndices(processingList, columnCount);
     }
 }
 
 void InputTableView::pasteSelection()
 {
     QModelIndexList processingList;
+    int columnCount = abstractSelection(processingList);
 
-    if (abstractSelection(processingList))
+    if (columnCount > 0)
     {
         InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
 
-        if (!model->pasteIndices(processingList))
+        if (!model->pasteIndices(processingList, columnCount))
         {
             QMessageBox::warning(this, "Paste Error", "The pasted data does not match the selected cells.");
         }
@@ -134,10 +136,16 @@ void InputTableView::deleteSelection()
 }
 
 
-bool InputTableView::abstractSelection(QModelIndexList& o_selection)
+int InputTableView::abstractSelection(QModelIndexList& o_selection)
 {
     QItemSelectionModel* selectionModel = this->selectionModel();
+
+    if (selectionModel->selectedIndexes().count() == 0)
+        return -1;
+
     QModelIndexList selectedRowList = selectionModel->selectedRows();
+
+    int columnCount = 0;
 
     if (selectedRowList.count() == 0)
     {
@@ -145,6 +153,7 @@ bool InputTableView::abstractSelection(QModelIndexList& o_selection)
         std::sort(selectedItems.begin(), selectedItems.end());
 
         o_selection.append(QItemSelection(selectedItems.first(), selectedItems.last()).indexes());
+        columnCount = selectedItems.last().column() - selectedItems.first().column() + 1;
     }
     else
     {
@@ -153,15 +162,17 @@ bool InputTableView::abstractSelection(QModelIndexList& o_selection)
         std::sort(altRowList.begin(), altRowList.end());
 
         if (selectedRowList.count() != altRowList.count())
-            return false;
+            return -1;
 
         for (int i = 0; i < selectedRowList.count(); i++)
         {
             o_selection.append(QItemSelection(selectedRowList[i], altRowList[i]).indexes());
         }
+
+        columnCount = FRAMECOUNT_COLUMN + NUM_INPUT_COLUMNS;
     }
 
-    return true;
+    return columnCount;
 }
 
 
