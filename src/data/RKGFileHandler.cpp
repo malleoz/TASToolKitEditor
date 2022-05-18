@@ -10,7 +10,7 @@ RKGFileHandler::RKGFileHandler()
 {
 }
 
-FileStatus RKGFileHandler::loadRKGFile(const QString& path, TTKFileData& o_fileData)
+FileStatus RKGFileHandler::loadRKGFile(const QString& path, RKGHeader& o_header, TTKFileData& o_fileData)
 {
     QFile fp(path);
 
@@ -28,55 +28,188 @@ FileStatus RKGFileHandler::loadRKGFile(const QString& path, TTKFileData& o_fileD
     QDataStream in(&fp);
     in.setByteOrder(QDataStream::BigEndian);
 
-    uint32_t dataMass32 = 0;
-    in >> dataMass32;
+    loadHeader(in, o_header);
 
-    in >> dataMass32;
-    m_rkgHeader.totalTime.minutes = dataMass32 >> 25 & 0x7F;
-    m_rkgHeader.totalTime.seconds = dataMass32 >> 18 & 0x7F;
-    m_rkgHeader.totalTime.milliseconds = dataMass32 >> 8 & 0x3FF;
-    m_rkgHeader.trackId = dataMass32 >> 2 & 0x3F;
-
-    in >> dataMass32;
-    m_rkgHeader.vehicleID = dataMass32 >> 26 & 0x3F;
-    m_rkgHeader.characterID = dataMass32 >> 20 & 0x3F;
-    m_rkgHeader.year = dataMass32 >> 13 & 0x7F;
-    m_rkgHeader.month = dataMass32 >> 9 & 0xF;
-    m_rkgHeader.day = dataMass32 >> 4 & 0x1F;
-    m_rkgHeader.controllerId = dataMass32 & 0xF;
-
-    uint16_t dataMass16 = 0;
-
-    in >> dataMass16;
-    m_rkgHeader.isCompressed = dataMass16 >> 11 & 0x1;
-    m_rkgHeader.ghostType = dataMass16 >> 2 & 0x7F;
-    m_rkgHeader.driftType = dataMass16 >> 1 & 0x1;
-
-    in >> m_rkgHeader.inputDataLength;
-    in >> m_rkgHeader.lapCount;
-
-    uint8_t lapSplits[totalLapTimes * lapSplitSize];
-    in.readRawData(reinterpret_cast<char*>(lapSplits), sizeof(lapSplits));
-
-    for (int i = 0; i < totalLapTimes; i++)
+    if (o_header.isCompressed)
     {
-        m_rkgHeader.lapTimes[i].from3Byte(&(lapSplits[i*lapSplitSize]));
+        uncompressInputs(in, o_header);
     }
 
-    in >> dataMass16;
+    loadInputs(in, o_header, o_fileData);
 
-    in >> m_rkgHeader.countryId;
-    in >> m_rkgHeader.stateId;
-    in >> m_rkgHeader.locationId;
-
-    in >> m_rkgHeader.freeSpace;
-
-    in.readRawData(reinterpret_cast<char*>(m_rkgHeader.mii), sizeof(m_rkgHeader.mii));
-    in >> m_rkgHeader.miiCrc;
+    fp.close();
 
     return FileStatus::Success;
 }
 
 void RKGFileHandler::saveRKGFile(const QString& path)
 {
+}
+
+
+void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
+{
+    uint32_t dataMass32 = 0;
+    stream >> dataMass32;
+
+    stream >> dataMass32;
+    o_header.totalTime.minutes = dataMass32 >> 25 & 0x7F;
+    o_header.totalTime.seconds = dataMass32 >> 18 & 0x7F;
+    o_header.totalTime.milliseconds = dataMass32 >> 8 & 0x3FF;
+    o_header.trackId = dataMass32 >> 2 & 0x3F;
+
+    stream >> dataMass32;
+    o_header.vehicleID = dataMass32 >> 26 & 0x3F;
+    o_header.characterID = dataMass32 >> 20 & 0x3F;
+    o_header.year = dataMass32 >> 13 & 0x7F;
+    o_header.month = dataMass32 >> 9 & 0xF;
+    o_header.day = dataMass32 >> 4 & 0x1F;
+    o_header.controllerId = dataMass32 & 0xF;
+
+    uint16_t dataMass16 = 0;
+
+    stream >> dataMass16;
+    o_header.isCompressed = dataMass16 >> 11 & 0x1;
+    o_header.ghostType = dataMass16 >> 2 & 0x7F;
+    o_header.driftType = dataMass16 >> 1 & 0x1;
+
+    stream >> o_header.inputDataLength;
+    stream >> o_header.lapCount;
+
+    uint8_t lapSplits[RKGHeader::totalLapTimes * RKGHeader::lapSplitSize];
+    stream.readRawData(reinterpret_cast<char*>(lapSplits), sizeof(lapSplits));
+
+    for (int i = 0; i < RKGHeader::totalLapTimes; i++)
+    {
+        o_header.lapTimes[i].from3Byte(&(lapSplits[i*RKGHeader::lapSplitSize]));
+    }
+
+    stream >> dataMass16;
+
+    stream >> o_header.countryId;
+    stream >> o_header.stateId;
+    stream >> o_header.locationId;
+
+    stream >> o_header.freeSpace;
+
+    stream.readRawData(reinterpret_cast<char*>(o_header.mii), sizeof(o_header.mii));
+    stream >> o_header.miiCrc;
+
+    if (o_header.isCompressed)
+    {
+        stream >> o_header.tail.cT.dataLength;
+        stream.readRawData(reinterpret_cast<char*>(o_header.tail.cT.YAZ1), sizeof(o_header.tail.cT.YAZ1));
+    }
+    else
+    {
+        stream >> o_header.tail.uT.faceButtonCount;
+        stream >> o_header.tail.uT.directionInputCount;
+        stream >> o_header.tail.uT.trickInputCount;
+        stream >> o_header.tail.uT._padding;
+    }
+}
+
+void RKGFileHandler::loadInputs(QDataStream& stream, RKGHeader& o_header, TTKFileData& o_fileData)
+{
+
+    if (o_header.inputDataLength != (o_header.tail.uT.faceButtonCount +
+                                     o_header.tail.uT.directionInputCount +
+                                     o_header.tail.uT.trickInputCount +
+                                     sizeof(o_header.tail)))
+    {
+        o_header.inputDataLength = o_header.tail.uT.faceButtonCount +
+                                   o_header.tail.uT.directionInputCount +
+                                   o_header.tail.uT.trickInputCount +
+                                   sizeof(o_header.tail);
+
+        const QString errorTitle = "GAS Alert";
+        const QString errorMsg = "Your ghost file is corrupted due to Ghost Always Saves code.\n" \
+                                 "Don't worry, we'll fix that for you *insert smiley here*.";
+        QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg);
+    }
+
+    for (int i = 0; i < o_header.tail.uT.faceButtonCount; i++)
+    {
+        uint8_t data = 0;
+        uint8_t size = 0;
+
+        stream >> data;
+        stream >> size;
+
+        FrameData newRow = {};
+        decodeFaceButton(data, newRow);
+
+        o_fileData.insert(o_fileData.length(), size, newRow);
+    }
+
+    int count = 0;
+
+    for (int i = 0; i < o_header.tail.uT.directionInputCount; i++)
+    {
+        uint8_t data = 0;
+        uint8_t size = 0;
+
+        stream >> data;
+        stream >> size;
+
+        FrameData newRow = {};
+        decodeDirectionInput(data, newRow);
+
+        for (int j = 0; j < size; j++)
+        {
+            o_fileData[count++].append(newRow);
+        }
+    }
+
+    count = 0;
+
+    for (int i = 0; i < o_header.tail.uT.trickInputCount; i++)
+    {
+        uint16_t data = 0;
+        uint16_t size = 0;
+        stream >> data;
+
+        const QString trickString = decodeTrickInput(data, size);
+
+        for (int j = 0; j < size; j++)
+        {
+            o_fileData[count++].append(trickString);
+        }
+    }
+}
+
+void RKGFileHandler::uncompressInputs(QDataStream& stream, const RKGHeader& o_header)
+{
+    QByteArray newStream;
+
+
+}
+
+
+void RKGFileHandler::decodeFaceButton(const uint8_t data, FrameData& row)
+{
+    const QString buttonA = QString::number(data & 0x1);
+    const QString buttonB = QString::number(data >> 1 & 0x1);
+    const QString buttonL = QString::number(data >> 2 & 0x1);
+
+    row.append(buttonA);
+    row.append(buttonB);
+    row.append(buttonL);
+}
+
+void RKGFileHandler::decodeDirectionInput(const uint8_t data, FrameData& row)
+{
+    const QString stickH = QString::number(data >> 4 & 0xF);
+    const QString stickV = QString::number(data & 0xF);
+
+    row.append(stickH);
+    row.append(stickV);
+}
+
+QString RKGFileHandler::decodeTrickInput(const uint16_t data, uint16_t& size)
+{
+    const QString dPad = QString::number(data >> 12 & 0x7);
+    size = data & 0xFFF;
+
+    return dPad;
 }

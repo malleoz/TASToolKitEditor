@@ -7,6 +7,7 @@ set(TTKE_Headers
     ui/InputTableView.h
     ui/TTKMainWindow.h
     include/Definitions.h
+    include/RKGDefinitions.h
     )
 
 set(TTKE_CPP
