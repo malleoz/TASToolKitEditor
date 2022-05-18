@@ -36,7 +36,10 @@ private: // Qt UI Elements
     QMenu* menuFile;
 
     QAction* actionOpenPlayer;
+    QAction* actionImportPlayerRKG;
     QAction* actionOpenGhost;
+    QAction* actionImportGhostRKG;
+
     QAction* actionSwapFiles;
     QAction* actionScrollTogether;
 
@@ -45,6 +48,7 @@ private: // Qt UI Elements
 
 protected: // connect
     void openFile(PlayerTypeInstance& typeInstance);
+    void importFile(PlayerTypeInstance& typeInstance);
 
     void onToggleScrollTogether(const bool bTogether);
 
@@ -54,10 +58,8 @@ protected: // connect
 
 
 private: // Refactored Functions
-    // checkup
     void connectActions();
 
-    // done
     void setupUi();
 
     void addMenuItems();
@@ -66,6 +68,8 @@ private: // Refactored Functions
     void setTitles();
 
     bool bothFilesLoaded();
+
+    void adjustUiOnOpen();
 
 private: // variables
     PlayerTypeInstance m_player;

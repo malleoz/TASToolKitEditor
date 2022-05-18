@@ -95,6 +95,13 @@ bool PlayerTypeInstance::openFile(QWidget* main)
     return true;
 }
 
+bool PlayerTypeInstance::importFile(QWidget* main)
+{
+
+
+    return true;
+}
+
 void PlayerTypeInstance::reloadFile()
 {
     TTKFileData data;

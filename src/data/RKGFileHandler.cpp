@@ -6,9 +6,6 @@
 #include <QDataStream>
 #include <QByteArray>
 
-RKGFileHandler::RKGFileHandler()
-{
-}
 
 FileStatus RKGFileHandler::loadRKGFile(const QString& path, RKGHeader& o_header, TTKFileData& o_fileData)
 {
@@ -17,8 +14,7 @@ FileStatus RKGFileHandler::loadRKGFile(const QString& path, RKGHeader& o_header,
     if (!fp.open(QIODevice::ReadOnly))
     {
         const QString errorTitle = "Error Opening File";
-        const QString errorMsg = "This program does not have sufficient permissions to modify the file.\n\n" \
-            "Try running this program in administrator mode and make sure the file is not open in another program.";
+        const QString errorMsg = "This program was not able to the specified file.";
         QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
 
         fp.close();
@@ -52,8 +48,9 @@ FileStatus RKGFileHandler::loadRKGFile(const QString& path, RKGHeader& o_header,
     return FileStatus::Success;
 }
 
-void RKGFileHandler::saveRKGFile(const QString& path)
+FileStatus RKGFileHandler::saveRKGFile(const QString& path)
 {
+    return FileStatus::Success;
 }
 
 
@@ -67,22 +64,22 @@ void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
     o_header.totalTime.minutes = dataMass32 >> 25 & 0x7F;
     o_header.totalTime.seconds = dataMass32 >> 18 & 0x7F;
     o_header.totalTime.milliseconds = dataMass32 >> 8 & 0x3FF;
-    o_header.trackId = dataMass32 >> 2 & 0x3F;
+    o_header.trackId = static_cast<TrackID>(dataMass32 >> 2 & 0x3F);
 
     stream >> dataMass32;
-    o_header.vehicleID = dataMass32 >> 26 & 0x3F;
-    o_header.characterID = dataMass32 >> 20 & 0x3F;
+    o_header.vehicleID = static_cast<VehicleID>(dataMass32 >> 26 & 0x3F);
+    o_header.characterID = static_cast<CharacterID>(dataMass32 >> 20 & 0x3F);
     o_header.year = dataMass32 >> 13 & 0x7F;
     o_header.month = dataMass32 >> 9 & 0xF;
     o_header.day = dataMass32 >> 4 & 0x1F;
-    o_header.controllerId = dataMass32 & 0xF;
+    o_header.controllerId = static_cast<ControllerType>(dataMass32 & 0xF);
 
     uint16_t dataMass16 = 0;
 
     stream >> dataMass16;
     o_header.isCompressed = dataMass16 >> 11 & 0x1;
     o_header.ghostType = dataMass16 >> 2 & 0x7F;
-    o_header.driftType = dataMass16 >> 1 & 0x1;
+    o_header.driftType = static_cast<DriftType>(dataMass16 >> 1 & 0x1);
 
     stream >> o_header.inputDataLength;
     stream >> o_header.lapCount;

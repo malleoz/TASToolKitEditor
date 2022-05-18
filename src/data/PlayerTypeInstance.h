@@ -28,6 +28,8 @@ public:
 public: // connect
     /// @return Returns only false on parse error, return true on cancel or successful load
     bool openFile(QWidget* main);
+    bool importFile(QWidget* main);
+
     void closeFile();
 
     void reloadFile();
