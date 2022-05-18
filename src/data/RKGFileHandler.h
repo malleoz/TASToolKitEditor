@@ -21,7 +21,7 @@ private:
     void loadHeader(QDataStream& stream, RKGHeader& o_header);
     void loadInputs(QDataStream& stream, RKGHeader& o_header, TTKFileData& o_fileData);
 
-    void uncompressInputs(QDataStream& stream, const RKGHeader& o_header);
+    bool uncompressInputs(QDataStream& stream, QByteArray& o_uncompressedData, const RKGHeader& header);
     void compressInputs();
 
 private:
@@ -32,4 +32,6 @@ private:
     void encodeFaceButton();
     void encodeDirectionInput();
     void encodeTrickInput();
+
+    void loadTail(QDataStream& stream, RKGHeader& o_header);
 };
