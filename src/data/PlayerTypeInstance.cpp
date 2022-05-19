@@ -26,6 +26,11 @@ PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
 {
 }
 
+PlayerTypeInstance::~PlayerTypeInstance()
+{
+    delete qRKGTable;
+}
+
 void PlayerTypeInstance::setupUI(QWidget* parent)
 {
     qVLayout = new QVBoxLayout(parent);
@@ -43,7 +48,7 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
 
     qVLayout->addWidget(m_pTableView);
 
-    qRKGTable = new QTableView(parent);
+    qRKGTable = new QTableView();
 
     RKGHeaderModel* rkgModel = new RKGHeaderModel();
     qRKGTable->setModel(rkgModel);
