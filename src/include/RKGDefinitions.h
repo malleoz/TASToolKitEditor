@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <QString>
+#include <QStringList>
 
 // https://wiki.tockdom.com/wiki/List_of_Identifiers
 
@@ -156,13 +157,23 @@ enum class DriftType
 
 struct RKGHeader
 {
+    friend class RKGFileHandler;
+
 public:
     static const int totalLapTimes = 0xB;
     static const int lapSplitSize = 0x3;
     static const int miiDataSize = 0x4A;
+    static const int trackAmount = 32;
 
     struct TimeSignature
     {
+        TimeSignature()
+        {
+            minutes = 0;
+            seconds = 0;
+            milliseconds = 0;
+        }
+
         uint8_t minutes;
         uint8_t seconds;
         uint16_t milliseconds;
@@ -181,8 +192,35 @@ public:
             byte3[1] = (seconds << 2 & 0xF7) + (milliseconds >> 8 & 0x3);
             byte3[2] = milliseconds & 0xFF;
         }
+
+        inline operator QString() const
+        {
+            return QString("%1:%2:%3").arg(QString::number(minutes), 2, '0')
+                                      .arg(QString::number(seconds), 2, '0')
+                                      .arg(QString::number(milliseconds), 3, '0');
+        }
+
+        inline TimeSignature& operator=(const QString string)
+        {
+            QStringList split = string.split(':');
+            if (split.size() == 3)
+            {
+                minutes = static_cast<uint8_t>(split[0].toUShort());
+                minutes &= 0x7F;
+
+                seconds = static_cast<uint8_t>(split[1].toUShort());
+                seconds &= 0x7F;
+
+                milliseconds = split[2].toUShort();
+                milliseconds &= 0x3FF;
+            }
+
+            return *this;
+        }
     };
 
+
+protected:
     struct UncompTail
     {
         uint16_t faceButtonCount;
@@ -198,8 +236,36 @@ public:
     };
 
 public:
-    uint8_t RKGD[4] = {0x52, 0x4B, 0x47, 0x44};
+    RKGHeader()
+    {
+        totalTime = "2:06:000";
 
+        trackId = TrackID::LC;
+        vehicleID = VehicleID::la_bike;
+        characterID = CharacterID::fk;
+
+        year = 8;
+        month = 4;
+        day = 10;
+
+        controllerID = ControllerType::Wheel;
+
+        ghostType = 0x1;
+        driftType = DriftType::Manual;
+
+        lapCount = 3;
+        lapTimes[0] = "0:42:000";
+        lapTimes[1] = "0:42:000";
+        lapTimes[2] = "0:42:000";
+
+        countryID = 0xAA;
+        stateID = 0x01;
+        locationID = 0x00;
+
+        freeSpace = 0;
+    }
+
+public:
     TimeSignature totalTime;
 
     TrackID trackId;
@@ -212,36 +278,52 @@ public:
     uint8_t month;
     uint8_t day;
 
-    ControllerType controllerId;
+    ControllerType controllerID;
 
-
-    bool isCompressed;
 
     uint8_t ghostType;
     DriftType driftType;
 
 
-    uint16_t inputDataLength;
     uint8_t lapCount;
 
     TimeSignature lapTimes[totalLapTimes];
 
-    uint8_t countryId;
-    uint8_t stateId;
-    uint16_t locationId;
+    uint8_t countryID;
+    uint8_t stateID;
+    uint16_t locationID;
 
     uint32_t freeSpace;
 
-    uint8_t mii[miiDataSize];
-    uint16_t miiCrc;
+    uint8_t mii[miiDataSize] =
+    { 0xC0, 0x10, 0x00, 0x54 ,0x00, 0x41, 0x00, 0x53, 0x00, 0x54, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x6C
+    , 0x00, 0x6B, 0x00, 0x69, 0x00, 0x74, 0x00, 0x22, 0x87, 0x30, 0x89, 0x66, 0xC2, 0xC4, 0xED, 0xC3
+    , 0x20, 0x44, 0x3C, 0x40, 0x28, 0x38, 0x0C, 0x84, 0x48, 0xCF, 0x0E, 0x00, 0x08, 0x00, 0xB9, 0x09
+    , 0x00, 0x8A, 0x81, 0x06, 0xC4, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    , 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint16_t miiCrc = 0x6E7A;
+
+protected:
+    uint8_t RKGD[4] = {0x52, 0x4B, 0x47, 0x44};
+
+    bool isCompressed;
+
+    uint16_t inputDataLength;
 
     union {
         UncompTail uT;
         CompTail cT;
     } tail;
 
+};
+
+class RKGInterpreter
+{
+private:
+    RKGInterpreter() {}
+
 public:
-    static constexpr TrackID TRACK_ID_ORDERED_LIST[32] =
+    static constexpr TrackID TRACK_ID_ORDERED_LIST[RKGHeader::trackAmount] =
     {
         TrackID::LC, TrackID::MMM, TrackID::MG, TrackID::TF,
         TrackID::MC, TrackID::CM, TrackID::DKS, TrackID::WGM,
@@ -319,6 +401,8 @@ public:
             case TrackID::rDKM: return "GCN DK Mountain";
             case TrackID::rBC: return "N64 Bowsers Castle";
         }
+
+        return "";
     }
 
     inline static QString vehicleDesc(const VehicleID vehicleID)
@@ -362,6 +446,8 @@ public:
             case VehicleID::me_bike: return "Dolphin Dasher";
             case VehicleID::le_bike: return "Phantom";
         }
+
+        return "";
     }
 
     inline static QString characterDesc(const CharacterID characterID)
@@ -417,6 +503,8 @@ public:
             case CharacterID::ds_menu: return "Daisy Biker Outfit";
             case CharacterID::rs_menu: return "Rosalina Biker Outfit";
         }
+
+        return "";
     }
 
     inline static QString controllerDesc(const ControllerType controllerID)
@@ -428,6 +516,8 @@ public:
             case ControllerType::Classic: return "Classic Controller";
             case ControllerType::GCN: return "Gamecube Controller";
         }
+
+        return "";
     }
 
     inline static QString driftDesc(const DriftType driftID)
@@ -437,6 +527,7 @@ public:
             case DriftType::Manual: return "Manual";
             case DriftType::Automatic: return "Automatic";
         }
-    }
 
+        return "";
+    }
 };

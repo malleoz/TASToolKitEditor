@@ -72,7 +72,7 @@ void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
     o_header.year = dataMass32 >> 13 & 0x7F;
     o_header.month = dataMass32 >> 9 & 0xF;
     o_header.day = dataMass32 >> 4 & 0x1F;
-    o_header.controllerId = static_cast<ControllerType>(dataMass32 & 0xF);
+    o_header.controllerID = static_cast<ControllerType>(dataMass32 & 0xF);
 
     uint16_t dataMass16 = 0;
 
@@ -94,9 +94,9 @@ void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
 
     stream.skipRawData(2);
 
-    stream >> o_header.countryId;
-    stream >> o_header.stateId;
-    stream >> o_header.locationId;
+    stream >> o_header.countryID;
+    stream >> o_header.stateID;
+    stream >> o_header.locationID;
 
     stream >> o_header.freeSpace;
 

@@ -125,6 +125,8 @@ bool PlayerTypeInstance::importFile()
 
         InputFileModel* model = new InputFileModel(data, centering);
         m_pTableView->setModel(model);
+
+        m_pFileHandler->saveFile(data);
     }
     else
     {
