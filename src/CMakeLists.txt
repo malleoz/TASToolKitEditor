@@ -3,6 +3,7 @@ set(TTKE_Headers
     data/InputFileModel.h
     data/PlayerTypeInstance.h
     data/RKGFileHandler.h
+    data/RKGHeaderModel.h
     ui/InputFileMenu.h
     ui/InputTableView.h
     ui/TTKMainWindow.h
@@ -15,6 +16,7 @@ set(TTKE_CPP
     data/InputFileModel.cpp
     data/PlayerTypeInstance.cpp
     data/RKGFileHandler.cpp
+    data/RKGHeaderModel.cpp
     ui/InputFileMenu.cpp
     ui/InputTableView.cpp
     ui/TTKMainWindow.cpp

@@ -2,6 +2,8 @@
 
 #include "data/InputFileHandler.h"
 #include "data/InputFileModel.h"
+#include "data/RKGFileHandler.h"
+#include "data/RKGHeaderModel.h"
 #include "ui/InputFileMenu.h"
 #include "ui/InputTableView.h"
 
@@ -15,6 +17,7 @@ PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
     : QObject(parent)
     , qVLayout(Q_NULLPTR)
     , qLabel(Q_NULLPTR)
+    , qRKGTable(Q_NULLPTR)
     , m_pTableView(nullptr)
     , m_pMenu(nullptr)
     , m_pFileHandler(nullptr)
@@ -39,17 +42,25 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
     m_pTableView->setVisible(false);
 
     qVLayout->addWidget(m_pTableView);
+
+    qRKGTable = new QTableView(parent);
+
+    RKGHeaderModel* rkgModel = new RKGHeaderModel();
+    qRKGTable->setModel(rkgModel);
+
+    connect(m_pMenu->getClose(), &QAction::triggered, this, &PlayerTypeInstance::closeFile);
+    connect(m_pMenu->getRKGHeadEdit(), &QAction::triggered, qRKGTable, &QTableView::show);
 }
 
-bool PlayerTypeInstance::openFile(QWidget* main)
+bool PlayerTypeInstance::openFile()
 {
-    const QString filePath = QFileDialog::getOpenFileName(main, "Open File", "", "Input Files (*.csv)");
+    const QString filePath = QFileDialog::getOpenFileName(Q_NULLPTR, "Open File", "", "Input Files (*.csv)");
 
     if (filePath == "")
-        return true;
+        return m_loaded;
 
-    if (m_pFileHandler != nullptr && !userClosedPreviousFile(main))
-        return true;
+    if (m_pFileHandler != nullptr && !userClosedPreviousFile())
+        return m_loaded;
 
 
     m_pFileHandler = new InputFileHandler(filePath);
@@ -65,7 +76,7 @@ bool PlayerTypeInstance::openFile(QWidget* main)
         m_loaded = false;
         // Error Handling
 
-        return false;
+        return m_loaded;
     }
 
     InputFileModel* model = new InputFileModel(data, centering);
@@ -75,9 +86,7 @@ bool PlayerTypeInstance::openFile(QWidget* main)
     adjustUiOnFileLoad(centering);
 
 
-    // ToDo: connect ?
-//    connect(inputFile->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, [inputFile]{ inputFile->fileChanged(); });
-//    connect(inputFile->getTableView(), &QTableView::clicked, this, [inputFile](const QModelIndex& index) { inputFile->onCellClicked(index); });
+    // connecting actions
 
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
@@ -92,14 +101,78 @@ bool PlayerTypeInstance::openFile(QWidget* main)
 
     connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
 
-    return true;
+    return m_loaded;
 }
 
-bool PlayerTypeInstance::importFile(QWidget* main)
+bool PlayerTypeInstance::importFile()
 {
+    const QString filePath = QFileDialog::getOpenFileName(Q_NULLPTR, "Open File", "", "Ghost File (*.rkg)");
 
+    if (filePath == "")
+        return m_loaded;
 
-    return true;
+    RKGHeader header;
+    TTKFileData data;
+    const Centering centering = Centering::Seven;
+
+    const FileStatus status = RKGFileHandler::loadRKGFile(filePath, header, data);
+
+    if (status != FileStatus::Success)
+    {
+        return m_loaded;
+    }
+
+    if (!m_loaded)
+    {
+        // Make the user create a csv file for using the rkg data
+        QMessageBox::StandardButton reply;
+
+        const QString message = "To import an *.rkg ghost file, you need to write into a *.csv file. \n\n" \
+                                "Do you want to want to import the ghost and save as a new *.csv file?";
+
+        reply = QMessageBox::question(Q_NULLPTR, "RKG Import", message, QMessageBox::No | QMessageBox::Yes);
+
+        if (reply != QMessageBox::Yes)
+            return m_loaded;
+
+        const QString savePath = QFileDialog::getSaveFileName(Q_NULLPTR, "Create File", "", "Input Files (*.csv)");
+
+        if (savePath == "")
+            return m_loaded;
+
+        m_pFileHandler = new InputFileHandler(savePath);
+
+        InputFileModel* model = new InputFileModel(data, centering);
+        m_pTableView->setModel(model);
+    }
+    else
+    {
+        InputFileModel* model = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+        model->replaceData(data, centering);
+    }
+
+    RKGHeaderModel* rkgModel = reinterpret_cast<RKGHeaderModel*>(qRKGTable->model());
+    rkgModel->setHeader(header);
+
+    m_loaded = true;
+    adjustUiOnFileLoad(centering);
+
+    // connecting actions
+
+    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+
+    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
+    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+
+    connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
+    connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
+
+    connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
+    connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
+
+    connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
+
+    return m_loaded;
 }
 
 void PlayerTypeInstance::reloadFile()
@@ -153,14 +226,21 @@ void PlayerTypeInstance::closeFile()
 }
 
 
-bool PlayerTypeInstance::userClosedPreviousFile(QWidget* main)
+
+bool PlayerTypeInstance::openFile(const QString& filePath)
+{
+
+    return true;
+}
+
+bool PlayerTypeInstance::userClosedPreviousFile()
 {
     if (m_pFileHandler == nullptr)
         return true;
 
     // Have user confirm they want to close file
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(main, "Close Current File", "Are you sure you want to close the current file and open a new one?",
+    reply = QMessageBox::question(Q_NULLPTR, "Close Current File", "Are you sure you want to close the current file and open a new one?",
         QMessageBox::No | QMessageBox::Yes);
 
     if (reply != QMessageBox::Yes)

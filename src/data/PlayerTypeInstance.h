@@ -10,6 +10,7 @@ class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
 
+class QTableView;
 
 enum class PlayerType
 {
@@ -27,18 +28,21 @@ public:
 
 public: // connect
     /// @return Returns only false on parse error, return true on cancel or successful load
-    bool openFile(QWidget* main);
-    bool importFile(QWidget* main);
+    bool openFile();
+    bool importFile();
 
     void closeFile();
 
     void reloadFile();
 
 private:
-    bool userClosedPreviousFile(QWidget* main);
+    bool openFile(const QString& filePath);
+
+    bool userClosedPreviousFile();
 
     void adjustUiOnFileLoad(const Centering centering);
     void adjustUiOnFileClose();
+
 
 
 public: // Setters / Getters
@@ -61,6 +65,8 @@ signals:
 private:
     QVBoxLayout* qVLayout;
     QLabel* qLabel;
+
+    QTableView* qRKGTable;
 
     InputTableView* m_pTableView;
     InputFileMenu* m_pMenu;

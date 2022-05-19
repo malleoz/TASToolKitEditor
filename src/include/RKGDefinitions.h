@@ -198,7 +198,7 @@ public:
     };
 
 public:
-    const uint8_t RKGD[4] = {0x52, 0x4B, 0x47, 0x44};
+    uint8_t RKGD[4] = {0x52, 0x4B, 0x47, 0x44};
 
     TimeSignature totalTime;
 

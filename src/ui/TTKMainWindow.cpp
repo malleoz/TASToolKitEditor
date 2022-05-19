@@ -30,7 +30,7 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
 
 void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 {
-    if (!typeInstance.openFile(this))
+    if (!typeInstance.openFile())
         adjustUiOnClose();
     else
         adjustUiOnOpen();
@@ -38,7 +38,7 @@ void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 
 void TTKMainWindow::importFile(PlayerTypeInstance& typeInstance)
 {
-    if (!typeInstance.importFile(this))
+    if (!typeInstance.importFile())
         adjustUiOnClose();
     else
         adjustUiOnOpen();
@@ -107,9 +107,6 @@ void TTKMainWindow::connectActions()
 
     connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(m_ghost);} );
     connect(actionImportGhostRKG, &QAction::triggered, this, [this]() { importFile(m_ghost);} );
-
-    connect(m_player.getMenu()->getClose(), &QAction::triggered, &m_player, &PlayerTypeInstance::closeFile);
-    connect(m_ghost.getMenu()->getClose(), &QAction::triggered, &m_ghost, &PlayerTypeInstance::closeFile);
 
     connect(&m_player, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);
     connect(&m_ghost, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);

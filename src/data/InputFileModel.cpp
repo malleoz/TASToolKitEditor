@@ -1,6 +1,7 @@
 #include "InputFileModel.h"
 
 #include <QBrush>
+
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QMimeData>
