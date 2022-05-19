@@ -82,26 +82,7 @@ bool PlayerTypeInstance::openFile()
     InputFileModel* model = new InputFileModel(data, centering);
     m_pTableView->setModel(model);
 
-    m_loaded = true;
-    adjustUiOnFileLoad(centering);
-
-
-    // connecting actions
-
-    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
-
-    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
-    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
-    
-    connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
-    connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
-
-    connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
-    connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
-
-    connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
-
-    return m_loaded;
+    return loadAdjustments(centering);
 }
 
 bool PlayerTypeInstance::importFile()
@@ -154,25 +135,7 @@ bool PlayerTypeInstance::importFile()
     RKGHeaderModel* rkgModel = reinterpret_cast<RKGHeaderModel*>(qRKGTable->model());
     rkgModel->setHeader(header);
 
-    m_loaded = true;
-    adjustUiOnFileLoad(centering);
-
-    // connecting actions
-
-    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
-
-    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
-    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
-
-    connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
-    connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
-
-    connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
-    connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
-
-    connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
-
-    return m_loaded;
+    return loadAdjustments(centering);
 }
 
 void PlayerTypeInstance::reloadFile()
@@ -227,10 +190,26 @@ void PlayerTypeInstance::closeFile()
 
 
 
-bool PlayerTypeInstance::openFile(const QString& filePath)
+bool PlayerTypeInstance::loadAdjustments(const Centering centering)
 {
+    adjustUiOnFileLoad(centering);
 
-    return true;
+    // connecting actions
+
+    InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+
+    connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
+    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+
+    connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
+    connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
+
+    connect(pModel->getUndoStack(), &QUndoStack::canUndoChanged, m_pMenu->getUndo(), &QAction::setEnabled);
+    connect(pModel->getUndoStack(), &QUndoStack::canRedoChanged, m_pMenu->getRedo(), &QAction::setEnabled);
+
+    connect(m_pFileHandler->getFsWatcher(), &QFileSystemWatcher::fileChanged, this, &PlayerTypeInstance::reloadFile);
+
+    return m_loaded = true;
 }
 
 bool PlayerTypeInstance::userClosedPreviousFile()

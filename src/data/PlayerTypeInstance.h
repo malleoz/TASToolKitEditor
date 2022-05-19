@@ -36,7 +36,7 @@ public: // connect
     void reloadFile();
 
 private:
-    bool openFile(const QString& filePath);
+    bool loadAdjustments(const Centering centering);
 
     bool userClosedPreviousFile();
 
