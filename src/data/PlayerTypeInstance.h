@@ -31,6 +31,7 @@ public: // connect
     /// @return Returns only false on parse error, return true on cancel or successful load
     bool openFile();
     bool importFile();
+    bool exportFile();
 
     void closeFile();
 

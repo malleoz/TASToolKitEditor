@@ -16,6 +16,7 @@ enum class FileStatus
     Success = 0,
     InsufficientWritePermission,
     Parse,
+    FileSizeLimit
 };
 
 enum class ParseStatus

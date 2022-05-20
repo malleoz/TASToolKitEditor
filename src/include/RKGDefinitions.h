@@ -185,11 +185,10 @@ public:
             milliseconds = (byte3[1] << 8 & 0x300) + (byte3[2] & 0xFF);
         }
 
-        // ToDo: Test
-        inline void to3Byte(uint8_t* const byte3)
+        inline void to3Byte(uint8_t* const byte3) const
         {
             byte3[0] = (minutes << 1 & 0xFE) + (seconds >> 6 & 0x1);
-            byte3[1] = (seconds << 2 & 0xF7) + (milliseconds >> 8 & 0x3);
+            byte3[1] = (seconds << 2 & 0xFC) + (milliseconds >> 8 & 0x3);
             byte3[2] = milliseconds & 0xFF;
         }
 

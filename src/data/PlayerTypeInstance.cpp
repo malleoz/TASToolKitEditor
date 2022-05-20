@@ -55,6 +55,7 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
 
     connect(m_pMenu->getClose(), &QAction::triggered, this, &PlayerTypeInstance::closeFile);
     connect(m_pMenu->getRKGHeadEdit(), &QAction::triggered, qRKGTable, &QTableView::show);
+    connect(m_pMenu->getRKGExport(), &QAction::triggered, this, &PlayerTypeInstance::exportFile);
 }
 
 bool PlayerTypeInstance::openFile()
@@ -143,6 +144,24 @@ bool PlayerTypeInstance::importFile()
     rkgModel->setHeader(header);
 
     return loadAdjustments(centering);
+}
+
+bool PlayerTypeInstance::exportFile()
+{
+    const QString savePath = QFileDialog::getSaveFileName(Q_NULLPTR, "Export RKG", "", "Ghost File (*.rkg)");
+
+    if (savePath == "")
+        return false;
+
+    RKGHeaderModel* rkgModel = reinterpret_cast<RKGHeaderModel*>(qRKGTable->model());
+    RKGHeader& header = rkgModel->getHeader();
+
+    InputFileModel* model = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+    const TTKFileData& data = model->getData();
+
+    RKGFileHandler::saveRKGFile(savePath, header, data);
+
+    return true;
 }
 
 void PlayerTypeInstance::reloadFile()

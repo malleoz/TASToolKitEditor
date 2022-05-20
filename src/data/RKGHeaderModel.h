@@ -23,7 +23,7 @@ public: // inherit
 
 public: // setter / getter
     void setHeader(const RKGHeader& header) {m_header = header;}
-    const RKGHeader& getHeader() const {return m_header;}
+    RKGHeader& getHeader() {return m_header;}
 
 private:
     QString dataFromHeader(const QModelIndex& index) const;
