@@ -66,8 +66,8 @@ void TTKMainWindow::onToggleScrollTogether(bool bTogether)
 
 void TTKMainWindow::swapModels()
 {
-    InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
-    InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
+    InputFileModel* playerModel = dynamic_cast<InputFileModel*>(m_player.getTableView()->model());
+    InputFileModel* ghostModel = dynamic_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
     playerModel->swap(ghostModel);
 }

@@ -96,7 +96,7 @@ void InputTableView::copySelection()
 
     if (columnCount > 0)
     {
-        InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
+        InputFileModel* model = dynamic_cast<InputFileModel*>(this->model());
         model->copyIndices(processingList, columnCount);
     }
 }
@@ -108,7 +108,7 @@ void InputTableView::pasteSelection()
 
     if (columnCount > 0)
     {
-        InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
+        InputFileModel* model = dynamic_cast<InputFileModel*>(this->model());
 
         if (!model->pasteIndices(processingList, columnCount))
         {
@@ -131,7 +131,7 @@ void InputTableView::deleteSelection()
         model()->removeRow(mIndex.row(), mIndex);
     }
 
-    InputFileModel* model = reinterpret_cast<InputFileModel*>(this->model());
+    InputFileModel* model = dynamic_cast<InputFileModel*>(this->model());
     model->resetData(selectedIndexes());
 }
 
