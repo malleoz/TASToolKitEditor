@@ -37,6 +37,8 @@ public: // connect
 
     void reloadFile();
 
+    void adjustPersistentEditors();
+
 private:
     bool loadAdjustments(const Centering centering);
 
@@ -45,6 +47,7 @@ private:
     void adjustUiOnFileLoad(const Centering centering);
     void adjustUiOnFileClose();
 
+    void setupRKGHeaderView();
 
 
 public: // Setters / Getters

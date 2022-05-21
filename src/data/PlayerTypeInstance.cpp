@@ -6,12 +6,16 @@
 #include "data/RKGHeaderModel.h"
 #include "ui/InputFileMenu.h"
 #include "ui/InputTableView.h"
+#include "ui/RKGDelegates.h"
 
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileSystemWatcher>
+#include <QItemDelegate>
+#include <QComboBox>
 
+const TrackID RKGInterpreter::TRACK_ID_ORDERED_LIST[RKGHeader::TRACK_AMOUNT];
 
 PlayerTypeInstance::PlayerTypeInstance(const PlayerType type, QObject* parent)
     : QObject(parent)
@@ -48,10 +52,7 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
 
     qVLayout->addWidget(m_pTableView);
 
-    qRKGTable = new QTableView();
-
-    RKGHeaderModel* rkgModel = new RKGHeaderModel();
-    qRKGTable->setModel(rkgModel);
+    setupRKGHeaderView();
 
     connect(m_pMenu->getClose(), &QAction::triggered, this, &PlayerTypeInstance::closeFile);
     connect(m_pMenu->getRKGHeadEdit(), &QAction::triggered, qRKGTable, &QTableView::show);
@@ -136,11 +137,11 @@ bool PlayerTypeInstance::importFile()
     }
     else
     {
-        InputFileModel* model = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+        InputFileModel* model = dynamic_cast<InputFileModel*>(m_pTableView->model());
         model->replaceData(data, centering);
     }
 
-    RKGHeaderModel* rkgModel = reinterpret_cast<RKGHeaderModel*>(qRKGTable->model());
+    RKGHeaderModel* rkgModel = dynamic_cast<RKGHeaderModel*>(qRKGTable->model());
     rkgModel->setHeader(header);
 
     return loadAdjustments(centering);
@@ -153,10 +154,10 @@ bool PlayerTypeInstance::exportFile()
     if (savePath == "")
         return false;
 
-    RKGHeaderModel* rkgModel = reinterpret_cast<RKGHeaderModel*>(qRKGTable->model());
+    RKGHeaderModel* rkgModel = dynamic_cast<RKGHeaderModel*>(qRKGTable->model());
     RKGHeader& header = rkgModel->getHeader();
 
-    InputFileModel* model = reinterpret_cast<InputFileModel*>(m_pTableView->model());
+    InputFileModel* model = dynamic_cast<InputFileModel*>(m_pTableView->model());
     const TTKFileData& data = model->getData();
 
     RKGFileHandler::saveRKGFile(savePath, header, data);
@@ -190,7 +191,7 @@ void PlayerTypeInstance::closeFile()
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
     disconnect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
-    disconnect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+    disconnect(m_pMenu->getCenter7(), &QAction::triggered, dynamic_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
 
     disconnect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
     disconnect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
@@ -225,7 +226,7 @@ bool PlayerTypeInstance::loadAdjustments(const Centering centering)
     InputFileModel* pModel = reinterpret_cast<InputFileModel*>(m_pTableView->model());
 
     connect(pModel, &InputFileModel::fileToBeWritten, m_pFileHandler, &InputFileHandler::saveFile);
-    connect(m_pMenu->getCenter7(), &QAction::triggered, reinterpret_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
+    connect(m_pMenu->getCenter7(), &QAction::triggered, dynamic_cast<InputFileModel*>(m_pTableView->model()), &InputFileModel::swapCentering);
 
     connect(m_pMenu->getUndo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::undo);
     connect(m_pMenu->getRedo(), &QAction::triggered, pModel->getUndoStack(), &QUndoStack::redo);
@@ -291,4 +292,82 @@ void PlayerTypeInstance::adjustUiOnFileClose()
     qLabel->setVisible(false);
 
     m_pTableView->setVisible(false);
+}
+
+void PlayerTypeInstance::setupRKGHeaderView()
+{
+    qRKGTable = new QTableView();
+
+    RKGHeaderModel* rkgModel = new RKGHeaderModel();
+    qRKGTable->setModel(rkgModel);
+
+    QStringList trackList;
+    for (const TrackID tid : RKGInterpreter::TRACK_ID_ORDERED_LIST)
+        trackList << RKGInterpreter::trackDesc(tid);
+
+    RKGComboBoxDelegate* trackDelegate = new RKGComboBoxDelegate(trackList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(1, trackDelegate);
+
+
+    QStringList vehicleList;
+    for (int vid = 0x0; vid <= static_cast<int>(VehicleID::le_bike); vid++)
+        vehicleList << RKGInterpreter::vehicleDesc(static_cast<VehicleID>(vid));
+
+    RKGComboBoxDelegate* vehicleDelegate = new RKGComboBoxDelegate(vehicleList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(2, vehicleDelegate);
+
+
+    QStringList characterList;
+    for (int cid = 0x0; cid <= static_cast<int>(CharacterID::rs_menu); cid++)
+        characterList << RKGInterpreter::characterDesc(static_cast<CharacterID>(cid));
+
+    RKGComboBoxDelegate* characterDelegate = new RKGComboBoxDelegate(characterList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(3, characterDelegate);
+
+
+    QStringList controllerList;
+    for (int cid = 0x0; cid <= static_cast<int>(ControllerType::GCN); cid++)
+        controllerList << RKGInterpreter::controllerDesc(static_cast<ControllerType>(cid));
+
+    RKGComboBoxDelegate* controllerDelegate = new RKGComboBoxDelegate(controllerList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(5, controllerDelegate);
+
+
+    QStringList ghostTypeList;
+    for (uint8_t gid = 0x1; gid <= 0x26; gid++)
+        ghostTypeList << RKGInterpreter::ghostTypeDesc(gid);
+
+    RKGComboBoxDelegate* ghostTypeDelegate = new RKGComboBoxDelegate(ghostTypeList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(6, ghostTypeDelegate);
+
+
+    QStringList driftTypeList = {RKGInterpreter::driftDesc(DriftType::Manual)
+                                ,RKGInterpreter::driftDesc(DriftType::Automatic)};
+
+    RKGComboBoxDelegate* driftTypeDelegate = new RKGComboBoxDelegate(driftTypeList, qRKGTable);
+    qRKGTable->setItemDelegateForRow(7, driftTypeDelegate);
+
+
+    QStringList lapCountList;
+    for (int i = 1; i <= RKGHeader::TOTAL_LAP_TIMES; i++)
+        lapCountList << QString("Lap: %1").arg(i);
+
+    RKGComboBoxDelegate* lapCountDelegate = new RKGComboBoxDelegate(lapCountList, qRKGTable);
+    qRKGTable->setItemDelegateForColumn(0, lapCountDelegate);
+
+    adjustPersistentEditors();
+    connect(rkgModel, &RKGHeaderModel::modelReset, this, &PlayerTypeInstance::adjustPersistentEditors);
+}
+
+void PlayerTypeInstance::adjustPersistentEditors()
+{
+    RKGHeaderModel* rkgModel = dynamic_cast<RKGHeaderModel*>(qRKGTable->model());
+
+    qRKGTable->openPersistentEditor(rkgModel->index(1,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(2,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(3,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(5,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(6,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(7,1));
+    qRKGTable->openPersistentEditor(rkgModel->index(RKGHeaderModel::LAPTIME_HEADER_INDEX, 0));
 }

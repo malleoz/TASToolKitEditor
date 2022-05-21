@@ -6,7 +6,7 @@
 const QStringList RKGHeaderModel::EDITABLE_HEADER_NAMES =
 {
     "Total Time", "Track", "Vehicle", "Character", "Date", "Controller",
-    "Ghost Type", "Drift Type", "Lap Count", "Lap Time",
+    "Ghost Type", "Drift Type", "Lap Count", "Lap :%1",
     "Country ID", "State ID", "Location ID", "Free Space", "Mii"
 };
 
@@ -53,7 +53,7 @@ QVariant RKGHeaderModel::data(const QModelIndex& index, int role) const
 
                 if (index.row() == LAPTIME_HEADER_INDEX)
                 {
-                    return headName.append(": %1").arg(m_currentLapCount + 1);
+                    return headName.arg(m_currentLapCount + 1);
                 }
 
                 return headName;
@@ -62,7 +62,7 @@ QVariant RKGHeaderModel::data(const QModelIndex& index, int role) const
                 return dataFromHeader(index);
         }
         case Qt::TextAlignmentRole:
-            return Qt::AlignCenter;
+            return Qt::AlignLeft + Qt::AlignVCenter;
         case Qt::BackgroundRole:
             return index.column() == 0 ? QBrush(Qt::lightGray) : QVariant();
     }
@@ -94,17 +94,9 @@ bool RKGHeaderModel::setData(const QModelIndex& index, const QVariant& value, in
         case Qt::EditRole:
         {
             if (index.column() == 1)
-                return dataToHeader(index, value.toString());
+                return dataToHeader(index, value);
             if (index.row() == LAPTIME_HEADER_INDEX)
-            {
-                QStringList list = value.toString().split(':');
-                if (list.size() != 2)
-                    return false;
-
-                const int cLC = list[1].toInt();
-
-                m_currentLapCount = cLC < RKGHeader::totalLapTimes ? cLC : RKGHeader::totalLapTimes - 1;
-            }
+                m_currentLapCount = value.toInt();
             else
                 return false;
 
@@ -117,6 +109,12 @@ bool RKGHeaderModel::setData(const QModelIndex& index, const QVariant& value, in
     return true;
 }
 
+void RKGHeaderModel::setHeader(const RKGHeader& header)
+{
+    beginResetModel();
+    m_header = header;
+    endResetModel();
+}
 
 
 QString RKGHeaderModel::dataFromHeader(const QModelIndex& index) const
@@ -145,60 +143,36 @@ QString RKGHeaderModel::dataFromHeader(const QModelIndex& index) const
     }
 }
 
-bool RKGHeaderModel::dataToHeader(const QModelIndex& index, const QString& data)
+bool RKGHeaderModel::dataToHeader(const QModelIndex& index, const QVariant& data)
 {
     switch(index.row())
     {
         case 0:
         {
-            m_header.totalTime = data;
+            m_header.totalTime = data.toString();
             break;
         }
         case 1:
         {
-            for (int tid = 0x0; tid < RKGHeader::trackAmount; tid++)
-            {
-                const TrackID trackId = static_cast<TrackID>(tid);
+            const int trackIndex = data.toInt();
+            const TrackID trackId = RKGInterpreter::TRACK_ID_ORDERED_LIST[trackIndex];
 
-                if (data == RKGInterpreter::trackDesc(trackId))
-                {
-                    m_header.trackId = trackId;
-                    return true;
-                }
-            }
-            return false;
+            m_header.trackId = trackId;
+            break;
         }
         case 2:
         {
-            for (int vid = 0x0; vid <= static_cast<int>(VehicleID::le_bike); vid++)
-            {
-                const VehicleID vehicleId = static_cast<VehicleID>(vid);
-
-                if (data == RKGInterpreter::vehicleDesc(vehicleId))
-                {
-                    m_header.vehicleID = vehicleId;
-                    return true;
-                }
-            }
-            return false;
+            m_header.vehicleID = static_cast<VehicleID>(data.toInt());
+            break;
         }
         case 3:
         {
-            for (int cid = 0x0; cid <= static_cast<int>(CharacterID::rs_menu); cid++)
-            {
-                const CharacterID characterId = static_cast<CharacterID>(cid);
-
-                if (data == RKGInterpreter::characterDesc(characterId))
-                {
-                    m_header.characterID = characterId;
-                    return true;
-                }
-            }
-            return false;
+            m_header.characterID = static_cast<CharacterID>(data.toInt());
+            break;
         }
         case 4:
         {
-            QStringList list = data.split('.');
+            QStringList list = data.toString().split('.');
             if (list.size() != 3)
                 return false;
 
@@ -210,74 +184,49 @@ bool RKGHeaderModel::dataToHeader(const QModelIndex& index, const QString& data)
         }
         case 5:
         {
-            for (int cid = 0x0; cid <= static_cast<int>(ControllerType::GCN); cid++)
-            {
-                const ControllerType controllerId = static_cast<ControllerType>(cid);
-
-                if (data == RKGInterpreter::controllerDesc(controllerId))
-                {
-                    m_header.controllerID = controllerId;
-                    return true;
-                }
-            }
-            return false;
+            m_header.controllerID = static_cast<ControllerType>(data.toInt());
+            break;
         }
         case 6:
         {
-            for (uint8_t gid = 0x1; gid <= 0x26; gid++)
-            {
-                if (data == RKGInterpreter::ghostTypeDesc(gid))
-                {
-                    m_header.ghostType = gid;
-                    return true;
-                }
-            }
-            return false;
+            m_header.ghostType = static_cast<uint8_t>(data.toInt() - 1);
+            break;
         }
         case 7:
         {
-            if (data == RKGInterpreter::driftDesc(DriftType::Manual))
-            {
-                m_header.driftType = DriftType::Manual;
-                return true;
-            }
-            if (data == RKGInterpreter::driftDesc(DriftType::Automatic))
-            {
-                m_header.driftType = DriftType::Automatic;
-                return true;
-            }
-            return false;
+            m_header.driftType = static_cast<DriftType>(data.toInt());
+            break;
         }
         case 8:
         {
-            const uint8_t lapCount = static_cast<uint8_t>(data.toUShort());
-            m_header.lapCount = lapCount < RKGHeader::totalLapTimes ? lapCount : RKGHeader::totalLapTimes - 1;
+            const uint8_t lapCount = static_cast<uint8_t>(data.toString().toUShort());
+            m_header.lapCount = lapCount < RKGHeader::TOTAL_LAP_TIMES ? lapCount : RKGHeader::TOTAL_LAP_TIMES - 1;
 
             break;
         }
         case 9:
         {
-            m_header.lapTimes[m_currentLapCount] = data;
+            m_header.lapTimes[m_currentLapCount] = data.toString();
             break;
         }
         case 10:
         {
-            m_header.countryID = static_cast<uint8_t>(data.toUShort());
+            m_header.countryID = static_cast<uint8_t>(data.toString().toUShort());
             break;
         }
         case 11:
         {
-            m_header.stateID = static_cast<uint8_t>(data.toUShort());
+            m_header.stateID = static_cast<uint8_t>(data.toString().toUShort());
             break;
         }
         case 12:
         {
-            m_header.locationID = data.toUShort();
+            m_header.locationID = data.toString().toUShort();
             break;
         }
         case 13:
         {
-            m_header.freeSpace = data.toULong();
+            m_header.freeSpace = data.toUInt();
             break;
         }
         case 14:

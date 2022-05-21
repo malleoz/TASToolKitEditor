@@ -160,10 +160,10 @@ struct RKGHeader
     friend class RKGFileHandler;
 
 public:
-    static const int totalLapTimes = 0xB;
-    static const int lapSplitSize = 0x3;
-    static const int miiDataSize = 0x4A;
-    static const int trackAmount = 32;
+    static const int TOTAL_LAP_TIMES = 0xB;
+    static const int LAP_SPLIT_SIZE = 0x3;
+    static const int MII_DATA_SIZE = 0x4A;
+    static const int TRACK_AMOUNT = 32;
 
     struct TimeSignature
     {
@@ -286,7 +286,7 @@ public:
 
     uint8_t lapCount;
 
-    TimeSignature lapTimes[totalLapTimes];
+    TimeSignature lapTimes[TOTAL_LAP_TIMES];
 
     uint8_t countryID;
     uint8_t stateID;
@@ -294,7 +294,7 @@ public:
 
     uint32_t freeSpace;
 
-    uint8_t mii[miiDataSize] =
+    uint8_t mii[MII_DATA_SIZE] =
     { 0xC0, 0x10, 0x00, 0x54 ,0x00, 0x41, 0x00, 0x53, 0x00, 0x54, 0x00, 0x6F, 0x00, 0x6F, 0x00, 0x6C
     , 0x00, 0x6B, 0x00, 0x69, 0x00, 0x74, 0x00, 0x22, 0x87, 0x30, 0x89, 0x66, 0xC2, 0xC4, 0xED, 0xC3
     , 0x20, 0x44, 0x3C, 0x40, 0x28, 0x38, 0x0C, 0x84, 0x48, 0xCF, 0x0E, 0x00, 0x08, 0x00, 0xB9, 0x09
@@ -322,7 +322,7 @@ private:
     RKGInterpreter() {}
 
 public:
-    static constexpr TrackID TRACK_ID_ORDERED_LIST[RKGHeader::trackAmount] =
+    static constexpr TrackID TRACK_ID_ORDERED_LIST[RKGHeader::TRACK_AMOUNT] =
     {
         TrackID::LC, TrackID::MMM, TrackID::MG, TrackID::TF,
         TrackID::MC, TrackID::CM, TrackID::DKS, TrackID::WGM,

@@ -85,10 +85,10 @@ FileStatus RKGFileHandler::saveRKGFile(const QString& path, RKGHeader& header, c
     // Todo: compression
     compressInputs(inputData);
 
-    if (!header.isCompressed)
-    {
+    if (!compressed)
         inputData.append(RKG_DATASECTION_SIZE - inputData.count(), 0x00);
-    }
+    else
+        compressInputs(inputData);
 
     QByteArray fullData;
     QDataStream byteWrite(&fullData, QIODevice::WriteOnly);
@@ -98,7 +98,7 @@ FileStatus RKGFileHandler::saveRKGFile(const QString& path, RKGHeader& header, c
 
     fullData.append(inputData);
 
-    if (!header.isCompressed)
+    if (!compressed)
         if (fullData.size() != 0x27FC)
         {
             fp.close();
@@ -147,12 +147,12 @@ void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
     stream >> o_header.inputDataLength;
     stream >> o_header.lapCount;
 
-    uint8_t lapSplits[RKGHeader::totalLapTimes * RKGHeader::lapSplitSize];
+    uint8_t lapSplits[RKGHeader::TOTAL_LAP_TIMES * RKGHeader::LAP_SPLIT_SIZE];
     stream.readRawData(reinterpret_cast<char*>(lapSplits), sizeof(lapSplits));
 
-    for (int i = 0; i < RKGHeader::totalLapTimes; i++)
+    for (int i = 0; i < RKGHeader::TOTAL_LAP_TIMES; i++)
     {
-        o_header.lapTimes[i].from3Byte(&(lapSplits[i*RKGHeader::lapSplitSize]));
+        o_header.lapTimes[i].from3Byte(&(lapSplits[i*RKGHeader::LAP_SPLIT_SIZE]));
     }
 
     stream.skipRawData(2);
@@ -384,10 +384,10 @@ void RKGFileHandler::storeHeader(QDataStream& stream, const RKGHeader& header)
     stream << header.inputDataLength;
     stream << header.lapCount;
 
-    uint8_t lapSplits[RKGHeader::totalLapTimes * RKGHeader::lapSplitSize];
-    for (int i = 0; i < RKGHeader::totalLapTimes; i++)
+    uint8_t lapSplits[RKGHeader::TOTAL_LAP_TIMES * RKGHeader::LAP_SPLIT_SIZE];
+    for (int i = 0; i < RKGHeader::TOTAL_LAP_TIMES; i++)
     {
-        header.lapTimes[i].to3Byte(&(lapSplits[i*RKGHeader::lapSplitSize]));
+        header.lapTimes[i].to3Byte(&(lapSplits[i*RKGHeader::LAP_SPLIT_SIZE]));
     }
 
     stream.writeRawData(reinterpret_cast<char*>(lapSplits), sizeof(lapSplits));
