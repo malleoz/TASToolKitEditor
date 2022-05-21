@@ -1,5 +1,6 @@
 x64/
 .vs/
+.vscode/
 *.user
 .github/
 build/
