@@ -36,7 +36,6 @@ void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
     {
         actionSwapFiles->setEnabled(true);
         actionScrollTogether->setEnabled(true);
-        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
         setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
     }
 }
@@ -72,7 +71,6 @@ void TTKMainWindow::swapModels()
 void TTKMainWindow::adjustUiOnClose()
 {
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
 
     actionSwapFiles->setEnabled(false);
 
@@ -146,7 +144,6 @@ void TTKMainWindow::setupUi()
 {
     // setup main window
     setMinimumWidth(SINGLE_FILE_WINDOW_WIDTH);
-    setMaximumWidth(SINGLE_FILE_WINDOW_WIDTH);
     resize(SINGLE_FILE_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT);
     
     addMenuItems();

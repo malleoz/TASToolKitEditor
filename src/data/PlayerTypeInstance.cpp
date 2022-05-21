@@ -34,7 +34,7 @@ void PlayerTypeInstance::setupUI(QWidget* parent)
 
     m_pTableView = new InputTableView();
 
-    m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    m_pTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     m_pTableView->horizontalHeader()->setMinimumSectionSize(0); // prevents minimum column size enforcement
     m_pTableView->setVisible(false);
 
