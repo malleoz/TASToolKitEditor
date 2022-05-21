@@ -17,6 +17,9 @@ public:
     static FileStatus loadRKGFile(const QString& path, RKGHeader& o_header, TTKFileData& o_fileData);
     static FileStatus saveRKGFile(const QString& path, RKGHeader& header, const TTKFileData& fileData, const bool compressed = false);
 
+    static FileStatus importMii(RKGHeader& o_header);
+    static FileStatus exportMii(const RKGHeader& header);
+
 private:
     static void loadHeader(QDataStream& stream, RKGHeader& o_header);
     static void loadInputs(QDataStream& stream, RKGHeader& o_header, TTKFileData& o_fileData);

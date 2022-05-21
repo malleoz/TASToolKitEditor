@@ -14,6 +14,7 @@
 enum class FileStatus
 {
     Success = 0,
+    Canceled,
     InsufficientWritePermission,
     Parse,
     FileSizeLimit

@@ -137,7 +137,7 @@ QString RKGHeaderModel::dataFromHeader(const QModelIndex& index) const
         case 11: return QString::number(m_header.stateID);
         case 12: return QString::number(m_header.locationID);
         case 13: return QString::number(m_header.freeSpace);
-        case 14: return QString::number(m_header.miiCrc);
+        case 14: return RKGInterpreter::miiName(m_header.mii);
 
         default: return "";
     }

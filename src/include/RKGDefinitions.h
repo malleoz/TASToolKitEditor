@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <QString>
 #include <QStringList>
+#include <QDataStream>
 
 // https://wiki.tockdom.com/wiki/List_of_Identifiers
 
@@ -526,6 +527,26 @@ public:
             case DriftType::Manual: return "Manual";
             case DriftType::Automatic: return "Automatic";
         }
+
+        return "";
+    }
+
+    inline static QString miiName(const uint8_t miiData[RKGHeader::MII_DATA_SIZE])
+    {
+        QByteArray mii(reinterpret_cast<const char*>(miiData), RKGHeader::MII_DATA_SIZE);
+        mii = mii.left(0x16);
+        mii = mii.right(0x14);
+
+        QDataStream txt(mii);
+        txt.setByteOrder(QDataStream::BigEndian);
+        ushort miiShorts[10];
+
+        for(int i = 0; i < 10; i++)
+            txt >> miiShorts[i];
+
+        QString miiName = QString::fromUtf16(miiShorts, 10);
+        if (miiName.isValidUtf16())
+            return miiName;
 
         return "";
     }

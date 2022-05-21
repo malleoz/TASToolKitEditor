@@ -1,6 +1,7 @@
 #include "RKGFileHandler.h"
 
 #include <QFile>
+#include <QFileDialog>
 #include <QMessageBox>
 
 #include <QDataStream>
@@ -116,6 +117,63 @@ FileStatus RKGFileHandler::saveRKGFile(const QString& path, RKGHeader& header, c
     return FileStatus::Success;
 }
 
+FileStatus RKGFileHandler::importMii(RKGHeader& o_header)
+{
+    const QString path = QFileDialog::getOpenFileName(Q_NULLPTR, "Import Mii", "", "Mii File (*.mii)");
+
+    if (path == "")
+        return FileStatus::Canceled;
+
+    QFile fp(path);
+
+    if (!fp.open(QIODevice::ReadOnly))
+    {
+        const QString errorTitle = "Error Opening File";
+        const QString errorMsg = "This program was not able to open the specified file.";
+        QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
+
+        fp.close();
+        return FileStatus::InsufficientWritePermission;
+    }
+
+    QDataStream in(&fp);
+    in.setByteOrder(QDataStream::BigEndian);
+    in.readRawData(reinterpret_cast<char*>(o_header.mii), sizeof(o_header.mii));
+    in >> o_header.miiCrc;
+
+    fp.close();
+
+    return FileStatus::Success;
+}
+
+FileStatus RKGFileHandler::exportMii(const RKGHeader& o_header)
+{
+    const QString path = QFileDialog::getSaveFileName(Q_NULLPTR, "Export Mii", "", "Mii File (*.mii)");
+
+    if (path == "")
+        return FileStatus::Canceled;
+
+    QFile fp(path);
+
+    if (!fp.open(QIODevice::WriteOnly))
+    {
+        const QString errorTitle = "Error Opening File";
+        const QString errorMsg = "This program was not able write into the specified file.";
+        QMessageBox::warning(Q_NULLPTR, errorTitle, errorMsg, QMessageBox::StandardButton::Ok);
+
+        fp.close();
+        return FileStatus::InsufficientWritePermission;
+    }
+
+    QDataStream out(&fp);
+    out.setByteOrder(QDataStream::BigEndian);
+    out.writeRawData(reinterpret_cast<const char*>(o_header.mii), sizeof(o_header.mii));
+    out << o_header.miiCrc;
+
+    fp.close();
+
+    return FileStatus::Success;
+}
 
 void RKGFileHandler::loadHeader(QDataStream& stream, RKGHeader& o_header)
 {

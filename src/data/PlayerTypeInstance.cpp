@@ -215,8 +215,6 @@ void PlayerTypeInstance::closeFile()
     emit fileClosed();
 }
 
-
-
 bool PlayerTypeInstance::loadAdjustments(const Centering centering)
 {
     adjustUiOnFileLoad(centering);
@@ -357,6 +355,22 @@ void PlayerTypeInstance::setupRKGHeaderView()
 
     adjustPersistentEditors();
     connect(rkgModel, &RKGHeaderModel::modelReset, this, &PlayerTypeInstance::adjustPersistentEditors);
+
+
+
+    QMenu* contextMenu = new QMenu("Mii Menu", qRKGTable);
+    QAction* importAction = new QAction("Import Mii");
+    QAction* exportAction = new QAction("Export Mii");
+
+    contextMenu->addAction(importAction);
+    contextMenu->addAction(exportAction);
+
+    connect(qRKGTable, &QTableView::customContextMenuRequested, qRKGTable, [=](const QPoint& pos){contextMenu->exec(qRKGTable->mapToGlobal(pos));});
+    connect(importAction, &QAction::triggered, this, [&]() { RKGFileHandler::importMii(dynamic_cast<RKGHeaderModel*>(qRKGTable->model())->getHeader()); });
+    connect(exportAction, &QAction::triggered, this, [&]() { RKGFileHandler::exportMii(dynamic_cast<RKGHeaderModel*>(qRKGTable->model())->getHeader()); });
+
+    qRKGTable->setContextMenuPolicy(Qt::CustomContextMenu);
+
 }
 
 void PlayerTypeInstance::adjustPersistentEditors()
