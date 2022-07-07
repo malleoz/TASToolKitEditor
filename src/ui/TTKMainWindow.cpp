@@ -30,15 +30,18 @@ TTKMainWindow::TTKMainWindow(QWidget *parent)
 
 void TTKMainWindow::openFile(PlayerTypeInstance& typeInstance)
 {
-    if (!typeInstance.openFile(this))
+    if (!typeInstance.openFile())
         adjustUiOnClose();
-    else if (bothFilesLoaded())
-    {
-        actionSwapFiles->setEnabled(true);
-        actionScrollTogether->setEnabled(true);
-        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
-    }
+    else
+        adjustUiOnOpen();
+}
+
+void TTKMainWindow::importFile(PlayerTypeInstance& typeInstance)
+{
+    if (!typeInstance.importFile())
+        adjustUiOnClose();
+    else
+        adjustUiOnOpen();
 }
 
 void TTKMainWindow::onToggleScrollTogether(bool bTogether)
@@ -63,8 +66,8 @@ void TTKMainWindow::onToggleScrollTogether(bool bTogether)
 
 void TTKMainWindow::swapModels()
 {
-    InputFileModel* playerModel = reinterpret_cast<InputFileModel*>(m_player.getTableView()->model());
-    InputFileModel* ghostModel = reinterpret_cast<InputFileModel*>(m_ghost.getTableView()->model());
+    InputFileModel* playerModel = dynamic_cast<InputFileModel*>(m_player.getTableView()->model());
+    InputFileModel* ghostModel = dynamic_cast<InputFileModel*>(m_ghost.getTableView()->model());
 
     playerModel->swap(ghostModel);
 }
@@ -80,6 +83,17 @@ void TTKMainWindow::adjustUiOnClose()
     actionScrollTogether->setChecked(false);
 }
 
+void TTKMainWindow::adjustUiOnOpen()
+{
+    if (bothFilesLoaded())
+    {
+        actionSwapFiles->setEnabled(true);
+        actionScrollTogether->setEnabled(true);
+        setMaximumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+        setMinimumWidth(DOUBLE_FILE_WINDOW_WIDTH);
+    }
+}
+
 bool TTKMainWindow::bothFilesLoaded()
 {
     return m_player.isLoaded() && m_ghost.isLoaded();
@@ -89,10 +103,10 @@ bool TTKMainWindow::bothFilesLoaded()
 void TTKMainWindow::connectActions()
 {
     connect(actionOpenPlayer, &QAction::triggered, this, [this]() { openFile(m_player);} );
-    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(m_ghost);} );
+    connect(actionImportPlayerRKG, &QAction::triggered, this, [this]() { importFile(m_player);} );
 
-    connect(m_player.getMenu()->getClose(), &QAction::triggered, &m_player, &PlayerTypeInstance::closeFile);
-    connect(m_ghost.getMenu()->getClose(), &QAction::triggered, &m_ghost, &PlayerTypeInstance::closeFile);
+    connect(actionOpenGhost, &QAction::triggered, this, [this]() { openFile(m_ghost);} );
+    connect(actionImportGhostRKG, &QAction::triggered, this, [this]() { importFile(m_ghost);} );
 
     connect(&m_player, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);
     connect(&m_ghost, &PlayerTypeInstance::fileClosed, this, &TTKMainWindow::adjustUiOnClose);
@@ -123,7 +137,10 @@ void TTKMainWindow::addFileMenuItems()
     menuFile = new QMenu(menuBar);
 
     actionOpenPlayer = new QAction(this);
+    actionImportPlayerRKG = new QAction(this);
     actionOpenGhost = new QAction(this);
+    actionImportGhostRKG = new QAction(this);
+
     actionSwapFiles = new QAction(this);
     actionSwapFiles->setEnabled(false);
 
@@ -133,8 +150,11 @@ void TTKMainWindow::addFileMenuItems()
     actionScrollTogether->setChecked(false);
 
     menuFile->addAction(actionOpenPlayer);
+    menuFile->addAction(actionImportPlayerRKG);
+    menuFile->addSeparator();
 
     menuFile->addAction(actionOpenGhost);
+    menuFile->addAction(actionImportGhostRKG);
     menuFile->addSeparator();
 
     menuFile->addAction(actionSwapFiles);
@@ -183,7 +203,11 @@ void TTKMainWindow::setTitles()
     menuFile->setTitle("File");
 
     actionOpenPlayer->setText("Open Player");
+    actionImportPlayerRKG->setText("Import Player RKG");
+
     actionOpenGhost->setText("Open Ghost");
+    actionImportGhostRKG->setText("Import Ghost RKG");
+
     actionSwapFiles->setText("Swap Player and Ghost");
     actionScrollTogether->setText("Scroll Together");
 

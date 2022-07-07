@@ -14,8 +14,10 @@
 enum class FileStatus
 {
     Success = 0,
+    Canceled,
     InsufficientWritePermission,
     Parse,
+    FileSizeLimit
 };
 
 enum class ParseStatus
@@ -53,6 +55,9 @@ enum class FileType
 
 typedef QVector<QString> FrameData;
 typedef QVector<FrameData> TTKFileData;
+
+// Clarification typedef
+typedef TTKFileData CSVData;
 
 
 class DefinitionUtils

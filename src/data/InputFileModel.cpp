@@ -2,6 +2,10 @@
 
 #include <QBrush>
 
+#include <QGuiApplication>
+#include <QClipboard>
+#include <QMimeData>
+
 
 CellEditCommand::CellEditCommand(InputFileModel* pModel, const QModelIndex& index, const QString oldVal, const QString newVal)
     : m_pModel(pModel)
@@ -322,6 +326,133 @@ bool InputFileModel::removeRows(int row, int count, const QModelIndex& parent)
 
 
     return true;
+}
+
+void InputFileModel::copyIndices(const QModelIndexList& list, const int columnCount)
+{
+    int curCol = 0;
+    QString copyVal;
+
+    for (QModelIndex index : list)
+    {
+        curCol++;
+        if (index.column() != 0)
+        {
+            copyVal.append(m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN]);
+            if(curCol < columnCount)
+                copyVal.append(',');
+            else
+            {
+                copyVal.append('\n');
+                curCol = 0;
+            }
+        }
+    }
+
+    copyVal.remove(copyVal.length() - 1, 1);
+
+    QClipboard* clipBoard = QGuiApplication::clipboard();
+    clipBoard->setText(copyVal);
+}
+
+// ToDo: Refactor
+bool InputFileModel::pasteIndices(QModelIndexList& list, const int columnCount)
+{
+    // Clipboard stuff
+    QClipboard* clipBoard = QGuiApplication::clipboard();
+    if (!clipBoard->mimeData()->hasText())
+        return false;
+
+    const QString clipText = clipBoard->text();
+    const QStringList lines = clipText.split('\n');
+
+    // Read clipboard data
+    CSVData csvData;
+
+    for (const QString line : lines)
+    {
+        const QStringList frameData = line.split(',');
+        if (frameData.length() == 1 && frameData[0].count() == 0)
+        {
+            continue;
+        }
+        csvData.append(frameData.toVector());
+    }
+
+    const QModelIndex startingIndex = list[0];
+    const int csvColCount = csvData[0].count();
+
+    if (csvColCount + startingIndex.column() > FRAMECOUNT_COLUMN + NUM_INPUT_COLUMNS)
+        return false;
+
+    // check index/data mass
+    const int totalCSVCount = csvData.count() * csvData[0].count();
+    int listCount = 0;
+    for (QModelIndex index : list)
+        if (index.column() != 0)
+            listCount++;
+
+    if (totalCSVCount >= listCount)
+    {
+        // ToDo: copy only into selection ?
+        // ToDo: copy only beneath the selected row ?
+
+        // runtime saving declarations
+        const int startingRow = startingIndex.row();
+        const int startingColumn = startingIndex.column() == 0 ? 1 : startingIndex.column();
+
+
+        // ToDo: better index handling?
+        // ToDo: check for not yet existing rows
+        // check valid clipboard data
+        for (int i = 0; i < csvData.count(); i++)
+            for (int j = 0; j < csvColCount; j++)
+                if (!inputValid(this->createIndex(startingRow + i, startingColumn + j), csvData[i][j]))
+                    return false;
+
+
+        // ToDo: add not existing rows
+        // copy validated data
+        for (int i = 0; i < csvData.count(); i++)
+            for (int j = 0; j < csvColCount; j++)
+            {
+                const QModelIndex index = this->createIndex(startingRow + i, startingColumn + j);
+                QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
+
+                CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, csvData[i][j]);
+                m_undoStack.push(cmd);
+            }
+
+        return true;
+    }
+    else
+    {
+        // ToDo:
+
+    }
+
+    return false;
+}
+
+void InputFileModel::resetData(const QModelIndexList& list)
+{
+    FrameData defaultData = DefinitionUtils::GetDefaultFrameData(m_fileCentering);
+
+    beginResetModel();
+
+    for (QModelIndex index : list)
+    {
+        if (index.column() == 0)
+            continue;
+
+        QString curValue = defaultData[index.column() - FRAMECOUNT_COLUMN];
+        QString prevValue = m_fileData[index.row()][index.column() - FRAMECOUNT_COLUMN];
+
+        CellEditCommand* cmd = new CellEditCommand(this, index, prevValue, curValue);
+        m_undoStack.push(cmd);
+    }
+
+    endResetModel();
 }
 
 void InputFileModel::emitDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)

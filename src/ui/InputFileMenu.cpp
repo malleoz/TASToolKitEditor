@@ -10,6 +10,8 @@ InputFileMenu::InputFileMenu(QString title,
     m_pUndo = new QAction(this);
     m_pRedo = new QAction(this);
     m_pCenter7 = new QAction(this);
+    m_pRKGHeadEdit = new QAction(this);
+    m_pRKGExport = new QAction(this);
 
     // Naming
     setTitle(title);
@@ -17,6 +19,8 @@ InputFileMenu::InputFileMenu(QString title,
     m_pUndo->setText("Undo");
     m_pRedo->setText("Redo");
     m_pCenter7->setText("7 Centered");
+    m_pRKGHeadEdit->setText("Edit RKG Header");
+    m_pRKGExport->setText("Export RKG File");
 
     // Set shortcuts
 #if QT_CONFIG(shortcut)
@@ -27,9 +31,15 @@ InputFileMenu::InputFileMenu(QString title,
 
     // Create hierarchy
     addAction(m_pClose);
+    addSeparator();
+
     addAction(m_pUndo);
     addAction(m_pRedo);
     addAction(m_pCenter7);
+    addSeparator();
+
+    addAction(m_pRKGHeadEdit);
+    addAction(m_pRKGExport);
 
     // Hide player/ghost menu by default
     menuAction()->setVisible(false);

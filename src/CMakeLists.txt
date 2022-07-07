@@ -2,18 +2,25 @@ set(TTKE_Headers
     data/InputFileHandler.h
     data/InputFileModel.h
     data/PlayerTypeInstance.h
+    data/RKGFileHandler.h
+    data/RKGHeaderModel.h
     ui/InputFileMenu.h
     ui/InputTableView.h
+    ui/RKGDelegates.h
     ui/TTKMainWindow.h
     include/Definitions.h
+    include/RKGDefinitions.h
     )
 
 set(TTKE_CPP
     data/InputFileHandler.cpp
     data/InputFileModel.cpp
     data/PlayerTypeInstance.cpp
+    data/RKGFileHandler.cpp
+    data/RKGHeaderModel.cpp
     ui/InputFileMenu.cpp
     ui/InputTableView.cpp
+    ui/RKGDelegates.cpp
     ui/TTKMainWindow.cpp
     main.cpp
 )

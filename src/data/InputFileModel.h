@@ -58,12 +58,18 @@ public: // inherit
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-    bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
     bool insertRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex& parent = QModelIndex()) override;
 
-public:
+public: // table events
+    void copyIndices(const QModelIndexList& list, const int columnCount);
+    bool pasteIndices(QModelIndexList& list, const int columnCount);
+
+    void resetData(const QModelIndexList& list);
+
+public: // public calls
     inline TTKFileData& getData() {return m_fileData;}
     inline Centering getCentering() const {return m_fileCentering;}
     inline QUndoStack* getUndoStack() { return &m_undoStack; }
@@ -80,7 +86,7 @@ signals:
 private:
     bool inputValid(const QModelIndex& index, const QVariant& value) const;
 
-protected:
+protected: // friend class accessables
     void emitDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
 
     TTKFileData m_fileData;
@@ -90,8 +96,7 @@ private:
 
     QUndoStack m_undoStack;
 
-    const QVector<int> BUTTON_COL_IDXS{ 0, 1, 2 };
-
-private:
+private: // const declarations
+    const QVector<int> BUTTON_COL_IDXS = { 0, 1, 2 };
     static const int UNDO_STACK_LIMIT = 100;
 };

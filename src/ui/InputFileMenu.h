@@ -16,6 +16,9 @@ public:
     inline QAction* getCenter7() const { return m_pCenter7; }
     inline void     setCenter7(bool centerOn7) { m_pCenter7->setChecked(centerOn7); }
 
+    inline QAction* getRKGHeadEdit() const { return m_pRKGHeadEdit; }
+    inline QAction* getRKGExport() const { return m_pRKGExport; }
+
     inline QAction* getClose() const { return m_pClose; }
 
 private:
@@ -23,6 +26,9 @@ private:
     QAction* m_pRedo;
 
     QAction* m_pCenter7;
+
+    QAction* m_pRKGHeadEdit;
+    QAction* m_pRKGExport;
 
     QAction* m_pClose;
 };

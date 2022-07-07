@@ -10,6 +10,7 @@ class InputFileMenu;
 class InputTableView;
 class InputFileHandler;
 
+class QTableView;
 
 enum class PlayerType
 {
@@ -22,21 +23,31 @@ class PlayerTypeInstance : public QObject
     Q_OBJECT
 public:
     PlayerTypeInstance(const PlayerType type, QObject* parent = nullptr);
+    ~PlayerTypeInstance() override;
 
     void setupUI(QWidget* parent = nullptr);
 
 public: // connect
     /// @return Returns only false on parse error, return true on cancel or successful load
-    bool openFile(QWidget* main);
+    bool openFile();
+    bool importFile();
+    bool exportFile();
+
     void closeFile();
 
     void reloadFile();
 
+    void adjustPersistentEditors();
+
 private:
-    bool userClosedPreviousFile(QWidget* main);
+    bool loadAdjustments(const Centering centering);
+
+    bool userClosedPreviousFile();
 
     void adjustUiOnFileLoad(const Centering centering);
     void adjustUiOnFileClose();
+
+    void setupRKGHeaderView();
 
 
 public: // Setters / Getters
@@ -59,6 +70,8 @@ signals:
 private:
     QVBoxLayout* qVLayout;
     QLabel* qLabel;
+
+    QTableView* qRKGTable;
 
     InputTableView* m_pTableView;
     InputFileMenu* m_pMenu;
